@@ -20,6 +20,10 @@ import java.net.URI
 import javax.imageio.ImageIO
 import java.io.ByteArrayOutputStream
 import org.springframework.core.io.ByteArrayResource
+import org.springframework.web.multipart.MultipartFile
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestPart
+
 
 /**
  * The specification of the controller.
@@ -131,4 +135,53 @@ class UrlShortenerControllerImpl(
         return ResponseEntity<ByteArrayResource>(qrCodeResource, h, HttpStatus.OK)
     }
 
+}
+
+@RestController
+@RequestMapping("/api")
+class CsvController {
+    data class CsvOutput(val originalUri: String, val shortenedUri: String, val explanation: String = "")
+
+    @PostMapping("/bulk", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun processCsvFile(@RequestPart("file") file: MultipartFile): ResponseEntity<String> {
+        val csvOutputList = mutableListOf<CsvOutput>()
+
+        // Process CSV file
+        val lines = file.inputStream.bufferedReader().readLines()
+        for (line in lines) {
+          
+                val uri = line.trim()
+                // Perform logic to shorten the URI and get additional information if needed
+                val shortenedUri = shortenUri(uri)
+                val explanation = "" // Explanation for cases where URI cannot be shortened, you can set it as needed
+                csvOutputList.add(CsvOutput(uri, shortenedUri, explanation))
+            
+            
+        }
+
+        val csvContent = buildCsvContent(csvOutputList)
+        val headers = HttpHeaders()
+        headers.contentType = MediaType.parseMediaType("text/csv")
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=output.csv")
+
+        return ResponseEntity(csvContent, headers, HttpStatus.CREATED)
+    }
+
+    private fun shortenUri(uri: String): String {
+        // Implement logic to shorten the URI, return shortened URI or throw an exception if unable to shorten
+        return uri // Placeholder logic, implement according to your requirements
+    }
+
+    private fun buildCsvContent(outputList: List<CsvOutput>): String {
+        val csvContent = StringBuilder()
+        csvContent.append("Original URI,Shortened URI,Explanation")
+        csvContent.append("\n")
+
+        for (output in outputList) {
+            csvContent.append("${output.originalUri},${output.shortenedUri},${output.explanation}")
+            csvContent.append("\n")
+        }
+
+        return csvContent.toString()
+    }
 }

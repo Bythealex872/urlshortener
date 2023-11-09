@@ -52,3 +52,7 @@ data class ClickProperties(
     val platform: String? = null,
     val country: String? = null
 )
+data class CsvInput(val uri: String)
+
+data class CsvOutput(val originalUri: String, val shortenedUri: String, val explanation: String = "")
+
