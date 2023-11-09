@@ -21,6 +21,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.junit.jupiter.api.Assertions
+
 
 @WebMvcTest
 @ContextConfiguration(
@@ -106,5 +108,11 @@ class UrlShortenerControllerTest {
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.statusCode").value(400))
+    }
+
+    @Test
+    fun `CAMBIA ESTO`() {
+        createQRCodeUseCase.createQRCode(key = "ftp://example.com/")
+        Assertions.assertTrue(true)
     }
 }
