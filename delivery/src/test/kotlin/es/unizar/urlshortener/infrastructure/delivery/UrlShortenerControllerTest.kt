@@ -6,6 +6,7 @@ import es.unizar.urlshortener.core.*
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
 import es.unizar.urlshortener.core.usecases.RedirectUseCase
+import es.unizar.urlshortener.core.usecases.CreateQRCodeUseCase
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.mockito.BDDMockito.never
@@ -41,6 +42,9 @@ class UrlShortenerControllerTest {
 
     @MockBean
     private lateinit var createShortUrlUseCase: CreateShortUrlUseCase
+
+    @MockBean
+    private lateinit var createQRCodeUseCase: CreateQRCodeUseCase
 
     @Test
     fun `redirectTo returns a redirect when the key exists`() {

@@ -5,6 +5,7 @@ import es.unizar.urlshortener.core.ShortUrlProperties
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
 import es.unizar.urlshortener.core.usecases.RedirectUseCase
+import es.unizar.urlshortener.core.usecases.CreateQRCodeUseCase
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.http.HttpHeaders
@@ -16,6 +17,9 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 import java.net.URI
+import javax.imageio.ImageIO
+import java.io.ByteArrayOutputStream
+import org.springframework.core.io.ByteArrayResource
 
 /**
  * The specification of the controller.
@@ -35,6 +39,13 @@ interface UrlShortenerController {
      * **Note**: Delivery of use case [CreateShortUrlUseCase].
      */
     fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut>
+
+    /**
+     * Returns a QR code with the url identified by its [id].
+     *
+     * **Note**: Delivery of use cases [CreateQRCodeUseCase].
+     */
+    fun qrCode(id: String, request: HttpServletRequest): ResponseEntity<ByteArrayResource>
 }
 
 /**
@@ -42,7 +53,8 @@ interface UrlShortenerController {
  */
 data class ShortUrlDataIn(
     val url: String,
-    val sponsor: String? = null
+    val sponsor: String? = null,
+    val qrRequest: Boolean? = null
 )
 
 /**
@@ -62,7 +74,8 @@ data class ShortUrlDataOut(
 class UrlShortenerControllerImpl(
     val redirectUseCase: RedirectUseCase,
     val logClickUseCase: LogClickUseCase,
-    val createShortUrlUseCase: CreateShortUrlUseCase
+    val createShortUrlUseCase: CreateShortUrlUseCase,
+    val createQRCodeUseCase: CreateQRCodeUseCase
 ) : UrlShortenerController {
 
     @GetMapping("/{id:(?!api|index).*}")
@@ -86,12 +99,36 @@ class UrlShortenerControllerImpl(
             val h = HttpHeaders()
             val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
             h.location = url
+            val qrr = url
             val response = ShortUrlDataOut(
                 url = url,
                 properties = mapOf(
-                    "safe" to it.properties.safe
+                    "safe" to it.properties.safe,
+                    "qr" to qrr
                 )
             )
             ResponseEntity<ShortUrlDataOut>(response, h, HttpStatus.CREATED)
         }
+
+    @GetMapping("/{id}/qr", produces = [MediaType.IMAGE_PNG_VALUE])
+    override fun qrCode(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<ByteArrayResource> {
+        // Llamamos a la función para generar la imagen del código QR
+        val qrCodeImage = createQRCodeUseCase.createQRCode(id)
+        
+        // Convertimos la imagen a un array de bytes
+        val outputStream = ByteArrayOutputStream()
+        ImageIO.write(qrCodeImage, "PNG", outputStream)
+        val qrCodeBytes = outputStream.toByteArray()
+        val qrCodeResource = ByteArrayResource(qrCodeBytes)
+
+        // Preparamos los encabezados de la respuesta para indicar que es una imagen
+        val h = HttpHeaders()
+        h.contentType = MediaType.IMAGE_PNG
+        h.cacheControl = "no-cache, no-store, must-revalidate"
+        h.pragma = "no-cache"
+        h.expires = 0
+
+        return ResponseEntity<ByteArrayResource>(qrCodeResource, h, HttpStatus.OK)
+    }
+
 }
