@@ -12,18 +12,18 @@ $(document).ready(function () {
                 var apiUrl = msg.properties.qr.split("/")[3] + "/qr";
                 console.log("API URL: ", apiUrl); // Imprime en consola en lugar de alerta
                 $("#result1").html(
-                    "<div class='alert alert-success lead'><a id='shortUrlLink' target='_blank' href='"
+                    "<a id='shortUrlLink' target='_blank' href='"
                     + shortUrl
                     + "'>"
                     + shortUrl
-                    + "</a></div>"
+                    + "</a>"
                 );
                 $('#qrCodeImage').attr('src', apiUrl);
                 $('#qrCodeContainer').show();
             },
             error: function () {
                 $('#qrCodeContainer').hide();
-                $("#result1").html("<div class='alert alert-danger lead'>ERROR</div>");
+                $("#result1").html("<div>ERROR</div>");
             }
         });
     });
@@ -49,11 +49,11 @@ $(document).ready(function () {
                 document.body.appendChild(link);
                 link.click();
                 link.remove();
-                $("#result2").html("<div class='alert alert-success'>El CSV ha sido procesado. Descargue el archivo haciendo clic <a href='" + downloadUrl + "' download='output.csv'>aquí</a>.</div>");
+                $("#result2").html("<div>El CSV ha sido procesado. Descargue el archivo haciendo clic <a href='" + downloadUrl + "' download='output.csv'>aquí</a>.</div>");
             },
             error: function () {
                 console.log("mal ");
-                $("#result2").html("<div class='alert alert-danger'>Ha ocurrido un error al procesar el CSV.</div>");
+                $("#result2").html("<div>Ha ocurrido un error al procesar el CSV.</div>");
             }
         });
     });
