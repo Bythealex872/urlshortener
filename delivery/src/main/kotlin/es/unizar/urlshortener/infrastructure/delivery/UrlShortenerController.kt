@@ -2,6 +2,7 @@ package es.unizar.urlshortener.infrastructure.delivery
 
 import es.unizar.urlshortener.core.ClickProperties
 import es.unizar.urlshortener.core.ShortUrlProperties
+import es.unizar.urlshortener.core.CsvOutput
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
 import es.unizar.urlshortener.core.usecases.RedirectUseCase
@@ -50,6 +51,8 @@ interface UrlShortenerController {
      * **Note**: Delivery of use cases [CreateQRCodeUseCase].
      */
     fun qrCode(id: String, request: HttpServletRequest): ResponseEntity<ByteArrayResource>
+
+    fun processCsvFile(@RequestPart("file") file: MultipartFile): ResponseEntity<String>
 }
 
 /**
@@ -135,15 +138,8 @@ class UrlShortenerControllerImpl(
         return ResponseEntity<ByteArrayResource>(qrCodeResource, h, HttpStatus.OK)
     }
 
-}
-
-@RestController
-@RequestMapping("/api")
-class CsvController {
-    data class CsvOutput(val originalUri: String, val shortenedUri: String, val explanation: String = "")
-
-    @PostMapping("/bulk", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    fun processCsvFile(@RequestPart("file") file: MultipartFile): ResponseEntity<String> {
+    @PostMapping("/api/bulk", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    override fun processCsvFile(@RequestPart("file") file: MultipartFile): ResponseEntity<String> {
         val csvOutputList = mutableListOf<CsvOutput>()
 
         // Process CSV file
@@ -184,4 +180,5 @@ class CsvController {
 
         return csvContent.toString()
     }
+
 }

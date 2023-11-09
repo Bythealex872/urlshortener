@@ -29,13 +29,23 @@
                     <label><input type="checkbox" id="qrCheck" name="qrRequest" value="true"> Generate QR Code</label>
                 </div>
             </form>
+            <h1>Procesador de Archivos CSV</h1>
+            <br>
+            <form id="csvForm" enctype="multipart/form-data">
+                <input type="file" name="file" accept=".csv" required>
+                <span class="input-btn">
+                    <button class="btn btn-primary" type="submit">Procesar CSV</button>
+                </span>
+            </form>
+            <br>
+            <div id="result1"></div>
         </div>
     </div>
     <div class="row">
         <div class="col-lg-12 text-center">
             <div class="col-sm-offset-4 col-sm-4 text-center">
                 <br/>
-                <div id="result"></div>
+                <div id="result2"></div>
             </div>
         </div>
     </div>

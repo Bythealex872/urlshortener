@@ -11,7 +11,7 @@ $(document).ready(function () {
                 console.log("Short URL: ", shortUrl); // Imprime en consola en lugar de alerta
                 var apiUrl = msg.properties.qr.split("/")[3] + "/qr";
                 console.log("API URL: ", apiUrl); // Imprime en consola en lugar de alerta
-                $("#result").html(
+                $("#result1").html(
                     "<div class='alert alert-success lead'><a id='shortUrlLink' target='_blank' href='"
                     + shortUrl
                     + "'>"
@@ -23,7 +23,37 @@ $(document).ready(function () {
             },
             error: function () {
                 $('#qrCodeContainer').hide();
-                $("#result").html("<div class='alert alert-danger lead'>ERROR</div>");
+                $("#result1").html("<div class='alert alert-danger lead'>ERROR</div>");
+            }
+        });
+    });
+
+    $("#csvForm").submit(function (event) {
+        event.preventDefault();
+
+        // Formulario de datos para enviar archivos
+        var formData = new FormData(this);
+
+        $.ajax({
+            type: "POST",
+            url: "/api/bulk",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (data, status, request) {
+                console.log("bien ");
+                var downloadUrl = window.URL.createObjectURL(new Blob([data]));
+                var link = document.createElement('a');
+                link.href = downloadUrl;
+                link.setAttribute('download', 'output.csv');
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                $("#result2").html("<div class='alert alert-success'>El CSV ha sido procesado. Descargue el archivo haciendo clic <a href='" + downloadUrl + "' download='output.csv'>aquí</a>.</div>");
+            },
+            error: function () {
+                console.log("mal ");
+                $("#result2").html("<div class='alert alert-danger'>Ha ocurrido un error al procesar el CSV.</div>");
             }
         });
     });
