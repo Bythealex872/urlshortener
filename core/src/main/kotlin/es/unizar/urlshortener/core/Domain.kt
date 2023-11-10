@@ -39,7 +39,8 @@ data class ShortUrlProperties(
     val sponsor: String? = null,
     val safe: Boolean = true,
     val owner: String? = null,
-    val country: String? = null
+    val country: String? = null,
+    val qr: String? = null
 )
 
 /**
@@ -52,7 +53,13 @@ data class ClickProperties(
     val platform: String? = null,
     val country: String? = null
 )
-data class CsvInput(val uri: String)
+data class CsvInput(
+    val uri: String
+)
 
-data class CsvOutput(val originalUri: String, val shortenedUri: String, val explanation: String = "")
+data class CsvOutput(
+    val originalUri: String,
+    val shortenedUri: String,
+    val explanation: String = ""
+)
 
