@@ -173,7 +173,8 @@ class UrlShortenerControllerImpl(
         val uriComponents = UriComponentsBuilder.fromHttpUrl(url).buildAndExpand(requestParams)
         val restTemplate = RestTemplate()
         val requestEntity = org.springframework.http.HttpEntity(requestParams, headers)
-        val responseEntity: ResponseEntity<String> = restTemplate.postForEntity(uriComponents.toUri(), requestEntity, String::class.java)
+        val responseEntity: ResponseEntity<String> = 
+        restTemplate.postForEntity(uriComponents.toUri(), requestEntity, String::class.java)
     
         if (responseEntity.statusCode.is2xxSuccessful) {
             return responseEntity.body ?: uri
