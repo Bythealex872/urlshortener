@@ -24,6 +24,8 @@ import org.springframework.core.io.ByteArrayResource
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
+import org.springframework.web.client.RestTemplate
+import org.springframework.web.util.UriComponentsBuilder
 
 
 /**
@@ -163,10 +165,21 @@ class UrlShortenerControllerImpl(
 
         return ResponseEntity(csvContent, headers, HttpStatus.CREATED)
     }
-
     private fun shortenUri(uri: String): String {
-        // Implement logic to shorten the URI, return shortened URI or throw an exception if unable to shorten
-        return uri // Placeholder logic, implement according to your requirements
+        val url = "/api/link"
+        val headers = HttpHeaders()
+        headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
+        val requestParams = mapOf("url" to uri)
+        val uriComponents = UriComponentsBuilder.fromHttpUrl(url).buildAndExpand(requestParams)
+        val restTemplate = RestTemplate()
+        val requestEntity = org.springframework.http.HttpEntity(requestParams, headers)
+        val responseEntity: ResponseEntity<String> = restTemplate.postForEntity(uriComponents.toUri(), requestEntity, String::class.java)
+    
+        if (responseEntity.statusCode.is2xxSuccessful) {
+            return responseEntity.body ?: uri
+        } else {
+            return uri
+        }
     }
 
     private fun buildCsvContent(outputList: List<CsvOutput>): String {
