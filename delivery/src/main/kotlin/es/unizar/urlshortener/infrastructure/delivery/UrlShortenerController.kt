@@ -63,7 +63,7 @@ interface UrlShortenerController {
 data class ShortUrlDataIn(
     val url: String,
     val sponsor: String? = null,
-    val qrRequest: Boolean? = null
+    val qrRequest: Boolean? = false
 )
 
 /**
@@ -100,16 +100,16 @@ class UrlShortenerControllerImpl(
     override fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut> =
         createShortUrlUseCase.create(
             url = data.url,
+            qrRequest = data.qrRequest,
             data = ShortUrlProperties(
                 ip = request.remoteAddr,
-                sponsor = data.sponsor,
-                qr = data.qrRequest.toString()
+                sponsor = data.sponsor
             )
         ).let {
             val h = HttpHeaders()
             val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
             h.location = url
-            val qr = data.qrRequest?.let { "$url/qr" } ?: ""
+            val qr = if(data.qrRequest!!) "$url/qr" else ""
             val response = ShortUrlDataOut(
                 url = url,
                 properties = mapOf(
@@ -148,14 +148,9 @@ class UrlShortenerControllerImpl(
         // Process CSV file
         val lines = file.inputStream.bufferedReader().readLines()
         for (line in lines) {
-          
-                val uri = line.trim()
-                // Perform logic to shorten the URI and get additional information if needed
-                val shortenedUri = shortenUri(uri)
-                val explanation = "" // Explanation for cases where URI cannot be shortened, you can set it as needed
-                csvOutputList.add(CsvOutput(uri, shortenedUri, explanation))
-            
-            
+            val uri = line.trim()
+            val shortenedUri = shortenUri(uri)
+            csvOutputList.add(CsvOutput(uri, shortenedUri.first, shortenedUri.second))
         }
 
         val csvContent = buildCsvContent(csvOutputList)
@@ -165,27 +160,33 @@ class UrlShortenerControllerImpl(
 
         return ResponseEntity(csvContent, headers, HttpStatus.CREATED)
     }
-    private fun shortenUri(uri: String): String {
-        val url = "/api/link"
-        val headers = HttpHeaders()
-        headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
-        val requestParams = mapOf("url" to uri)
-        val uriComponents = UriComponentsBuilder.fromHttpUrl(url).buildAndExpand(requestParams)
-        val restTemplate = RestTemplate()
-        val requestEntity = org.springframework.http.HttpEntity(requestParams, headers)
-        val responseEntity: ResponseEntity<String> = 
-        restTemplate.postForEntity(uriComponents.toUri(), requestEntity, String::class.java)
-    
-        if (responseEntity.statusCode.is2xxSuccessful) {
-            return responseEntity.body ?: uri
-        } else {
-            return uri
+
+    private fun shortenUri(uri: String): Pair<String, String> {
+    // Analiza la URI proporcionada para obtener sus componentes
+    val parsedUri = URI(uri)
+
+    // Usa una estructura de control 'when' para manejar diferentes casos basados en el esquema de la URI
+    return when (parsedUri.scheme) {
+        // Si el esquema es 'http' o 'https', procesa la URI
+        "http", "https" -> {
+            // Simula el acortamiento de la URI. Aquí, simplemente se concatena un hash de la URI
+            // con una base de URL predefinida para crear una 'URI acortada'
+            val shortened = "http://short.uri/" + uri.hashCode()
+
+            // Devuelve un par (Pair) con la URI acortada y una cadena vacía para el mensaje de error
+            shortened to ""
+        }
+        // Para cualquier otro esquema (o si no hay esquema)
+        else -> {
+            // Devuelve un par con una cadena vacía para la URI acortada y un mensaje de error
+            "" to "debe ser una URI http o https"
         }
     }
+}
 
     private fun buildCsvContent(outputList: List<CsvOutput>): String {
         val csvContent = StringBuilder()
-        csvContent.append("Original URI,Shortened URI,Explanation")
+        csvContent.append("URI,URI_recortada,Mensaje")
         csvContent.append("\n")
 
         for (output in outputList) {

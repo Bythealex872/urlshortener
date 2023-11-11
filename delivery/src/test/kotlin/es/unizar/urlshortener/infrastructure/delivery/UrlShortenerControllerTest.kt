@@ -77,7 +77,7 @@ class UrlShortenerControllerTest {
         given(
             createShortUrlUseCase.create(
                 url = "http://example.com/",
-                data = ShortUrlProperties(ip = "127.0.0.1", qr = "null")
+                data = ShortUrlProperties(ip = "127.0.0.1")
             )
         ).willReturn(ShortUrl("f684a3c4", Redirection("http://example.com/")))
 
@@ -97,7 +97,7 @@ class UrlShortenerControllerTest {
         given(
             createShortUrlUseCase.create(
                 url = "ftp://example.com/",
-                data = ShortUrlProperties(ip = "127.0.0.1", qr = "null")
+                data = ShortUrlProperties(ip = "127.0.0.1")
             )
         ).willAnswer { throw InvalidUrlException("ftp://example.com/") }
 
