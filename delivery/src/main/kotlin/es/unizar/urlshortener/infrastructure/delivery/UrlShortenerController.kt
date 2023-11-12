@@ -7,6 +7,7 @@ import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
 import es.unizar.urlshortener.core.usecases.RedirectUseCase
 import es.unizar.urlshortener.core.usecases.CreateQRCodeUseCase
+import es.unizar.urlshortener.core.usecases.CreateCSVUseCase
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.http.HttpHeaders
@@ -54,7 +55,7 @@ interface UrlShortenerController {
      */
     fun qrCode(id: String, request: HttpServletRequest): ResponseEntity<ByteArrayResource>
 
-    fun processCsvFile(@RequestPart("file") file: MultipartFile): ResponseEntity<String>
+    fun processCsvFile(@RequestPart("file") file: MultipartFile,request: HttpServletRequest): ResponseEntity<String>
 }
 
 /**
@@ -84,7 +85,8 @@ class UrlShortenerControllerImpl(
     val redirectUseCase: RedirectUseCase,
     val logClickUseCase: LogClickUseCase,
     val createShortUrlUseCase: CreateShortUrlUseCase,
-    val createQRCodeUseCase: CreateQRCodeUseCase
+    val createQRCodeUseCase: CreateQRCodeUseCase,
+    val createCSVUseCase : CreateCSVUseCase
 ) : UrlShortenerController {
 
     @GetMapping("/{id:(?!api|index).*}")
@@ -142,59 +144,55 @@ class UrlShortenerControllerImpl(
     }
 
     @PostMapping("/api/bulk", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    override fun processCsvFile(@RequestPart("file") file: MultipartFile): ResponseEntity<String> {
+    override fun processCsvFile(@RequestPart("file") file: MultipartFile,
+    request: HttpServletRequest): ResponseEntity<String> {
         val csvOutputList = mutableListOf<CsvOutput>()
 
         // Process CSV file
         val lines = file.inputStream.bufferedReader().readLines()
         for (line in lines) {
             val uri = line.trim()
-            val shortenedUri = shortenUri(uri)
-            csvOutputList.add(CsvOutput(uri, shortenedUri.first, shortenedUri.second))
+           val create =  createShortUrlUseCase.create(
+                url = uri,
+                data = ShortUrlProperties(
+                    ip = request.remoteAddr,
+                )
+            )
+            val urlrecortada = linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
+            csvOutputList.add(CsvOutput(uri, "$urlrecortada" ,":)"))
         }
 
-        val csvContent = buildCsvContent(csvOutputList)
+        val csvContent = createCSVUseCase.buildCsvContent(csvOutputList)
         val headers = HttpHeaders()
         headers.contentType = MediaType.parseMediaType("text/csv")
         headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=output.csv")
 
         return ResponseEntity(csvContent, headers, HttpStatus.CREATED)
     }
+    /* 
 
     private fun shortenUri(uri: String): Pair<String, String> {
     // Analiza la URI proporcionada para obtener sus componentes
-    val parsedUri = URI(uri)
+        val parsedUri = URI(uri)
 
-    // Usa una estructura de control 'when' para manejar diferentes casos basados en el esquema de la URI
-    return when (parsedUri.scheme) {
+        // Usa una estructura de control 'when' para manejar diferentes casos basados en el esquema de la URI
+        return when (parsedUri.scheme) {
         // Si el esquema es 'http' o 'https', procesa la URI
-        "http", "https" -> {
-            // Simula el acortamiento de la URI. Aquí, simplemente se concatena un hash de la URI
-            // con una base de URL predefinida para crear una 'URI acortada'
-            val shortened = "http://short.uri/" + uri.hashCode()
+            "http", "https" -> {
+                // Simula el acortamiento de la URI. Aquí, simplemente se concatena un hash de la URI
+                // con una base de URL predefinida para crear una 'URI acortada'
+                val shortened = "http://short.uri/" + uri.hashCode()
 
-            // Devuelve un par (Pair) con la URI acortada y una cadena vacía para el mensaje de error
-            shortened to ""
-        }
-        // Para cualquier otro esquema (o si no hay esquema)
-        else -> {
-            // Devuelve un par con una cadena vacía para la URI acortada y un mensaje de error
-            "" to "debe ser una URI http o https"
+                // Devuelve un par (Pair) con la URI acortada y una cadena vacía para el mensaje de error
+                shortened to ""
+            }
+            // Para cualquier otro esquema (o si no hay esquema)
+            else -> {
+                // Devuelve un par con una cadena vacía para la URI acortada y un mensaje de error
+                "" to "debe ser una URI http o https"
+            }
         }
     }
-}
-
-    private fun buildCsvContent(outputList: List<CsvOutput>): String {
-        val csvContent = StringBuilder()
-        csvContent.append("URI,URI_recortada,Mensaje")
-        csvContent.append("\n")
-
-        for (output in outputList) {
-            csvContent.append("${output.originalUri},${output.shortenedUri},${output.explanation}")
-            csvContent.append("\n")
-        }
-
-        return csvContent.toString()
-    }
+    */
 
 }
