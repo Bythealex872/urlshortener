@@ -6,8 +6,6 @@ import es.unizar.urlshortener.core.*
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
 import es.unizar.urlshortener.core.usecases.RedirectUseCase
-import es.unizar.urlshortener.core.usecases.CreateQRCodeUseCase
-import es.unizar.urlshortener.core.usecases.CreateCSVUseCase
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.mockito.BDDMockito.never
@@ -22,8 +20,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import org.junit.jupiter.api.Assertions
-
 
 @WebMvcTest
 @ContextConfiguration(
@@ -45,12 +41,6 @@ class UrlShortenerControllerTest {
 
     @MockBean
     private lateinit var createShortUrlUseCase: CreateShortUrlUseCase
-
-    @MockBean
-    private lateinit var createQRCodeUseCase: CreateQRCodeUseCase
-
-    @MockBean
-    private lateinit var createCSVUseCase: CreateCSVUseCase
 
     @Test
     fun `redirectTo returns a redirect when the key exists`() {
@@ -112,23 +102,5 @@ class UrlShortenerControllerTest {
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.statusCode").value(400))
-    }
-
-    @Test
-    fun `CAMBIA ESTO`() {
-        createQRCodeUseCase.createQRCode(key = "ftp://example.com/")
-        Assertions.assertTrue(true)
-    }
-    @Test
-    fun `Esto En C No Pasa`(){
-        val csvOutputs = listOf(
-            CsvOutput(
-                originalUri = "https://example.com/long-url-1",
-                shortenedUri = "https://short.url/1",
-                explanation = "Primera URL acortada"
-            )
-        )
-        createCSVUseCase.buildCsvContent(csvOutputs)
-        Assertions.assertTrue(true)
     }
 }
