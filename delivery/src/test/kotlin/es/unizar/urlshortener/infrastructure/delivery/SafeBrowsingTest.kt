@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 
-class SafeBrowsingImplTest {
+class SafeBrowsingTest {
     private lateinit var safeBrowsing : SafeBrowsingImpl
     private lateinit var mockRepository: ShortUrlRepositoryService
 

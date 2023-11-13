@@ -21,10 +21,10 @@ const val GOOGLE_CLIENT_ID = "UrlShortener" // client id
 const val GOOGLE_CLIENT_VERSION = "0.0.1" // client version
 const val GOOGLE_APPLICATION_NAME = "UrlShortener" // appication name
 
-val GOOGLE_THREAT_TYPES =
-    Arrays.asList(*arrayOf("MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"))
-val GOOGLE_PLATFORM_TYPES = listOf(*arrayOf("ANY_PLATFORM"))
-val GOOGLE_THREAT_ENTRYTYPES = listOf(*arrayOf("URL"))
+val GOOGLE_THREAT_TYPES = listOf("MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE",
+    "POTENTIALLY_HARMFUL_APPLICATION")
+val GOOGLE_PLATFORM_TYPES = listOf("ANY_PLATFORM")
+val GOOGLE_THREAT_ENTRYTYPES = listOf("URL")
 var httpTransport: NetHttpTransport? = null
 
 interface SafeBrowsing {
