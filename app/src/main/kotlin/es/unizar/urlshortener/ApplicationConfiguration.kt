@@ -48,7 +48,7 @@ class ApplicationConfiguration(
         CreateShortUrlUseCaseImpl(shortUrlRepositoryService(), validatorService(), hashService())
         
     @Bean
-    fun createQRCodeUseCase() = CreateQRCodeUseCaseImpl(shortUrlRepositoryService())
+    fun createQRCodeUseCase() = CreateQRCodeUseCaseImpl()
     
     @Bean
     fun createCSVUseCase() = CreateCSVUseCaseImpl()

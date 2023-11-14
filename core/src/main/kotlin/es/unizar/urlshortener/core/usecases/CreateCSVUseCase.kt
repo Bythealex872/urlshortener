@@ -7,6 +7,7 @@ import es.unizar.urlshortener.core.CsvOutput
 interface CreateCSVUseCase {
     fun buildCsvContent(outputList: List<CsvOutput>): String
 }
+
 class CreateCSVUseCaseImpl : CreateCSVUseCase{
     override fun buildCsvContent(outputList: List<CsvOutput>): String {
         val csvContent = StringBuilder()

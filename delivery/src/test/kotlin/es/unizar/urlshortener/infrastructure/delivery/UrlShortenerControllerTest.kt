@@ -115,10 +115,37 @@ class UrlShortenerControllerTest {
     }
 
     @Test
-    fun `CAMBIA ESTO`() {
-        createQRCodeUseCase.createQRCode(key = "ftp://example.com/")
+    fun `creates returns a basic redirect and the qr route if it can compute a hash and if qr is requested`() {
+        given(
+            createShortUrlUseCase.create(
+                url = "http://example.com/",
+                qrRequest = true,
+                data = ShortUrlProperties(ip = "127.0.0.1")
+            )
+        ).willReturn(ShortUrl("f684a3c4", Redirection("http://example.com/")))
+
+        mockMvc.perform(
+            post("/api/link")
+                .param("url", "http://example.com/")
+                .param("qrRequest", "true")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        )
+            .andDo(print())
+            .andExpect(status().isCreated)
+            .andExpect(redirectedUrl("http://localhost/f684a3c4"))
+            .andExpect(jsonPath("$.url").value("http://localhost/f684a3c4"))
+            .andExpect(jsonPath("$.properties.qr").value("http://localhost/f684a3c4/qr"))
+    }
+
+    @Test
+    fun `creates qr code`() {
+        val a = createQRCodeUseCase.createQRCode(id = "http://example.com/")
+        given(
+            createQRCodeUseCase.createQRCode(id = "http://example.com/")
+        ).willReturn(a)
         Assertions.assertTrue(true)
     }
+
     @Test
     fun `Esto En C No Pasa`(){
         val csvOutputs = listOf(

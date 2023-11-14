@@ -125,7 +125,8 @@ class UrlShortenerControllerImpl(
     @GetMapping("/{id}/qr", produces = [MediaType.IMAGE_PNG_VALUE])
     override fun qrCode(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<ByteArrayResource> {
         // Llamamos a la función para generar la imagen del código QR
-        val qrCodeImage = createQRCodeUseCase.createQRCode(id)
+        val url = linkTo<UrlShortenerControllerImpl> { redirectTo(id, request) }.toUri().toString()
+        val qrCodeImage = createQRCodeUseCase.createQRCode(url)
         
         // Convertimos la imagen a un array de bytes
         val outputStream = ByteArrayOutputStream()

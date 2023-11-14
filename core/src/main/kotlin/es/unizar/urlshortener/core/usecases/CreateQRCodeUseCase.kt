@@ -9,20 +9,15 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import java.awt.image.BufferedImage
 
 interface CreateQRCodeUseCase {
-    fun createQRCode(key: String): BufferedImage
+    fun createQRCode(id: String): BufferedImage
 }
 
 /**
  * Implementation of [CreateQRCodeUseCase].
  */
-class CreateQRCodeUseCaseImpl(
-    private val shortUrlRepository: ShortUrlRepositoryService
-) : CreateQRCodeUseCase {
-    override fun createQRCode(key: String): BufferedImage { 
-        val redirection = shortUrlRepository.findByKey(key)?.redirection
-            ?: throw RedirectionNotFound(key)
-
-        return generateQrCodeImage(redirection.target.toString())
+class CreateQRCodeUseCaseImpl : CreateQRCodeUseCase {
+    override fun createQRCode(id: String): BufferedImage { 
+        return generateQrCodeImage(id)
     }
 
     companion object {
