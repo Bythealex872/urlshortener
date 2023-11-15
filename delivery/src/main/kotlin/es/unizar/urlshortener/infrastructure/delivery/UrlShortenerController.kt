@@ -25,9 +25,15 @@ import org.springframework.core.io.ByteArrayResource
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
+<<<<<<< Updated upstream
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
 
+=======
+import com.blueconic.browscap.Capabilities;
+import com.blueconic.browscap.UserAgentParser;
+import com.blueconic.browscap.UserAgentService;
+>>>>>>> Stashed changes
 
 /**
  * The specification of the controller.
@@ -55,7 +61,16 @@ interface UrlShortenerController {
      */
     fun qrCode(id: String, request: HttpServletRequest): ResponseEntity<ByteArrayResource>
 
+<<<<<<< Updated upstream
     fun processCsvFile(@RequestPart("file") file: MultipartFile,request: HttpServletRequest): ResponseEntity<String>
+=======
+    fun processCsvFile(@RequestPart("file") file: MultipartFile): ResponseEntity<String>
+
+    /**
+    * Returns the user agent information from the map.
+    */
+    fun returnUserAgentInfo(@PathVariable id: String): ResponseEntity<Map<String, Any>>
+>>>>>>> Stashed changes
 }
 
 /**
@@ -76,6 +91,14 @@ data class ShortUrlDataOut(
 )
 
 /**
+ * Structure of the user agent.
+ */
+data class UserAgent(
+    val browser: String,
+    val platform: String,
+)
+
+/**
  * The implementation of the controller.
  *
  * **Note**: Spring Boot is able to discover this [RestController] without further configuration.
@@ -89,10 +112,25 @@ class UrlShortenerControllerImpl(
     val createCSVUseCase : CreateCSVUseCase
 ) : UrlShortenerController {
 
+    //Variables privadas 
+    private val userAgentMap: MutableMap<String, UserAgent> = mutableMapOf()
+    private val parser = UserAgentService().loadParser()
+
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> =
         redirectUseCase.redirectTo(id).let {
             logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr))
+
+            // Añadimos datos de userAgent
+            val userAgentString = request.getHeader("User-Agent") ?: ""
+            val capabilities: Capabilities = parser.parse(userAgentString)
+
+            // Almacena la información en el mapa
+            userAgentMap[id] = UserAgent(
+                    browser = capabilities.browser,
+                    platform = capabilities.platform
+            )
+
             val h = HttpHeaders()
             h.location = URI.create(it.target)
             ResponseEntity<Unit>(h, HttpStatus.valueOf(it.mode))
@@ -196,4 +234,21 @@ class UrlShortenerControllerImpl(
     }
     */
 
+    @GetMapping("/api/link/{id}")
+    override fun returnUserAgentInfo(@PathVariable id: String): ResponseEntity<Map<String, Any>> {
+        val userAgentInfo = userAgentMap[id]
+
+        return if (userAgentInfo != null) {
+            // Construir el resumen acumulado
+            val summary = mapOf(
+                "id" to id,
+                "browser" to userAgentInfo.browser,
+                "platform" to userAgentInfo.platform,
+            )
+            ResponseEntity.ok(summary)
+        } else {
+            ResponseEntity.notFound().build()
+        }
+    }
+    
 }
