@@ -25,15 +25,12 @@ import org.springframework.core.io.ByteArrayResource
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
-<<<<<<< Updated upstream
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
 
-=======
 import com.blueconic.browscap.Capabilities;
 import com.blueconic.browscap.UserAgentParser;
 import com.blueconic.browscap.UserAgentService;
->>>>>>> Stashed changes
 
 /**
  * The specification of the controller.
@@ -61,16 +58,10 @@ interface UrlShortenerController {
      */
     fun qrCode(id: String, request: HttpServletRequest): ResponseEntity<ByteArrayResource>
 
-<<<<<<< Updated upstream
-    fun processCsvFile(@RequestPart("file") file: MultipartFile,request: HttpServletRequest): ResponseEntity<String>
-=======
-    fun processCsvFile(@RequestPart("file") file: MultipartFile): ResponseEntity<String>
-
-    /**
+    fun processCsvFile(@RequestPart("file") file: MultipartFile,request: HttpServletRequest): ResponseEntity<String>/**
     * Returns the user agent information from the map.
     */
     fun returnUserAgentInfo(@PathVariable id: String): ResponseEntity<Map<String, Any>>
->>>>>>> Stashed changes
 }
 
 /**
