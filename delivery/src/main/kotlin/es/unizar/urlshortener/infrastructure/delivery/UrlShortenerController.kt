@@ -1,8 +1,5 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
-import es.unizar.urlshortener.core.ClickProperties
-import es.unizar.urlshortener.core.ShortUrlProperties
-import es.unizar.urlshortener.core.CsvOutput
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
 import es.unizar.urlshortener.core.usecases.RedirectUseCase
@@ -31,6 +28,7 @@ import org.springframework.web.util.UriComponentsBuilder
 import com.blueconic.browscap.Capabilities;
 import com.blueconic.browscap.UserAgentParser;
 import com.blueconic.browscap.UserAgentService;
+import es.unizar.urlshortener.core.*
 
 /**
  * The specification of the controller.
@@ -100,7 +98,9 @@ class UrlShortenerControllerImpl(
     val logClickUseCase: LogClickUseCase,
     val createShortUrlUseCase: CreateShortUrlUseCase,
     val createQRCodeUseCase: CreateQRCodeUseCase,
-    val createCSVUseCase : CreateCSVUseCase
+    val createCSVUseCase : CreateCSVUseCase,
+    val shortUrlRepository: ShortUrlRepositoryService
+
 ) : UrlShortenerController {
 
     //Variables privadas 
@@ -115,6 +115,7 @@ class UrlShortenerControllerImpl(
             val capabilities: Capabilities = parser.parse(userAgentString)
             val browser = capabilities.browser
             val platform = capabilities.platform
+
             // Almacena la información en el mapa
             userAgentMap[id] = UserAgent(
                     browser = browser,
@@ -231,19 +232,21 @@ class UrlShortenerControllerImpl(
 
     @GetMapping("/api/link/{id}")
     override fun returnUserAgentInfo(@PathVariable id: String): ResponseEntity<Map<String, Any>> {
-        val userAgentInfo = userAgentMap[id]
+        val short = shortUrlRepository.findByKey(id)
 
-        return if (userAgentInfo != null) {
-            // Construir el resumen acumulado
+        return if (short != null) {
             val summary = mapOf(
-                "id" to id,
-                "browser" to userAgentInfo.browser,
-                "platform" to userAgentInfo.platform,
+                    "hash" to short.hash,
+                    "redirection" to short.redirection,
+                    "created" to short.created,
+                    "properties" to short.properties
             )
+
             ResponseEntity.ok(summary)
         } else {
             ResponseEntity.notFound().build()
         }
+
     }
     
 }
