@@ -11,6 +11,7 @@ dependencies {
     implementation("commons-validator:commons-validator:${Version.COMMONS_VALIDATOR}")
     implementation("com.google.guava:guava:${Version.GUAVA}")
     implementation("com.blueconic:browscap-java:1.4.1")
+    implementation("com.opencsv:opencsv:5.5")
     
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.mockito.kotlin:mockito-kotlin:${Version.MOCKITO}")

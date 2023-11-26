@@ -51,10 +51,10 @@ class UrlShortenerControllerTest {
 
     @MockBean
     private lateinit var createCSVUseCase: CreateCSVUseCase
-
+    /* 
     @MockBean
     private lateinit var shortUrlRepository: ShortUrlRepositoryService
-
+    */
     @Test
     fun `redirectTo returns a redirect when the key exists`() {
         given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/"))
@@ -63,7 +63,8 @@ class UrlShortenerControllerTest {
             .andExpect(status().isTemporaryRedirect)
             .andExpect(redirectedUrl("http://example.com/"))
 
-        verify(logClickUseCase).logClick("key", ClickProperties(ip = "127.0.0.1", browser = "Chrome", platform = "Windows"))
+        verify(logClickUseCase).logClick("key", 
+        ClickProperties(ip = "127.0.0.1", browser = "Chrome", platform = "Windows"))
     }
 
     @Test
