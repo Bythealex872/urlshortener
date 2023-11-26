@@ -7,17 +7,20 @@ import com.google.zxing.qrcode.QRCodeWriter
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import java.awt.image.BufferedImage
+import javax.imageio.ImageIO
+import java.io.ByteArrayOutputStream
 
 interface CreateQRCodeUseCase {
-    fun createQRCode(id: String): BufferedImage
+    fun createQRCode(id: String): ByteArray
 }
 
 /**
  * Implementation of [CreateQRCodeUseCase].
  */
 class CreateQRCodeUseCaseImpl : CreateQRCodeUseCase {
-    override fun createQRCode(id: String): BufferedImage { 
-        return generateQrCodeImage(id)
+    override fun createQRCode(id: String): ByteArray { 
+        val qrCodeImage = generateQrCodeImage(id)
+        return convertToByteArray(qrCodeImage)
     }
 
     companion object {
@@ -43,6 +46,12 @@ class CreateQRCodeUseCaseImpl : CreateQRCodeUseCase {
         }
     
         return image
+    }
+
+    private fun convertToByteArray(image: BufferedImage): ByteArray {
+        val outputStream = ByteArrayOutputStream()
+        ImageIO.write(image, "PNG", outputStream)
+        return outputStream.toByteArray()
     }
 }
 

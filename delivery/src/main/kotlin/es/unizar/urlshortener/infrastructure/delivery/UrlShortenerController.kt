@@ -1,3 +1,5 @@
+@file:Suppress("WildcardImport")
+
 package es.unizar.urlshortener.infrastructure.delivery
 
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
@@ -56,7 +58,9 @@ interface UrlShortenerController {
      */
     fun qrCode(id: String, request: HttpServletRequest): ResponseEntity<ByteArrayResource>
 
-    fun processCsvFile(@RequestPart("file") file: MultipartFile,request: HttpServletRequest): ResponseEntity<String>/**
+    fun processCsvFile(@RequestPart("file") file: MultipartFile,request: HttpServletRequest): ResponseEntity<String>
+    
+    /**
     * Returns the user agent information from the map.
     */
     fun returnUserAgentInfo(@PathVariable id: String): ResponseEntity<Map<String, Any>>
@@ -158,22 +162,16 @@ class UrlShortenerControllerImpl(
 
     @GetMapping("/{id}/qr", produces = [MediaType.IMAGE_PNG_VALUE])
     override fun qrCode(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<ByteArrayResource> {
-        // Llamamos a la función para generar la imagen del código QR
         val url = linkTo<UrlShortenerControllerImpl> { redirectTo(id, request) }.toUri().toString()
-        val qrCodeImage = createQRCodeUseCase.createQRCode(url)
-        
-        // Convertimos la imagen a un array de bytes
-        val outputStream = ByteArrayOutputStream()
-        ImageIO.write(qrCodeImage, "PNG", outputStream)
-        val qrCodeBytes = outputStream.toByteArray()
+        val qrCodeBytes = createQRCodeUseCase.createQRCode(url)
         val qrCodeResource = ByteArrayResource(qrCodeBytes)
 
-        // Preparamos los encabezados de la respuesta para indicar que es una imagen
-        val h = HttpHeaders()
-        h.contentType = MediaType.IMAGE_PNG
-        h.cacheControl = "no-cache, no-store, must-revalidate"
-        h.pragma = "no-cache"
-        h.expires = 0
+        val h = HttpHeaders().apply {
+            contentType = MediaType.IMAGE_PNG
+            cacheControl = "no-cache, no-store, must-revalidate"
+            pragma = "no-cache"
+            expires = 0
+        }
 
         return ResponseEntity<ByteArrayResource>(qrCodeResource, h, HttpStatus.OK)
     }
