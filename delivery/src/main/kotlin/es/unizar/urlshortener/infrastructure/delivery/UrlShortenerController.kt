@@ -112,10 +112,10 @@ class UrlShortenerControllerImpl(
     private val parser = UserAgentService().loadParser()
 
     @GetMapping("/{id:(?!api|index).*}")
-    override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> =
-        redirectUseCase.redirectTo(id).let {
-            // Añadimos datos de userAgent
-            val userAgentString = request.getHeader("User-Agent") ?: ""
+    override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
+        val userAgentString = request.getHeader("User-Agent")
+        // Verifica si hay User-Agent presente antes de intentar analizarlo
+        if (!userAgentString.isNullOrBlank()) {
             val capabilities: Capabilities = parser.parse(userAgentString)
             val browser = capabilities.browser
             val platform = capabilities.platform
@@ -126,15 +126,23 @@ class UrlShortenerControllerImpl(
                     platform = platform
             )
 
+            // LogClick con información del User-Agent
             logClickUseCase.logClick(id, ClickProperties(
                     ip = request.remoteAddr,
                     browser = browser,
-                    platform = platform))
-
-            val h = HttpHeaders()
-            h.location = URI.create(it.target)
-            ResponseEntity<Unit>(h, HttpStatus.valueOf(it.mode))
+                    platform = platform
+            ))
+        } else {
+            // LogClick solo con la información de la IP (sin User-Agent)
+            logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr))
         }
+
+        val redirectResult = redirectUseCase.redirectTo(id)
+        val headers = HttpHeaders()
+        headers.location = URI.create(redirectResult.target)
+        return ResponseEntity<Unit>(headers, HttpStatus.valueOf(redirectResult.mode))
+    }
+
 
     @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE])
     override fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut> =
