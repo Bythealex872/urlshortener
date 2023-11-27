@@ -35,6 +35,7 @@ import com.opencsv.exceptions.CsvException
 import com.opencsv.exceptions.CsvValidationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
 /**
  * The specification of the controller.
  */
@@ -113,10 +114,12 @@ class UrlShortenerControllerImpl(
     //Variables privadas 
     private val userAgentMap: MutableMap<String, UserAgent> = mutableMapOf()
     private val parser = UserAgentService().loadParser()
+    private val logger: Logger = LoggerFactory.getLogger(UrlShortenerControllerImpl::class.java)
 
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> =
         redirectUseCase.redirectTo(id).let {
+            logger.info("Redirección creada creada")
             // Añadimos datos de userAgent
             val userAgentString = request.getHeader("User-Agent") ?: ""
             val capabilities: Capabilities = parser.parse(userAgentString)
@@ -149,6 +152,7 @@ class UrlShortenerControllerImpl(
                 sponsor = data.sponsor
             )
         ).let {
+            logger.info("URL creada")
             val h = HttpHeaders()
             val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
             h.location = url
@@ -168,6 +172,8 @@ class UrlShortenerControllerImpl(
         val url = linkTo<UrlShortenerControllerImpl> { redirectTo(id, request) }.toUri().toString()
         val qrCodeBytes = createQRCodeUseCase.createQRCode(url)
         val qrCodeResource = ByteArrayResource(qrCodeBytes)
+        
+        logger.info("QR creado")
 
         val h = HttpHeaders().apply {
             contentType = MediaType.IMAGE_PNG
@@ -184,7 +190,6 @@ class UrlShortenerControllerImpl(
         @RequestPart("file") file: MultipartFile,
         request: HttpServletRequest
     ): ResponseEntity<String> {
-        val logger: Logger = LoggerFactory.getLogger(UrlShortenerControllerImpl::class.java)
         try {
             val csvOutputList = mutableListOf<CsvOutput>()
             val csvParser = CSVParserBuilder().build()
@@ -209,6 +214,7 @@ class UrlShortenerControllerImpl(
             }
 
             val csvContent = createCSVUseCase.buildCsvContent(csvOutputList)
+            logger.info("CSV creado")
             val headers = HttpHeaders()
             headers.contentType = MediaType.parseMediaType("text/csv")
             headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=output.csv")
