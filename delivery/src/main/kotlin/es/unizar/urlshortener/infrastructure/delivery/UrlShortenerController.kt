@@ -26,11 +26,15 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
-
 import com.blueconic.browscap.Capabilities;
 import com.blueconic.browscap.UserAgentParser;
 import com.blueconic.browscap.UserAgentService;
 import es.unizar.urlshortener.core.*
+import com.opencsv.*
+import com.opencsv.exceptions.CsvException
+import com.opencsv.exceptions.CsvValidationException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * The specification of the controller.
@@ -110,6 +114,7 @@ class UrlShortenerControllerImpl(
     //Variables privadas 
     private val userAgentMap: MutableMap<String, UserAgent> = mutableMapOf()
     private val parser = UserAgentService().loadParser()
+    private val logger: Logger = LoggerFactory.getLogger(UrlShortenerControllerImpl::class.java)
 
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
@@ -136,7 +141,8 @@ class UrlShortenerControllerImpl(
             // LogClick solo con la información de la IP (sin User-Agent)
             logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr))
         }
-
+        
+        logger.info("Redirección creada creada")
         val redirectResult = redirectUseCase.redirectTo(id)
         val headers = HttpHeaders()
         headers.location = URI.create(redirectResult.target)
@@ -154,6 +160,7 @@ class UrlShortenerControllerImpl(
                 sponsor = data.sponsor
             )
         ).let {
+            logger.info("URL creada")
             val h = HttpHeaders()
             val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
             h.location = url
@@ -173,6 +180,8 @@ class UrlShortenerControllerImpl(
         val url = linkTo<UrlShortenerControllerImpl> { redirectTo(id, request) }.toUri().toString()
         val qrCodeBytes = createQRCodeUseCase.createQRCode(url)
         val qrCodeResource = ByteArrayResource(qrCodeBytes)
+        
+        logger.info("QR creado")
 
         val h = HttpHeaders().apply {
             contentType = MediaType.IMAGE_PNG
@@ -185,30 +194,45 @@ class UrlShortenerControllerImpl(
     }
 
     @PostMapping("/api/bulk", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    override fun processCsvFile(@RequestPart("file") file: MultipartFile,
-    request: HttpServletRequest): ResponseEntity<String> {
-        val csvOutputList = mutableListOf<CsvOutput>()
+    override fun processCsvFile(
+        @RequestPart("file") file: MultipartFile,
+        request: HttpServletRequest
+    ): ResponseEntity<String> {
+        try {
+            val csvOutputList = mutableListOf<CsvOutput>()
+            val csvParser = CSVParserBuilder().build()
+            val csvReader = CSVReaderBuilder(file.inputStream.bufferedReader())
+                .withCSVParser(csvParser)
+                .build()
 
-        // Process CSV file
-        val lines = file.inputStream.bufferedReader().readLines()
-        for (line in lines) {
-            val uri = line.trim()
-           val create =  createShortUrlUseCase.create(
-                url = uri,
-                data = ShortUrlProperties(
-                    ip = request.remoteAddr,
-                )
-            )
-            val urlrecortada = linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
-            csvOutputList.add(CsvOutput(uri, "$urlrecortada" ,":)"))
-        }
+            val lines = csvReader.readAll()
+            for (line in lines) {
+                for (uri in line) {
+                    val trimmedUri = uri.trim()
+                    val create = createShortUrlUseCase.create(
+                        url = trimmedUri,
+                        data = ShortUrlProperties(
+                            ip = request.remoteAddr,
+                        )
+                    )
+                    val urlRecortada =
+                        linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
+                    csvOutputList.add(CsvOutput(trimmedUri, "$urlRecortada", ":)"))
+                }
+            }
 
-        val csvContent = createCSVUseCase.buildCsvContent(csvOutputList)
-        val headers = HttpHeaders()
-        headers.contentType = MediaType.parseMediaType("text/csv")
-        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=output.csv")
+            val csvContent = createCSVUseCase.buildCsvContent(csvOutputList)
+            logger.info("CSV creado")
+            val headers = HttpHeaders()
+            headers.contentType = MediaType.parseMediaType("text/csv")
+            headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=output.csv")
 
-        return ResponseEntity(csvContent, headers, HttpStatus.CREATED)
+            return ResponseEntity(csvContent, headers, HttpStatus.CREATED)
+        } catch (e: CsvException) {
+            // Handle CSV validation exception
+            logger.error("Error processing CSV file", e)
+            return ResponseEntity("Error en el formato del archivo CSV", HttpStatus.BAD_REQUEST)
+        } 
     }
     /* 
 

@@ -51,12 +51,12 @@ class UrlShortenerControllerTest {
 
     @MockBean
     private lateinit var createCSVUseCase: CreateCSVUseCase
-
+    /* 
     @MockBean
     private lateinit var shortUrlRepository: ShortUrlRepositoryService
-
+    */
     @Test
-    fun `redirectTo returns a redirect when the key exists`() {
+    fun `redirectTo returns a redirect when the key exists and no userAgent`() {
         given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/"))
 
         mockMvc.perform(get("/{id}", "key"))
