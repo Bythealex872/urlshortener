@@ -12,8 +12,8 @@ import es.unizar.urlshortener.core.ShortUrlRepositoryService
  */
 interface RedirectUseCase {
     fun redirectTo(key: String): Redirection
-}
 
+}
 /**
  * Implementation of [RedirectUseCase].
  */
@@ -25,4 +25,6 @@ class RedirectUseCaseImpl(
         ?.redirection
         ?: throw RedirectionNotFound(key)
 }
+
+
 

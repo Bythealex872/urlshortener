@@ -3,11 +3,7 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
 import es.unizar.urlshortener.core.*
-import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
-import es.unizar.urlshortener.core.usecases.LogClickUseCase
-import es.unizar.urlshortener.core.usecases.RedirectUseCase
-import es.unizar.urlshortener.core.usecases.CreateQRCodeUseCase
-import es.unizar.urlshortener.core.usecases.CreateCSVUseCase
+import es.unizar.urlshortener.core.usecases.*
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.mockito.BDDMockito.never
@@ -51,7 +47,10 @@ class UrlShortenerControllerTest {
 
     @MockBean
     private lateinit var createCSVUseCase: CreateCSVUseCase
-    /* 
+
+    @MockBean
+    private lateinit var userAgentInfoUseCase: UserAgentInfoUseCase
+    /*
     @MockBean
     private lateinit var shortUrlRepository: ShortUrlRepositoryService
     */
@@ -65,6 +64,21 @@ class UrlShortenerControllerTest {
 
         verify(logClickUseCase).logClick("key",
                 ClickProperties(ip = "127.0.0.1"))
+    }
+
+    @Test
+    fun `redirectTo returns a redirect when the key exists and userAgent`() {
+        given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/"))
+
+        // Simular el envío de un encabezado "User-Agent" en la solicitud
+        val userAgentHeaderValue = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+
+        mockMvc.perform(get("/{id}", "key").header("User-Agent", userAgentHeaderValue))
+                .andExpect(status().isTemporaryRedirect)
+                .andExpect(redirectedUrl("http://example.com/"))
+
+        verify(logClickUseCase).logClick("key",
+                ClickProperties(ip = "127.0.0.1", browser = "Chrome", platform = "Win10"))
     }
 
     @Test
@@ -161,5 +175,10 @@ class UrlShortenerControllerTest {
         )
         createCSVUseCase.buildCsvContent(csvOutputs)
         Assertions.assertTrue(true)
+    }
+
+    @Test
+    fun `Comprobar el returnUserAgentInfo`(){
+
     }
 }

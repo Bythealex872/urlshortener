@@ -2,11 +2,6 @@
 
 package es.unizar.urlshortener.infrastructure.delivery
 
-import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
-import es.unizar.urlshortener.core.usecases.LogClickUseCase
-import es.unizar.urlshortener.core.usecases.RedirectUseCase
-import es.unizar.urlshortener.core.usecases.CreateQRCodeUseCase
-import es.unizar.urlshortener.core.usecases.CreateCSVUseCase
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.http.HttpHeaders
@@ -33,8 +28,10 @@ import es.unizar.urlshortener.core.*
 import com.opencsv.*
 import com.opencsv.exceptions.CsvException
 import com.opencsv.exceptions.CsvValidationException
+import es.unizar.urlshortener.core.usecases.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
 
 /**
  * The specification of the controller.
@@ -88,14 +85,6 @@ data class ShortUrlDataOut(
 )
 
 /**
- * Structure of the user agent.
- */
-data class UserAgent(
-    val browser: String,
-    val platform: String,
-)
-
-/**
  * The implementation of the controller.
  *
  * **Note**: Spring Boot is able to discover this [RestController] without further configuration.
@@ -107,12 +96,11 @@ class UrlShortenerControllerImpl(
     val createShortUrlUseCase: CreateShortUrlUseCase,
     val createQRCodeUseCase: CreateQRCodeUseCase,
     val createCSVUseCase : CreateCSVUseCase,
-    val shortUrlRepository: ShortUrlRepositoryService
+    val userAgentInfoUseCase: UserAgentInfoUseCase
 
 ) : UrlShortenerController {
 
     //Variables privadas 
-    private val userAgentMap: MutableMap<String, UserAgent> = mutableMapOf()
     private val parser = UserAgentService().loadParser()
     private val logger: Logger = LoggerFactory.getLogger(UrlShortenerControllerImpl::class.java)
 
@@ -124,12 +112,6 @@ class UrlShortenerControllerImpl(
             val capabilities: Capabilities = parser.parse(userAgentString)
             val browser = capabilities.browser
             val platform = capabilities.platform
-
-            // Almacena la información en el mapa
-            userAgentMap[id] = UserAgent(
-                    browser = browser,
-                    platform = platform
-            )
 
             // LogClick con información del User-Agent
             logClickUseCase.logClick(id, ClickProperties(
@@ -262,21 +244,13 @@ class UrlShortenerControllerImpl(
 
     @GetMapping("/api/link/{id}")
     override fun returnUserAgentInfo(@PathVariable id: String): ResponseEntity<Map<String, Any>> {
-        val short = shortUrlRepository.findByKey(id)
+        val userAgentInfo = userAgentInfoUseCase.getUserAgentInfoByKey(id)
 
-        return if (short != null) {
-            val summary = mapOf(
-                    "hash" to short.hash,
-                    "redirection" to short.redirection,
-                    "created" to short.created,
-                    "properties" to short.properties
-            )
-
-            ResponseEntity.ok(summary)
+        return if (userAgentInfo != null) {
+            ResponseEntity.ok(userAgentInfo)
         } else {
             ResponseEntity.notFound().build()
         }
-
     }
-    
+
 }
