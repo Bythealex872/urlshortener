@@ -32,6 +32,21 @@ import com.opencsv.exceptions.CsvValidationException
 import es.unizar.urlshortener.core.usecases.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.messaging.simp.SimpMessagingTemplate
+import jakarta.websocket.*
+import jakarta.websocket.CloseReason.CloseCodes
+import jakarta.websocket.server.ServerEndpoint
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.runApplication
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.stereotype.Component
+import org.springframework.web.socket.server.standard.ServerEndpointExporter
+import java.util.*
+
+
 
 
 /**
@@ -151,7 +166,7 @@ class UrlShortenerControllerImpl(
             )
         ).let {
             logger.info("URL creada")
-            if (data.qrRequest) sendQR.sendQR(it.hash)
+            sendQR.sendQR(it.hash)
             val h = HttpHeaders()
             val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
             h.location = url
@@ -227,6 +242,7 @@ class UrlShortenerControllerImpl(
             return ResponseEntity("Error en el formato del archivo CSV", HttpStatus.BAD_REQUEST)
         } 
     }
+  
 
     /* 
 
@@ -257,6 +273,57 @@ class UrlShortenerControllerImpl(
     @GetMapping("/api/link/{id}")
     override fun returnUserAgentInfo(@PathVariable id: String): ResponseEntity<Map<String, Any>>
         = ResponseEntity.ok(userAgentInfoUseCase.getUserAgentInfoByKey(id));
+}
 
+@ServerEndpoint("/api/bulk-fast")
+@Component
+class BulkEndpoint {
 
+    private val logger = LoggerFactory.getLogger(BulkEndpoint::class.java)
+
+    /**
+     * Successful connection
+     *
+     * @param session
+     */
+    @OnOpen
+    fun onOpen(session: Session) {
+        logger.info("Server Connected ... Session ${session.id}")
+    }
+
+    /**
+     * Connection closure
+     *
+     * @param session
+     */
+    @OnClose
+    fun onClose(session: Session, closeReason: CloseReason) {
+        logger.info("Session ${session.id} closed because of $closeReason")
+    }
+
+    /**
+     * Message received
+     *
+     * @param message
+     */
+    @OnMessage
+    fun onMsg(message: String, session: Session) {
+        logger.info("Server Message ... Session ${session.id}")
+        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
+        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
+        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
+        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
+        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
+        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
+        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
+        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
+        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
+        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
+        logger.info("Server received \"$message\"")
+    }
+
+    @OnError
+    fun onError(session: Session, errorReason: Throwable) {
+        logger.error("Session ${session.id} closed because of ${errorReason.javaClass.name}")
+    }
 }

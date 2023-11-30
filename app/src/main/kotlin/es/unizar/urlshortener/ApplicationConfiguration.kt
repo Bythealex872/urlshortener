@@ -28,7 +28,10 @@ import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.integration.dsl.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-
+import org.springframework.web.socket.config.annotation.EnableWebSocket
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker
+import org.springframework.web.socket.config.annotation.WebSocketConfigurer
+import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 
 /**
  * Wires use cases with service implementations, and services implementations with repositories.
@@ -107,3 +110,5 @@ class QRCodeIntegrationConfig(
 
     data class QrCodeUpdatePayload(val url: String, val qrCode: ByteArray)
 }
+
+

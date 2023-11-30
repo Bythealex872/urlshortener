@@ -62,3 +62,38 @@ $(document).ready(function () {
         });
     });
 });
+let ws;
+
+function connect() {
+    ws = new WebSocket("ws://localhost:8080/api/bulk-fast"); // Ajusta la URL según sea necesario
+
+    ws.onopen = function() {
+        console.log("Conectado al WebSocket");
+    };
+
+    ws.onmessage = function(event) {
+        console.log("Mensaje recibido: " + event.data);
+    };
+
+    ws.onclose = function(event) {
+        console.log("Conexión cerrada: " + event.reason);
+    };
+
+    ws.onerror = function(error) {
+        console.log("Error en WebSocket: " + error);
+    };
+}
+
+function sendMessage(message) {
+    ws.send(message);
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    connect();
+
+    const sendButton = document.getElementById("sendButton");
+    sendButton.addEventListener("click", function() {
+        const uri = "tu_uri_aquí"; // Reemplaza con la URI que deseas enviar
+        sendMessage(uri);
+    });
+});
