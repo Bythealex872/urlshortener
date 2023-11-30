@@ -151,7 +151,7 @@ class UrlShortenerControllerImpl(
             )
         ).let {
             logger.info("URL creada")
-            sendQR.sendQR(it.hash)
+            if (data.qrRequest) sendQR.sendQR(it.hash)
             val h = HttpHeaders()
             val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
             h.location = url
