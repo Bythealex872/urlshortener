@@ -24,5 +24,8 @@ class ShortUrlRepositoryServiceImpl(
 
     override fun save(su: ShortUrl): ShortUrl = shortUrlEntityRepository.save(su.toEntity()).toDomain()
     override fun updateSafeStatusByHash(hash: String) = shortUrlEntityRepository.updateSafeStatusByHash(hash)
+    override fun updateQRCodeByHash(hash: String, qr: String) {
+        shortUrlEntityRepository.updateQRCodeByHash(hash, qr)
+    }
 }
 

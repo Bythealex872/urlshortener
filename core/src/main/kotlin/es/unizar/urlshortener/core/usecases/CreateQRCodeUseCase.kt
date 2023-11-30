@@ -24,8 +24,8 @@ class CreateQRCodeUseCaseImpl : CreateQRCodeUseCase {
     }
 
     companion object {
-        const val QR_CODE_WIDTH = 500
-        const val QR_CODE_HEIGHT = 500
+        const val QR_CODE_WIDTH = 400
+        const val QR_CODE_HEIGHT = 400
     }
 
     private fun generateQrCodeImage(url: String): BufferedImage {

@@ -12,10 +12,16 @@ import org.springframework.data.jpa.repository.JpaRepository
  */
 interface ShortUrlEntityRepository : JpaRepository<ShortUrlEntity, String> {
     fun findByHash(hash: String): ShortUrlEntity?
+    
     @Modifying
     @Transactional
     @Query("UPDATE ShortUrlEntity s SET s.safe = TRUE WHERE s.hash= :hash")
     fun updateSafeStatusByHash(hash:  String)
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE ShortUrlEntity s SET s.qr = :qr WHERE s.hash = :hash")
+    fun updateQRCodeByHash(hash: String, qr: String)
 }
 
 /**

@@ -7,6 +7,7 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":delivery"))
     implementation(project(":repositories"))
+    implementation("org.springframework.boot:spring-boot-starter-integration")
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.webjars:bootstrap:${Version.BOOTSTRAP}")
     implementation("org.webjars:jquery:${Version.JQUERY}")

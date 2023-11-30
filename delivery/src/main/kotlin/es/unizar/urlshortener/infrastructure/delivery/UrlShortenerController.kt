@@ -25,6 +25,7 @@ import com.blueconic.browscap.Capabilities;
 import com.blueconic.browscap.UserAgentParser;
 import com.blueconic.browscap.UserAgentService;
 import es.unizar.urlshortener.core.*
+import es.unizar.urlshortener.infrastructure.delivery.SendQR
 import com.opencsv.*
 import com.opencsv.exceptions.CsvException
 import com.opencsv.exceptions.CsvValidationException
@@ -96,7 +97,8 @@ class UrlShortenerControllerImpl(
     val createShortUrlUseCase: CreateShortUrlUseCase,
     val createQRCodeUseCase: CreateQRCodeUseCase,
     val createCSVUseCase : CreateCSVUseCase,
-    val userAgentInfoUseCase: UserAgentInfoUseCase
+    val userAgentInfoUseCase: UserAgentInfoUseCase,
+    val sendQR: SendQR
 
 ) : UrlShortenerController {
 
@@ -149,6 +151,7 @@ class UrlShortenerControllerImpl(
             )
         ).let {
             logger.info("URL creada")
+            sendQR.sendQR(it.hash)
             val h = HttpHeaders()
             val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
             h.location = url
