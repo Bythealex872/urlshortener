@@ -255,14 +255,8 @@ class UrlShortenerControllerImpl(
     */
 
     @GetMapping("/api/link/{id}")
-    override fun returnUserAgentInfo(@PathVariable id: String): ResponseEntity<Map<String, Any>> {
-        val userAgentInfo = userAgentInfoUseCase.getUserAgentInfoByKey(id)
+    override fun returnUserAgentInfo(@PathVariable id: String): ResponseEntity<Map<String, Any>>
+        = ResponseEntity.ok(userAgentInfoUseCase.getUserAgentInfoByKey(id));
 
-        return if (userAgentInfo != null) {
-            ResponseEntity.ok(userAgentInfo)
-        } else {
-            ResponseEntity.notFound().build()
-        }
-    }
 
 }

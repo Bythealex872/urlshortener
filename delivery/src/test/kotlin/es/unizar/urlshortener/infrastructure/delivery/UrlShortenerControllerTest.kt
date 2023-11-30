@@ -179,7 +179,12 @@ class UrlShortenerControllerTest {
     }
 
     @Test
-    fun `Comprobar el returnUserAgentInfo`(){
+    fun `Return User-Agent info return a redirect with the information when the key exist`(){
+
+    }
+
+    @Test
+    fun `Return User-Agent info return a not found when the key not found`(){
 
     }
 }
