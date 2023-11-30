@@ -106,6 +106,12 @@ class UrlShortenerControllerImpl(
 
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
+        //Verifica si el id es un hash válido
+        if(redirectUseCase.redirectTo(id).mode == 404){
+            logger.error("Error 404: No se ha encontrado el hash")
+            return ResponseEntity.notFound().build()
+        }
+
         val userAgentString = request.getHeader("User-Agent")
         // Verifica si hay User-Agent presente antes de intentar analizarlo
         if (!userAgentString.isNullOrBlank()) {

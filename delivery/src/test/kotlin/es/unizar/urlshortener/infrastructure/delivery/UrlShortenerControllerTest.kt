@@ -50,6 +50,7 @@ class UrlShortenerControllerTest {
 
     @MockBean
     private lateinit var userAgentInfoUseCase: UserAgentInfoUseCase
+
     /*
     @MockBean
     private lateinit var shortUrlRepository: ShortUrlRepositoryService
