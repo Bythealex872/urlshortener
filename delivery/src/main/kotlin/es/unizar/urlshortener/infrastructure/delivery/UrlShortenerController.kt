@@ -204,18 +204,21 @@ class UrlShortenerControllerImpl(
             }
 
             val csvContent = createCSVUseCase.buildCsvContent(csvOutputList)
-            logger.info("CSV creado")
             val headers = HttpHeaders()
             headers.contentType = MediaType.parseMediaType("text/csv")
             headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=output.csv")
+            val firstShortenedUrl = csvOutputList.firstOrNull()?.shortenedUri
+            headers.set(HttpHeaders.LOCATION, firstShortenedUrl)
 
             return ResponseEntity(csvContent, headers, HttpStatus.CREATED)
         } catch (e: CsvException) {
             // Handle CSV validation exception
             logger.error("Error processing CSV file", e)
+   
             return ResponseEntity("Error en el formato del archivo CSV", HttpStatus.BAD_REQUEST)
         } 
     }
+
     /* 
 
     private fun shortenUri(uri: String): Pair<String, String> {
