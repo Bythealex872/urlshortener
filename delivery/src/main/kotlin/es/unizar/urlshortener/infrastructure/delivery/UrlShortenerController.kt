@@ -324,17 +324,7 @@ class BulkEndpoint {
     @OnMessage
     fun onMsg(message: String, session: Session) {
         logger.info("Server Message ... Session ${session.id}")
-        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
-        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
-        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
-        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
-        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
-        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
-        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
-        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
-        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
-        logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}")
-        logger.info("Server received \"$message\"")
+        logger.info("Message ${message}")
     }
 
     @OnError

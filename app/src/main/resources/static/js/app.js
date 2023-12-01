@@ -65,35 +65,72 @@ $(document).ready(function () {
 let ws;
 
 function connect() {
-    ws = new WebSocket("ws://localhost:8080/api/bulk-fast"); // Ajusta la URL según sea necesario
+    return new Promise((resolve, reject) => {
+        ws = new WebSocket("ws://localhost:8080/api/bulk-fast");
 
-    ws.onopen = function() {
-        console.log("Conectado al WebSocket");
-    };
+        ws.onopen = function () {
+            console.log("Connected to WebSocket");
+            resolve();
+        };
 
-    ws.onmessage = function(event) {
-        console.log("Mensaje recibido: " + event.data);
-    };
+        ws.onmessage = function (event) {
+            console.log("Message received: " + event.data);
+        };
 
-    ws.onclose = function(event) {
-        console.log("Conexión cerrada: " + event.reason);
-    };
+        ws.onclose = function (event) {
+            console.log("WebSocket connection closed: " + event.reason);
+            reject();
+        };
 
-    ws.onerror = function(error) {
-        console.log("Error en WebSocket: " + error);
-    };
+        ws.onerror = function (error) {
+            console.log("WebSocket error: " + error);
+            reject();
+        };
+    });
 }
 
 function sendMessage(message) {
-    ws.send(message);
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(message);
+    } else {
+        console.log("WebSocket connection not open");
+    }
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-    connect();
+document.addEventListener("DOMContentLoaded", function () {
+    const csvForm = document.getElementById("csvForm");
+    const sendButton = document.getElementById("Premium");
 
-    const sendButton = document.getElementById("sendButton");
-    sendButton.addEventListener("click", function() {
-        const uri = "tu_uri_aquí"; // Reemplaza con la URI que deseas enviar
-        sendMessage(uri);
+    sendButton.addEventListener("click", function () {
+        connect()
+            .then(() => {
+                // WebSocket connection is established, now you can send CSV data
+                const fileInput = document.querySelector('input[type="file"]');
+                const file = fileInput.files[0];
+
+                if (file) {
+                    processCSV(file);
+                } else {
+                    console.log("Please select a CSV file");
+                }
+            })
+            .catch(() => {
+                console.log("WebSocket connection failed");
+            });
     });
 });
+
+function processCSV(file) {
+    const reader = new FileReader();
+
+    reader.onload = function (event) {
+        const csvData = event.target.result.split('\n');
+        csvData.forEach((line) => {
+            console.log(line);
+            sendMessage(line);
+        });
+    };
+
+    reader.readAsText(file);
+}
+
