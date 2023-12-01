@@ -14,7 +14,7 @@ interface ShortUrlRepositoryService {
     fun findByKey(id: String): ShortUrl?
     fun save(su: ShortUrl): ShortUrl
     fun updateSafeStatusByHash(hash: String)
-    fun updateQRCodeByHash(hash: String, qr: String)
+    fun updateQRCodeByHash(hash: String, qr: ByteArray)
 }
 
 /**

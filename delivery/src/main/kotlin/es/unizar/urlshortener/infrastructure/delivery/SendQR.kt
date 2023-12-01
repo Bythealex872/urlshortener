@@ -12,14 +12,10 @@ import org.springframework.stereotype.Component
 import org.springframework.scheduling.annotation.Scheduled
 import es.unizar.urlshortener.core.usecases.CreateQRCodeUseCase
 import org.springframework.integration.config.EnableIntegration
-import org.springframework.scheduling.annotation.EnableScheduling
-import org.springframework.integration.dsl.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 @MessagingGateway
 interface SendQR {
 
-    @Gateway(requestChannel = "inputChannel")
+    @Gateway(requestChannel = "qrCreationChannel")
     fun sendQR(url: String)
 }

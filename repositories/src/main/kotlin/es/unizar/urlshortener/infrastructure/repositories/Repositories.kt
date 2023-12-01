@@ -21,7 +21,7 @@ interface ShortUrlEntityRepository : JpaRepository<ShortUrlEntity, String> {
     @Modifying
     @Transactional
     @Query("UPDATE ShortUrlEntity s SET s.qr = :qr WHERE s.hash = :hash")
-    fun updateQRCodeByHash(hash: String, qr: String)
+    fun updateQRCodeByHash(hash: String, qr: ByteArray)
 }
 
 /**

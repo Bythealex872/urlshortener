@@ -41,5 +41,6 @@ class ShortUrlEntity(
     val safe: Boolean,
     val ip: String?,
     val country: String?,
-    val qr: String?
+    @Lob  // Indica que el campo es un objeto grande
+    val qr: ByteArray?
 )

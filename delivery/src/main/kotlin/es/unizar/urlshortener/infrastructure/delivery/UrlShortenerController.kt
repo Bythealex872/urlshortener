@@ -73,7 +73,7 @@ interface UrlShortenerController {
      *
      * **Note**: Delivery of use cases [CreateQRCodeUseCase].
      */
-    fun qrCode(id: String, request: HttpServletRequest): ResponseEntity<ByteArrayResource>
+    fun qrCode(id: String, request: HttpServletRequest): ResponseEntity<Any>
 
     fun processCsvFile(@RequestPart("file") file: MultipartFile,request: HttpServletRequest): ResponseEntity<String>
     
@@ -113,7 +113,8 @@ class UrlShortenerControllerImpl(
     val createQRCodeUseCase: CreateQRCodeUseCase,
     val createCSVUseCase : CreateCSVUseCase,
     val userAgentInfoUseCase: UserAgentInfoUseCase,
-    val sendQR: SendQR
+    val sendQR: SendQR,
+    val shortUrlRepository: ShortUrlRepositoryService
 
 ) : UrlShortenerController {
 
@@ -159,14 +160,15 @@ class UrlShortenerControllerImpl(
     override fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut> =
         createShortUrlUseCase.create(
             url = data.url,
-            qrRequest = data.qrRequest,
             data = ShortUrlProperties(
                 ip = request.remoteAddr,
                 sponsor = data.sponsor
             )
         ).let {
             logger.info("URL creada")
-            sendQR.sendQR(it.hash)
+            if (data.qrRequest!!) {
+                sendQR.sendQR(it.hash)
+            }
             val h = HttpHeaders()
             val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
             h.location = url
@@ -182,22 +184,35 @@ class UrlShortenerControllerImpl(
         }
 
     @GetMapping("/{id}/qr", produces = [MediaType.IMAGE_PNG_VALUE])
-    override fun qrCode(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<ByteArrayResource> {
-        val url = linkTo<UrlShortenerControllerImpl> { redirectTo(id, request) }.toUri().toString()
-        val qrCodeBytes = createQRCodeUseCase.createQRCode(url)
-        val qrCodeResource = ByteArrayResource(qrCodeBytes)
-        
-        logger.info("QR creado")
+    override fun qrCode(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Any> {
+        data class ErrorResponse(val error: String)
+        Thread.sleep(5000)
+        val url = shortUrlRepository.findByKey(id)
 
-        val h = HttpHeaders().apply {
-            contentType = MediaType.IMAGE_PNG
-            cacheControl = "no-cache, no-store, must-revalidate"
-            pragma = "no-cache"
-            expires = 0
+        return when {
+            url == null -> ResponseEntity(ErrorResponse("URL no encontrada"), HttpStatus.NOT_FOUND)
+            url.properties.qr == null -> ResponseEntity(ErrorResponse("Código QR no disponible")
+                ,HttpStatus.BAD_REQUEST)
+            else -> {
+                val qrCodeResource = ByteArrayResource(url.properties.qr)
+                logger.info("QR creado")
+
+                val headers = HttpHeaders().apply {
+                    contentType = MediaType.IMAGE_PNG
+                    cacheControl = "no-cache, no-store, must-revalidate"
+                    pragma = "no-cache"
+                    expires = 0
+                }
+
+                ResponseEntity(qrCodeResource, headers, HttpStatus.OK)
+            }
         }
-
-        return ResponseEntity<ByteArrayResource>(qrCodeResource, h, HttpStatus.OK)
     }
+
+    private fun calculateRetryAfterSeconds(url: ShortUrl): Int {
+        return 30 // Ejemplo: 30 segundos
+    }
+
 
     @PostMapping("/api/bulk", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     override fun processCsvFile(
