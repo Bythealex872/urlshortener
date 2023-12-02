@@ -21,11 +21,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
-import com.blueconic.browscap.Capabilities;
-import com.blueconic.browscap.UserAgentParser;
-import com.blueconic.browscap.UserAgentService;
+import com.blueconic.browscap.Capabilities
+import com.blueconic.browscap.UserAgentParser
+import com.blueconic.browscap.UserAgentService
 import es.unizar.urlshortener.core.*
-import es.unizar.urlshortener.infrastructure.delivery.SendQR
 import com.opencsv.*
 import com.opencsv.exceptions.CsvException
 import com.opencsv.exceptions.CsvValidationException
@@ -100,6 +99,10 @@ data class ShortUrlDataOut(
     val properties: Map<String, Any> = emptyMap()
 )
 
+data class ErrorResponse(
+    val error: String
+)
+
 /**
  * The implementation of the controller.
  *
@@ -113,9 +116,9 @@ class UrlShortenerControllerImpl(
     val createQRCodeUseCase: CreateQRCodeUseCase,
     val createCSVUseCase : CreateCSVUseCase,
     val userAgentInfoUseCase: UserAgentInfoUseCase,
+    val shortUrlRepository: ShortUrlRepositoryService,
     val sendQR: SendQR,
-    val shortUrlRepository: ShortUrlRepositoryService
-
+    val rateLimiter: RateLimiter
 ) : UrlShortenerController {
 
     //Variables privadas 
@@ -183,36 +186,40 @@ class UrlShortenerControllerImpl(
             ResponseEntity<ShortUrlDataOut>(response, h, HttpStatus.CREATED)
         }
 
-    @GetMapping("/{id}/qr", produces = [MediaType.IMAGE_PNG_VALUE])
+    @GetMapping("/{id}/qr")
     override fun qrCode(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Any> {
-        data class ErrorResponse(val error: String)
-        Thread.sleep(5000)
-        val url = shortUrlRepository.findByKey(id)
+    
+        val clientId = request.remoteAddr
+        if (rateLimiter.isLimitExceeded(clientId)) {
+            val retryAfterMillis = rateLimiter.timeToNextRequest(clientId)
+            logger.info((retryAfterMillis / 1000).toString())
+            val headers = HttpHeaders().apply {
+                set("Retry-After", (retryAfterMillis / 1000).toString())
+            }
+            return ResponseEntity(ErrorResponse("Demasiadas peticiones"), headers, HttpStatus.TOO_MANY_REQUESTS)
+        } else {
+            val url = shortUrlRepository.findByKey(id)
 
-        return when {
-            url == null -> ResponseEntity(ErrorResponse("URL no encontrada"), HttpStatus.NOT_FOUND)
-            url.properties.qr == null -> ResponseEntity(ErrorResponse("Código QR no disponible")
-                ,HttpStatus.BAD_REQUEST)
-            else -> {
-                val qrCodeResource = ByteArrayResource(url.properties.qr)
-                logger.info("QR creado")
+            return when {
+                url == null -> ResponseEntity(ErrorResponse("URL no encontrada"), HttpStatus.NOT_FOUND)
+                url.properties.qr == null -> ResponseEntity(ErrorResponse("Código QR no disponible")
+                    ,HttpStatus.BAD_REQUEST)
+                else -> {
+                    val qrCodeResource = ByteArrayResource(url.properties.qr!!)
+                    logger.info("QR creado")
 
-                val headers = HttpHeaders().apply {
-                    contentType = MediaType.IMAGE_PNG
-                    cacheControl = "no-cache, no-store, must-revalidate"
-                    pragma = "no-cache"
-                    expires = 0
+                    val headers = HttpHeaders().apply {
+                        contentType = MediaType.IMAGE_PNG
+                        cacheControl = "no-cache, no-store, must-revalidate"
+                        pragma = "no-cache"
+                        expires = 0
+                    }
+
+                    ResponseEntity(qrCodeResource, headers, HttpStatus.OK)
                 }
-
-                ResponseEntity(qrCodeResource, headers, HttpStatus.OK)
             }
         }
     }
-
-    private fun calculateRetryAfterSeconds(url: ShortUrl): Int {
-        return 30 // Ejemplo: 30 segundos
-    }
-
 
     @PostMapping("/api/bulk", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     override fun processCsvFile(

@@ -76,7 +76,7 @@ class QRCodeIntegrationConfiguration(
         channel(qrCreationChannel())
         transform { url: String -> 
             val qrCode = createQRCodeUseCase.createQRCode(url)
-            logger.info("QR code created")
+            logger.info("Código QR creado")
             QRCodePayload(url, qrCode)
         }
         channel(qrUpdateChannel())
@@ -85,6 +85,6 @@ class QRCodeIntegrationConfiguration(
     @ServiceActivator(inputChannel = "qrUpdateChannel")
     fun updateDatabase(payload: QRCodePayload) {
         shortUrlRepository.updateQRCodeByHash(payload.url, payload.qrCode)
-        logger.info("QR code updated for URL: ${payload.url}")
+        logger.info("Código QR actualizado para ${payload.url}")
     }
 }

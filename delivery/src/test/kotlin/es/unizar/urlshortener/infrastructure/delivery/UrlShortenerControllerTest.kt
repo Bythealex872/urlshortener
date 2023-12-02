@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.junit.jupiter.api.Assertions
+import java.time.OffsetDateTime
 
 
 @WebMvcTest
@@ -51,10 +52,15 @@ class UrlShortenerControllerTest {
     @MockBean
     private lateinit var userAgentInfoUseCase: UserAgentInfoUseCase
 
-    /*
     @MockBean
     private lateinit var shortUrlRepository: ShortUrlRepositoryService
-    */
+    
+    @MockBean
+    private lateinit var sendQR: SendQR
+
+    @MockBean
+    private lateinit var rateLimiter: RateLimiter
+
     @Test
     fun `redirectTo returns a redirect when the key exists and no userAgent`() {
         given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/"))
@@ -134,7 +140,7 @@ class UrlShortenerControllerTest {
     }
 
     @Test
-    fun `creates returns a basic redirect and the qr route if it can compute a hash and if qr is requested`() {
+    fun `creates returns a basic redirect and the qr route if it can compute a hash`() {
         given(
             createShortUrlUseCase.create(
                 url = "http://example.com/",
@@ -156,12 +162,50 @@ class UrlShortenerControllerTest {
     }
 
     @Test
-    fun `creates qr code`() {
-        val a = createQRCodeUseCase.createQRCode(id = "http://example.com/")
+    fun `qrCode returns not found when url does not exist`() {
         given(
-            createQRCodeUseCase.createQRCode(id = "http://example.com/")
-        ).willReturn(a)
-        Assertions.assertTrue(true)
+            shortUrlRepository.findByKey("nonexistent")
+        ).willReturn(null)
+        mockMvc.perform(get("/{id}/qr", "nonexistent"))
+            .andDo(print())
+            .andExpect(status().isNotFound)
+            .andExpect(jsonPath("$.error").value("URL no encontrada"))
+    }
+    @Test
+    fun `qrCode returns bad request when qr code is not available`() {
+        given(
+            shortUrlRepository.findByKey("nonexistent")
+        ).willReturn(ShortUrl("nonexistent", Redirection("http://example.com"), OffsetDateTime.now()))
+        mockMvc.perform(get("/{id}/qr", "nonexistent"))
+            .andDo(print())
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.error").value("Código QR no disponible"))
+    }
+    @Test
+    fun `qrCode returns qr code image when qr code is available`() {
+        val qrCodeBytes = ByteArray(100) // Supongamos que es un QR generado
+        val url = ShortUrl("existent", Redirection("http://example.com"), OffsetDateTime.now(), ShortUrlProperties(qr = qrCodeBytes))
+        given(
+            shortUrlRepository.findByKey("existent")
+        ).willReturn(url)
+        mockMvc.perform(get("/{id}/qr", "existent"))
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(content().contentType(MediaType.IMAGE_PNG_VALUE))
+    }
+
+    @Test
+    fun `qrCode returns too many requests when rate limit is exceeded`() {
+        val clientId = "127.0.0.1" // Ejemplo de una dirección IP
+        val retryAfterSeconds = 60L // Tiempo de espera en segundos
+        given(rateLimiter.isLimitExceeded(clientId)).willReturn(true)
+        given(rateLimiter.timeToNextRequest(clientId)).willReturn(retryAfterSeconds * 1000) // Convertir a milisegundos
+
+        mockMvc.perform(get("/{id}/qr", "existent").header("X-Forwarded-For", clientId))
+            .andDo(print())
+            .andExpect(status().isTooManyRequests)
+            .andExpect(header().string("Retry-After", retryAfterSeconds.toString()))
+            .andExpect(jsonPath("$.error").value("Demasiadas peticiones"))
     }
 
     @Test

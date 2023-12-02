@@ -1,11 +1,6 @@
 package es.unizar.urlshortener
-import org.springframework.web.socket.config.annotation.EnableWebSocket
-import org.springframework.web.socket.config.annotation.WebSocketConfigurer
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-import org.springframework.web.socket.server.standard.ServerEndpointExporter
 
+import org.springframework.web.socket.server.standard.ServerEndpointExporter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -31,6 +26,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import java.util.concurrent.Executor
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
+
 @Configuration
 @EnableWebSocket
 class WebSocketConfig{
@@ -44,6 +40,7 @@ class CSVIntegrationConfiguration(
     private val shortUrlRepository: ShortUrlRepositoryService
 ) {
 
+    /*
     private val logger: Logger = LoggerFactory.getLogger(CSVIntegrationConfiguration::class.java)
 
     data class CSVProcessingPayload(val line: String)
@@ -78,4 +75,5 @@ class CSVIntegrationConfiguration(
             logger.info("Additional processing for CSV line: ${payload.line}")
         }
     }
+    */
 }
