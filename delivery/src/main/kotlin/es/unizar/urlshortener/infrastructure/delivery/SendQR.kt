@@ -7,5 +7,5 @@ import org.springframework.integration.annotation.Gateway
 interface SendQR {
 
     @Gateway(requestChannel = "qrCreationChannel")
-    fun sendQR(url: String)
+    fun sendQR(p: Pair<String, String>)
 }

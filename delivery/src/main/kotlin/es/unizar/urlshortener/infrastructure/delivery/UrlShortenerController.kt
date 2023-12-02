@@ -169,13 +169,14 @@ class UrlShortenerControllerImpl(
             )
         ).let {
             logger.info("URL creada")
-            if (data.qrRequest!!) {
-                sendQR.sendQR(it.hash)
-            }
-            val h = HttpHeaders()
             val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
-            h.location = url
+            if (data.qrRequest!!) {
+                sendQR.sendQR(Pair(it.hash, url.toString()))
+            }
             val qr = if(data.qrRequest!!) "$url/qr" else ""
+            val h = HttpHeaders().apply {
+                location = url
+            }
             val response = ShortUrlDataOut(
                 url = url,
                 properties = mapOf(
@@ -196,14 +197,15 @@ class UrlShortenerControllerImpl(
             val headers = HttpHeaders().apply {
                 set("Retry-After", (retryAfterMillis / 1000).toString())
             }
-            return ResponseEntity(ErrorResponse("Demasiadas peticiones"), headers, HttpStatus.TOO_MANY_REQUESTS)
+            return ResponseEntity(ErrorResponse("Demasiadas peticiones"), headers
+                , HttpStatus.TOO_MANY_REQUESTS)
         } else {
             val url = shortUrlRepository.findByKey(id)
 
             return when {
                 url == null -> ResponseEntity(ErrorResponse("URL no encontrada"), HttpStatus.NOT_FOUND)
                 url.properties.qr == null -> ResponseEntity(ErrorResponse("Código QR no disponible")
-                    ,HttpStatus.BAD_REQUEST)
+                    , HttpStatus.BAD_REQUEST)
                 else -> {
                     val qrCodeResource = ByteArrayResource(url.properties.qr!!)
                     logger.info("QR creado")

@@ -33,10 +33,6 @@ class QRCodeIntegrationConfiguration(
     private val shortUrlRepository: ShortUrlRepositoryService
 ) {
 
-    private val logger: Logger = LoggerFactory.getLogger(QRCodeIntegrationConfiguration::class.java)
-
-    data class QRCodePayload(val url: String, val qrCode: ByteArray)
-
     companion object {
         private const val QR_CREATION_CORE_POOL_SIZE = 2
         private const val QR_CREATION_MAX_POOL_SIZE = 5
@@ -48,6 +44,10 @@ class QRCodeIntegrationConfiguration(
         private const val QR_UPDATE_QUEUE_CAPACITY = 25
         private const val QR_UPDATE_THREAD_NAME = "qr-update-"
     }
+
+    private val logger: Logger = LoggerFactory.getLogger(QRCodeIntegrationConfiguration::class.java)
+
+    data class QRCodePayload(val id: String, val qrCode: ByteArray)
 
     fun qrCreationExecutor(): Executor = ThreadPoolTaskExecutor().apply {
         corePoolSize = QR_CREATION_CORE_POOL_SIZE
@@ -74,17 +74,20 @@ class QRCodeIntegrationConfiguration(
     @Bean
     fun qrFlow(createQRCodeUseCase: CreateQRCodeUseCase): IntegrationFlow = integrationFlow {
         channel(qrCreationChannel())
-        transform { url: String -> 
-            val qrCode = createQRCodeUseCase.createQRCode(url)
-            logger.info("Código QR creado")
-            QRCodePayload(url, qrCode)
+        filter<Pair<String, String>> { payload ->
+            shortUrlRepository.findByKey(payload.first)?.properties?.qr == null
         }
+        transform<Pair<String, String>>  { payload -> 
+            val qrCode = createQRCodeUseCase.createQRCode(payload.second)
+            logger.info("Código QR creado para ${payload.first}")
+            QRCodePayload(payload.first, qrCode)
+        } 
         channel(qrUpdateChannel())
     }
 
     @ServiceActivator(inputChannel = "qrUpdateChannel")
     fun updateDatabase(payload: QRCodePayload) {
-        shortUrlRepository.updateQRCodeByHash(payload.url, payload.qrCode)
-        logger.info("Código QR actualizado para ${payload.url}")
+        shortUrlRepository.updateQRCodeByHash(payload.id, payload.qrCode)
+        logger.info("Código QR actualizado para ${payload.id}")
     }
 }
