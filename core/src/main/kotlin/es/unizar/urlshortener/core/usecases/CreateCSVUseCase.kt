@@ -11,11 +11,11 @@ interface CreateCSVUseCase {
 class CreateCSVUseCaseImpl : CreateCSVUseCase{
     override fun buildCsvContent(outputList: List<CsvOutput>): String {
         val csvContent = StringBuilder()
-        csvContent.append("URI,URI_recortada,Mensaje")
+        csvContent.append("URI,URI_recortada,qr,Mensaje")
         csvContent.append("\n")
     
         for (output in outputList) {
-            csvContent.append("${output.originalUri},${output.shortenedUri},${output.explanation}")
+            csvContent.append("${output.originalUri},${output.shortenedUri},${output.qr},${output.explanation}")
             csvContent.append("\n")
         }
     

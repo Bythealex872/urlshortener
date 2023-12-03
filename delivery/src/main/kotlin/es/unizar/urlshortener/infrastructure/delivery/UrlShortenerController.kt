@@ -237,17 +237,33 @@ class UrlShortenerControllerImpl(
 
             val lines = csvReader.readAll()
             for (line in lines) {
-                for (uri in line) {
-                    val trimmedUri = uri.trim()
+                if (line.size >= 2) {
+                    val uri = line[0].trim()
+                    val qrCodeIndicator = line[1].trim()
+                    // Rest of the code remains the same
                     val create = createShortUrlUseCase.create(
-                        url = trimmedUri,
+                        url = uri,
                         data = ShortUrlProperties(
                             ip = request.remoteAddr,
                         )
                     )
-                    val urlRecortada =
-                        linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
-                    csvOutputList.add(CsvOutput(trimmedUri, "$urlRecortada", ":)"))
+                    if(qrCodeIndicator == "1"){
+                        
+                        val urlRecortada = linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
+                        sendQR.sendQR(Pair(create.hash, urlRecortada.toString()))
+                        csvOutputList.add(CsvOutput(uri, "$urlRecortada", "$urlRecortada/qr","hola"))
+                    }
+                    else{
+                        
+                        val urlRecortada = linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
+                        csvOutputList.add(CsvOutput(uri, "$urlRecortada", "no_qr","hola"))
+                    }
+            
+
+                } else {
+                    // Handle the case where the CSV line does not have enough fields
+                    // You can log an error, skip the line, or handle it based on your requirements
+                    logger.warn("Invalid CSV line: $line")
                 }
             }
 

@@ -60,6 +60,7 @@ data class CsvInput(
 data class CsvOutput(
     val originalUri: String,
     val shortenedUri: String,
+    val qr : String,
     val explanation: String = ""
 )
 
