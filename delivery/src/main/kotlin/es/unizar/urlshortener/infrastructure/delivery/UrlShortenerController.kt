@@ -317,8 +317,7 @@ class UrlShortenerControllerImpl(
 
 @ServerEndpoint("/api/bulk-fast")
 @Component
-class BulkEndpoint() {
-    fun SendCSV():SendCSV = SendCSV()
+class BulkEndpoint{
     private val logger = LoggerFactory.getLogger(BulkEndpoint::class.java)
 
     /**
@@ -343,14 +342,19 @@ class BulkEndpoint() {
 
     /**
      * Message received
-     *
+     * 
      * @param message
      */
     @OnMessage
     fun onMsg(message: String, session: Session) {
+        
+        try {
         logger.info("Server Message ... Session ${session.id}")
         logger.info("Message ${message}")
-        SendCSV().SendCSV(Pair(message,message))
+        
+        } catch(e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     @OnError

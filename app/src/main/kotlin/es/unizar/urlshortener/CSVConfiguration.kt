@@ -71,7 +71,7 @@ class CSVCodeIntegrationConfiguration(
     fun CSVFlow(createShortUrlUseCase: CreateShortUrlUseCase): IntegrationFlow = integrationFlow {
         channel(CSVCreationChannel())
         transform<Pair<String,String >>  { payload -> 
-            logger.info("Tu madre tiene una polla que ya la quisiera yo")
+            logger.info("Debug")
             val create = createShortUrlUseCase.create(
                 url = payload.first,
                 data = ShortUrlProperties()
@@ -82,3 +82,25 @@ class CSVCodeIntegrationConfiguration(
 
     }
 }
+/* 
+@Component
+public class SpringContext implements ApplicationContextAware {
+
+    private static ApplicationContext context;
+
+    @Override
+    public void setApplicationContext(ApplicationContext context) throws BeansException {
+        SpringContext.context = context;
+    }
+
+    public ApplicationContext getApplicationContext() {
+        return context;
+    }
+
+    // Generic method to return a beanClass
+    public static <T> T getBean(Class<T> beanClass)
+    {
+        return context.getBean(beanClass);
+    }
+}
+*/
