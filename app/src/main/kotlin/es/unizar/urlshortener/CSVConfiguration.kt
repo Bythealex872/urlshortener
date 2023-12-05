@@ -82,25 +82,28 @@ class CSVCodeIntegrationConfiguration(
 
     }
 }
+
 /* 
 @Component
-public class SpringContext implements ApplicationContextAware {
+class SpringContext : ApplicationContextAware {
 
-    private static ApplicationContext context;
-
-    @Override
-    public void setApplicationContext(ApplicationContext context) throws BeansException {
-        SpringContext.context = context;
+    override fun setApplicationContext(context: ApplicationContext) {
+        SpringContext.context = context
     }
 
-    public ApplicationContext getApplicationContext() {
-        return context;
+    fun getApplicationContext(): ApplicationContext {
+        return context
     }
 
-    // Generic method to return a beanClass
-    public static <T> T getBean(Class<T> beanClass)
-    {
-        return context.getBean(beanClass);
+    companion object {
+        private lateinit var context: ApplicationContext
+        
+        internal fun setContext(applicationContext: ApplicationContext) {
+            context = applicationContext
+        }
+
+        inline fun <reified T> getBean(): T {
+            return context.getBean(T::class.java)
+        }
     }
-}
-*/
+}*/

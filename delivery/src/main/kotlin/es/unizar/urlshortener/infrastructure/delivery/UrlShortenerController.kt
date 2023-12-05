@@ -317,7 +317,7 @@ class UrlShortenerControllerImpl(
 
 @ServerEndpoint("/api/bulk-fast")
 @Component
-class BulkEndpoint{
+class BulkEndpoint(val createShortUrlUseCase: CreateShortUrlUseCase){
     private val logger = LoggerFactory.getLogger(BulkEndpoint::class.java)
 
     /**
