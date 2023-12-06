@@ -32,6 +32,8 @@ import jakarta.websocket.server.ServerEndpoint
 import es.unizar.urlshortener.core.ShortUrlProperties
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
+import jakarta.websocket.*
+
 
 
 @Configuration
@@ -72,44 +74,25 @@ class CSVCodeIntegrationConfiguration(
     @Bean
     fun CSVFlow(createShortUrlUseCase: CreateShortUrlUseCase): IntegrationFlow = integrationFlow {
         channel(CSVCreationChannel())
-        transform<Pair<String,String >>  { payload -> 
+        transform<Pair<String,Session >>  { payload -> 
+
             logger.info("Debug")
+            val parts = payload.first.split(",")
+            val uri = parts[0].trim()
+            val qr = parts[1].trim()
             val create = createShortUrlUseCase.create(
-                url = payload.first,
+                url = uri,
                 data = ShortUrlProperties()
             )
             true
-            //payload.second.basicRemote.sendText("hola")   
+            payload.second.basicRemote.sendText("hola")   
         } 
 
     }
 }
 
-open class SpringContext : ApplicationContextAware {
 
-    private lateinit var context: ApplicationContext
 
-    override fun setApplicationContext(context: ApplicationContext) {
-        this.context = context
-        SpringContext.context = this
-    }
-
-    fun <T> getBean(beanClass: Class<T>): T {
-        return context.getBean(beanClass)
-    }
-
-    companion object : DI {
-        lateinit var context: SpringContext
-
-        override fun <T> getBean(beanClass: Class<T>): T {
-            return context.getBean(beanClass)
-        }
-    }
-}
-
-interface DI {
-    fun <T> getBean(beanClass: Class<T>): T
-}
 
 
 

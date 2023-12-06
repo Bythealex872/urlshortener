@@ -45,6 +45,9 @@ import org.springframework.stereotype.Component
 import org.springframework.web.socket.server.standard.ServerEndpointExporter
 import org.springframework.web.socket.server.standard.SpringConfigurator
 import java.util.*
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
+import es.unizar.urlshortener.*
 
 
 
@@ -103,6 +106,8 @@ data class ShortUrlDataOut(
 data class ErrorResponse(
     val error: String
 )
+
+
 
 /**
  * The implementation of the controller.
@@ -315,47 +320,39 @@ class UrlShortenerControllerImpl(
     override fun returnUserAgentInfo(@PathVariable id: String): ResponseEntity<Map<String, Any>>
         = ResponseEntity.ok(userAgentInfoUseCase.getUserAgentInfoByKey(id));
 }
+interface BulkEndpoint {
+    fun onOpen(session: Session)
+    fun onClose(session: Session, closeReason: CloseReason)
+    fun onMsg(message: String, session: Session)
+    fun onError(session: Session, errorReason: Throwable)
+}
+
 @Component
 @ServerEndpoint("/api/bulk-fast")
-class BulkEndpoint(/*val createShortUrlUseCase: CreateShortUrlUseCase*/){
-    private val logger = LoggerFactory.getLogger(BulkEndpoint::class.java)
+class Luis() : BulkEndpoint {
+    private val logger: Logger = LoggerFactory.getLogger(Luis::class.java)
 
-    /**
-     * Successful connection
-     *
-     * @param session
-     */
     @OnOpen
-    fun onOpen(session: Session) {
+    override fun onOpen(session: Session) {
         logger.info("Server Connected ... Session ${session.id}")
     }
 
-    /**
-     * Connection closure
-     *
-     * @param session
-     */
     @OnClose
-    fun onClose(session: Session, closeReason: CloseReason) {
-        logger.info("Session ${session.id} closed because of $closeReason")
+    override fun onClose(session: Session, closeReason: CloseReason) {
+        logger.info("Session ${session.id} closed because of ${closeReason.reasonPhrase}")
     }
 
-    /**
-     * Message received
-     * 
-     * @param message
-     */
     @OnMessage
-    fun onMsg(message: String, session: Session) {
-        
+    override fun onMsg(message: String, session: Session) {
         logger.info("Server Message ... Session ${session.id}")
-        logger.info("Message ${message}")
-        //val sendCsvBean = ApplicationConfiguration.springContext.getBean(SendCsv::class.java)
-        
+        logger.info("Message $message")
+
+       val sendCsvBean = SpringContext.getBean(SendCSV::class.java)
+        sendCsvBean.SendCSV(Pair("$message", session))
     }
 
     @OnError
-    fun onError(session: Session, errorReason: Throwable) {
+    override fun onError(session: Session, errorReason: Throwable) {
         logger.error("Session ${session.id} closed because of ${errorReason.javaClass.name}")
     }
 }
