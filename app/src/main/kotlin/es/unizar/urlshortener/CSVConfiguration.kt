@@ -33,6 +33,25 @@ import es.unizar.urlshortener.core.ShortUrlProperties
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import jakarta.websocket.*
+import jakarta.websocket.Session
+import org.apache.tomcat.websocket.WsSession
+import org.apache.catalina.session.StandardSessionFacade
+import org.apache.catalina.connector.Request
+
+/* 
+override fun redirectTo(@PathVariable id: String): ResponseEntity<Unit> {
+    //Verifica si el id es un hash válido
+    if(redirectUseCase.redirectTo(id).mode == 404){
+        logger.error("Error 404: No se ha encontrado el hash")
+        return ResponseEntity.notFound().build()
+    }
+    logger.info("Redirección creada creada")
+    val redirectResult = redirectUseCase.redirectTo(id)
+    val headers = HttpHeaders()
+    headers.location = URI.create(redirectResult.target)
+    return ResponseEntity<Unit>(headers, HttpStatus.valueOf(redirectResult.mode))
+}*/
+
 
 
 
@@ -74,7 +93,7 @@ class CSVCodeIntegrationConfiguration(
     @Bean
     fun CSVFlow(createShortUrlUseCase: CreateShortUrlUseCase): IntegrationFlow = integrationFlow {
         channel(CSVCreationChannel())
-        transform<Pair<String,Session >>  { payload -> 
+        transform<Pair<String,Session >>{ payload -> 
 
             logger.info("Debug")
             val parts = payload.first.split(",")
@@ -84,8 +103,8 @@ class CSVCodeIntegrationConfiguration(
                 url = uri,
                 data = ShortUrlProperties()
             )
-            true
             payload.second.basicRemote.sendText("hola")   
+            true
         } 
 
     }
