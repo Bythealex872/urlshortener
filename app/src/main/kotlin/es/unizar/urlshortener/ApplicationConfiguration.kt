@@ -2,7 +2,6 @@
 
 package es.unizar.urlshortener
 
-import es.unizar.urlshortener.QRCodeIntegrationConfiguration
 import es.unizar.urlshortener.core.usecases.*
 import es.unizar.urlshortener.infrastructure.delivery.HashServiceImpl
 import es.unizar.urlshortener.infrastructure.delivery.ValidatorServiceImpl
@@ -59,8 +58,9 @@ class ApplicationConfiguration(
     fun userAgentInfoUseCase() = UserAgentInfoUseCaseImpl(shortUrlRepositoryService())
 
     @Bean
-    fun qrCodeIntegrationConfiguration() = QRCodeIntegrationConfiguration(shortUrlRepositoryService())
+    fun qrCodeIntegration() = QRCodeIntegrationConfiguration(shortUrlRepositoryService())
+
     @Bean
-    fun safeBrowsingConfiguration() = SafeBrowsingConfiguration(shortUrlRepositoryService())
+    fun safeBrowsingIntegration() = SafeBrowsingConfiguration(shortUrlRepositoryService())
 
 }

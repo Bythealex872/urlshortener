@@ -59,6 +59,9 @@ class UrlShortenerControllerTest {
     private lateinit var sendQR: SendQR
 
     @MockBean
+    private lateinit var sendSafeBrowser: SendSafeBrowser
+
+    @MockBean
     private lateinit var rateLimiter: RateLimiter
 
     @Test

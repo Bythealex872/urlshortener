@@ -20,7 +20,8 @@ import java.util.concurrent.Executor
 @EnableIntegration
 @EnableScheduling
 class SafeBrowsingConfiguration(
-    private val shortUrlRepository: ShortUrlRepositoryService) {
+    private val shortUrlRepository: ShortUrlRepositoryService
+) {
     companion object {
         private const val SAFE_CREATION_CORE_POOL_SIZE = 2
         private const val SAFE_CREATION_MAX_POOL_SIZE = 5

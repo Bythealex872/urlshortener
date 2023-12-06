@@ -265,7 +265,8 @@ class UrlShortenerControllerImpl(
                 CsvOutput(it.redirection.target, urlRecortada, qrOutput,"hola")
             }
 
-            val csvContent = createCSVUseCase.buildCsvContent(csvOutputList)
+            // CAMBIA ESTO QUE EL TOLIST() ESTA PARA QUE COMPILE PERO AHORA MISMO NO VA
+            val csvContent = createCSVUseCase.buildCsvContent(csvOutputList.toList())
             val headers = HttpHeaders()
             headers.contentType = MediaType.parseMediaType("text/csv")
             headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=output.csv")

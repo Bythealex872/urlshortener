@@ -48,10 +48,10 @@ class SafeBrowsingServiceImpl() : SafeBrowsingService {
         return urlsAreSafe(listOf(url)).size == 0
     }
 
-    override fun urlsAreSafe(urlList: List<String>) : List<String> {
+    override fun urlsAreSafe(urls: List<String>) : List<String> {
         httpTransport = GoogleNetHttpTransport.newTrustedTransport()
 
-        val findThreatMatchesRequest: FindThreatMatchesRequest = createFindThreatMatchesRequest(urlList)
+        val findThreatMatchesRequest: FindThreatMatchesRequest = createFindThreatMatchesRequest(urls)
         val safebrowsingBuilder =
             Safebrowsing.Builder(httpTransport, GOOGLE_JSON_FACTORY, null).setApplicationName(GOOGLE_APPLICATION_NAME)
         val safebrowsing = safebrowsingBuilder.build()
