@@ -30,9 +30,12 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import jakarta.websocket.CloseReason.CloseCodes
 import jakarta.websocket.server.ServerEndpoint
 import es.unizar.urlshortener.core.ShortUrlProperties
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
 
 
 @Configuration
+@EnableWebSocket
 class WebSocketConfig{
     @Bean
     fun serverEndpointExporter() = ServerEndpointExporter()
@@ -81,6 +84,34 @@ class CSVCodeIntegrationConfiguration(
 
     }
 }
+
+open class SpringContext : ApplicationContextAware {
+
+    private lateinit var context: ApplicationContext
+
+    override fun setApplicationContext(context: ApplicationContext) {
+        this.context = context
+        SpringContext.context = this
+    }
+
+    fun <T> getBean(beanClass: Class<T>): T {
+        return context.getBean(beanClass)
+    }
+
+    companion object : DI {
+        lateinit var context: SpringContext
+
+        override fun <T> getBean(beanClass: Class<T>): T {
+            return context.getBean(beanClass)
+        }
+    }
+}
+
+interface DI {
+    fun <T> getBean(beanClass: Class<T>): T
+}
+
+
 
 /* 
 @Component

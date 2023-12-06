@@ -315,8 +315,8 @@ class UrlShortenerControllerImpl(
     override fun returnUserAgentInfo(@PathVariable id: String): ResponseEntity<Map<String, Any>>
         = ResponseEntity.ok(userAgentInfoUseCase.getUserAgentInfoByKey(id));
 }
-
-@ServerEndpoint(value = "/api/bulk-fast", configurator=SpringConfigurator::class)
+@Component
+@ServerEndpoint("/api/bulk-fast")
 class BulkEndpoint(/*val createShortUrlUseCase: CreateShortUrlUseCase*/){
     private val logger = LoggerFactory.getLogger(BulkEndpoint::class.java)
 
@@ -348,13 +348,10 @@ class BulkEndpoint(/*val createShortUrlUseCase: CreateShortUrlUseCase*/){
     @OnMessage
     fun onMsg(message: String, session: Session) {
         
-        try {
         logger.info("Server Message ... Session ${session.id}")
         logger.info("Message ${message}")
+        //val sendCsvBean = ApplicationConfiguration.springContext.getBean(SendCsv::class.java)
         
-        } catch(e: Exception) {
-            e.printStackTrace()
-        }
     }
 
     @OnError
