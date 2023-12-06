@@ -33,7 +33,6 @@ import es.unizar.urlshortener.core.ShortUrlProperties
 
 
 @Configuration
-@EnableWebSocket
 class WebSocketConfig{
     @Bean
     fun serverEndpointExporter() = ServerEndpointExporter()

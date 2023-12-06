@@ -119,7 +119,6 @@ class UrlShortenerControllerImpl(
     val userAgentInfoUseCase: UserAgentInfoUseCase,
     val shortUrlRepository: ShortUrlRepositoryService,
     val sendQR: SendQR,
-    val sendSafeBrowser: SendSafeBrowser,
     val rateLimiter: RateLimiter
 ) : UrlShortenerController {
 
@@ -175,8 +174,6 @@ class UrlShortenerControllerImpl(
             if (data.qrRequest!!) {
                 sendQR.sendQR(Pair(it.hash, url.toString()))
             }
-            //Se envía la url al servicio de SafeBrowsing
-            sendSafeBrowser.sendSafeBrowser(Pair(it.hash, url.toString()))
             val qr = if(data.qrRequest!!) "$url/qr" else ""
             val h = HttpHeaders().apply {
                 location = url
@@ -233,40 +230,45 @@ class UrlShortenerControllerImpl(
         request: HttpServletRequest
     ): ResponseEntity<String> {
         try {
+            val csvOutputList = mutableListOf<CsvOutput>()
             val csvParser = CSVParserBuilder().build()
             val csvReader = CSVReaderBuilder(file.inputStream.bufferedReader())
                 .withCSVParser(csvParser)
                 .build()
 
-            val lines = csvReader.readAll().asSequence()
-
-            if (lines.any { it.size != 2}) {
-                return ResponseEntity("Error en el formato del archivo CSV", HttpStatus.BAD_REQUEST)
-            }
-            val csvOutputList = lines.map {line ->
-                val uri = line[0].trim()
-                val qrCodeIndicator = line[1].trim()
-                // Rest of the code remains the same
-                createShortUrlUseCase.create(
-                    url = uri,
-                    data = ShortUrlProperties(
-                        ip = request.remoteAddr,
+            val lines = csvReader.readAll()
+            for (line in lines) {
+                if (line.size >= 2) {
+                    val uri = line[0].trim()
+                    val qrCodeIndicator = line[1].trim()
+                    // Rest of the code remains the same
+                    val create = createShortUrlUseCase.create(
+                        url = uri,
+                        data = ShortUrlProperties(
+                            ip = request.remoteAddr,
+                        )
                     )
-                ) to qrCodeIndicator
-            }.map {  (it, qrCodeIndicator) ->
-                val urlRecortada = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri().toString()
-                val qrOutput = if(qrCodeIndicator == "1"){
-                    sendQR.sendQR(Pair(it.hash, urlRecortada))
-                    "$urlRecortada/qr"
+                    if(qrCodeIndicator == "1"){
+                        
+                        val urlRecortada = linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
+                        sendQR.sendQR(Pair(create.hash, urlRecortada.toString()))
+                        csvOutputList.add(CsvOutput(uri, "$urlRecortada", "$urlRecortada/qr","hola"))
+                    }
+                    else{
+                        
+                        val urlRecortada = linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
+                        csvOutputList.add(CsvOutput(uri, "$urlRecortada", "no_qr","hola"))
+                    }
+            
+
+                } else {
+                    // Handle the case where the CSV line does not have enough fields
+                    // You can log an error, skip the line, or handle it based on your requirements
+                    logger.warn("Invalid CSV line: $line")
                 }
-                else{
-                    "no_qr"
-                }
-                CsvOutput(it.redirection.target, urlRecortada, qrOutput,"hola")
             }
 
-            // CAMBIA ESTO QUE EL TOLIST() ESTA PARA QUE COMPILE PERO AHORA MISMO NO VA
-            val csvContent = createCSVUseCase.buildCsvContent(csvOutputList.toList())
+            val csvContent = createCSVUseCase.buildCsvContent(csvOutputList)
             val headers = HttpHeaders()
             headers.contentType = MediaType.parseMediaType("text/csv")
             headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=output.csv")
@@ -314,9 +316,8 @@ class UrlShortenerControllerImpl(
         = ResponseEntity.ok(userAgentInfoUseCase.getUserAgentInfoByKey(id));
 }
 
-@ServerEndpoint(/*value =*/ "/api/bulk-fast", /*configurator = SpringConfigurator::class*/)
-@Component
-class BulkEndpoint(val createShortUrlUseCase: CreateShortUrlUseCase){
+@ServerEndpoint(value = "/api/bulk-fast", configurator=SpringConfigurator::class)
+class BulkEndpoint(/*val createShortUrlUseCase: CreateShortUrlUseCase*/){
     private val logger = LoggerFactory.getLogger(BulkEndpoint::class.java)
 
     /**
