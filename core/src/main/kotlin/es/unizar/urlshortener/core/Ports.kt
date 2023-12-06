@@ -13,7 +13,7 @@ interface ClickRepositoryService {
 interface ShortUrlRepositoryService {
     fun findByKey(id: String): ShortUrl?
     fun save(su: ShortUrl): ShortUrl
-    fun updateSafeStatusByHash(hash: String)
+    fun updateSafeStatusByHash(hash: String, safe: Boolean)
     fun updateQRCodeByHash(hash: String, qr: ByteArray)
 }
 
@@ -24,6 +24,12 @@ interface ShortUrlRepositoryService {
  */
 interface ValidatorService {
     fun isValid(url: String): Boolean
+}
+
+interface SafeBrowsingService {
+    fun isSafe(url: String): Boolean
+    fun urlsAreSafe(urls: List<String>): List<String>
+
 }
 
 /**

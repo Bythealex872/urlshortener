@@ -214,6 +214,7 @@ class UrlShortenerControllerTest {
             CsvOutput(
                 originalUri = "https://example.com/long-url-1",
                 shortenedUri = "https://short.url/1",
+                qr = "https://short.url/1/qr",
                 explanation = "Primera URL acortada"
             )
         )

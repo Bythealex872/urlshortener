@@ -7,6 +7,7 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":delivery"))
     implementation(project(":repositories"))
+    implementation(project(":integrationServices"))
     implementation("org.springframework.boot:spring-boot-starter-integration")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.boot:spring-boot-starter")

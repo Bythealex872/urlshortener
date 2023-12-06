@@ -1,3 +1,3 @@
 rootProject.name = "urlshortener"
 
-include("core", "delivery", "repositories", "app")
+include("core","integrationServices", "delivery", "repositories", "app")

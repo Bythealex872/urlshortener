@@ -15,8 +15,8 @@ interface ShortUrlEntityRepository : JpaRepository<ShortUrlEntity, String> {
     
     @Modifying
     @Transactional
-    @Query("UPDATE ShortUrlEntity s SET s.safe = TRUE WHERE s.hash= :hash")
-    fun updateSafeStatusByHash(hash:  String)
+    @Query("UPDATE ShortUrlEntity s SET s.safe = :safe WHERE s.hash= :hash")
+    fun updateSafeStatusByHash(hash:  String, safe: Boolean)
 
     @Modifying
     @Transactional

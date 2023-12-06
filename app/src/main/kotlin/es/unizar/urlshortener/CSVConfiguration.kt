@@ -26,7 +26,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import java.util.concurrent.Executor
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
-import jakarta.websocket.*
+//import jakarta.websocket.*
 import jakarta.websocket.CloseReason.CloseCodes
 import jakarta.websocket.server.ServerEndpoint
 import es.unizar.urlshortener.core.ShortUrlProperties
@@ -82,6 +82,7 @@ class CSVCodeIntegrationConfiguration(
 
     }
 }
+
 /* 
 @Component
 public class SpringContext implements ApplicationContextAware {

@@ -20,7 +20,7 @@ interface CreateShortUrlUseCase {
 class CreateShortUrlUseCaseImpl(
     private val shortUrlRepository: ShortUrlRepositoryService,
     private val validatorService: ValidatorService,
-    private val hashService: HashService
+    private val hashService: HashService,
 ) : CreateShortUrlUseCase {
     override fun create(url: String, data: ShortUrlProperties): ShortUrl {
         // Verificar si la URL es válida

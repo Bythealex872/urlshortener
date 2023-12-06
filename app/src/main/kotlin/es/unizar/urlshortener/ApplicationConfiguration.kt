@@ -10,7 +10,7 @@ import es.unizar.urlshortener.infrastructure.repositories.ClickEntityRepository
 import es.unizar.urlshortener.infrastructure.repositories.ClickRepositoryServiceImpl
 import es.unizar.urlshortener.infrastructure.repositories.ShortUrlEntityRepository
 import es.unizar.urlshortener.infrastructure.repositories.ShortUrlRepositoryServiceImpl
-import es.unizar.urlshortener.core.ShortUrlRepositoryService
+import es.unizar.urlshortener.integrationServices.SafeBrowsingServiceImpl
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -30,7 +30,8 @@ class ApplicationConfiguration(
 
     @Bean
     fun shortUrlRepositoryService() = ShortUrlRepositoryServiceImpl(shortUrlEntityRepository)
-
+    @Bean
+    fun safeBrowsingService() = SafeBrowsingServiceImpl()
     @Bean
     fun validatorService() = ValidatorServiceImpl()
 
@@ -46,7 +47,8 @@ class ApplicationConfiguration(
     @Bean
     fun createShortUrlUseCase() =
         CreateShortUrlUseCaseImpl(shortUrlRepositoryService(), validatorService(), hashService())
-        
+    @Bean
+    fun safeBrowsingUseCase() = SafeBrowsingUseCaseImpl(safeBrowsingService())
     @Bean
     fun createQRCodeUseCase() = CreateQRCodeUseCaseImpl()
     
@@ -58,5 +60,7 @@ class ApplicationConfiguration(
 
     @Bean
     fun qrCodeIntegrationConfiguration() = QRCodeIntegrationConfiguration(shortUrlRepositoryService())
+    @Bean
+    fun safeBrowsingConfiguration() = SafeBrowsingConfiguration(shortUrlRepositoryService())
 
 }
