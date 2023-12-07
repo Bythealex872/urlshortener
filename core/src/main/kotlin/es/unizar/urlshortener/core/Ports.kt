@@ -4,6 +4,7 @@ package es.unizar.urlshortener.core
  * [ClickRepositoryService] is the port to the repository that provides persistence to [Clicks][Click].
  */
 interface ClickRepositoryService {
+    fun findByKey(id: Long): Click?
     fun save(cl: Click): Click
 }
 

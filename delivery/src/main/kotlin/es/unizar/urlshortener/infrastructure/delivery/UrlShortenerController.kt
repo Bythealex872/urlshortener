@@ -132,37 +132,13 @@ class UrlShortenerControllerImpl(
     private val logger: Logger = LoggerFactory.getLogger(UrlShortenerControllerImpl::class.java)
 
     @GetMapping("/{id:(?!api|index).*}")
-    override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
-        //Verifica si el id es un hash válido
-        if(redirectUseCase.redirectTo(id).mode == 404){
-            logger.error("Error 404: No se ha encontrado el hash")
-            return ResponseEntity.notFound().build()
+    override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> =
+        redirectUseCase.redirectTo(id, request.remoteAddr, request.getHeader("User-Agent")).let {
+            logger.info("Redirección creada creada")
+            val headers = HttpHeaders()
+            headers.location = URI.create(it.target)
+            ResponseEntity<Unit>(headers, HttpStatus.valueOf(it.mode))
         }
-
-        val userAgentString = request.getHeader("User-Agent")
-        // Verifica si hay User-Agent presente antes de intentar analizarlo
-        if (!userAgentString.isNullOrBlank()) {
-            val capabilities: Capabilities = parser.parse(userAgentString)
-            val browser = capabilities.browser
-            val platform = capabilities.platform
-
-            // LogClick con información del User-Agent
-            logClickUseCase.logClick(id, ClickProperties(
-                    ip = request.remoteAddr,
-                    browser = browser,
-                    platform = platform
-            ))
-        } else {
-            // LogClick solo con la información de la IP (sin User-Agent)
-            logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr))
-        }
-        
-        logger.info("Redirección creada creada")
-        val redirectResult = redirectUseCase.redirectTo(id)
-        val headers = HttpHeaders()
-        headers.location = URI.create(redirectResult.target)
-        return ResponseEntity<Unit>(headers, HttpStatus.valueOf(redirectResult.mode))
-    }
 
 
     @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE])

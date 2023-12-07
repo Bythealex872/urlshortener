@@ -64,3 +64,7 @@ data class CsvOutput(
     val explanation: String = ""
 )
 
+data class UserAgent(
+    val browser: String? = null,
+    val platform: String? = null
+)

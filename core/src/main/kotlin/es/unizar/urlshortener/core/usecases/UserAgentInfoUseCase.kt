@@ -1,12 +1,16 @@
 package es.unizar.urlshortener.core.usecases
 
+import com.blueconic.browscap.Capabilities
+import com.blueconic.browscap.UserAgentService
 import es.unizar.urlshortener.core.ShortUrlRepositoryService
+import es.unizar.urlshortener.core.UserAgent
 
 /**
  * Given a key returns user agent information.
  */
 interface UserAgentInfoUseCase {
     fun getUserAgentInfoByKey(key: String): Map<String, Any>?
+    fun returnUserAgentInfo(UAstring: String): UserAgent?
 }
 
 /**
@@ -15,6 +19,7 @@ interface UserAgentInfoUseCase {
 class UserAgentInfoUseCaseImpl(
         private val shortUrlRepository: ShortUrlRepositoryService
 ) : UserAgentInfoUseCase {
+    private val parser = UserAgentService().loadParser()
 
     override fun getUserAgentInfoByKey(key: String): Map<String, Any>? {
         val shortUrl = shortUrlRepository.findByKey(key)
@@ -29,4 +34,12 @@ class UserAgentInfoUseCaseImpl(
             )
         }
     }
+
+    override fun returnUserAgentInfo(UAstring: String): UserAgent? {
+        val capabilities: Capabilities = parser.parse(UAstring)
+        val browser = capabilities.browser
+        val platform = capabilities.platform
+        return UserAgent(browser, platform)
+    }
+
 }

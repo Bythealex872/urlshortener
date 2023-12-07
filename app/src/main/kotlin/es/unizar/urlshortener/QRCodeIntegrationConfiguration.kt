@@ -72,8 +72,7 @@ class QRCodeIntegrationConfiguration(
     fun qrUpdateChannel(): MessageChannel = ExecutorChannel(qrUpdateExecutor())
 
     @Bean
-    fun qrFlow(createQRCodeUseCase: CreateQRCodeUseCase): IntegrationFlow = integrationFlow {
-        channel(qrCreationChannel())
+    fun qrFlow(createQRCodeUseCase: CreateQRCodeUseCase): IntegrationFlow = integrationFlow(qrCreationChannel()) {
         filter<Pair<String, String>> { payload ->
             shortUrlRepository.findByKey(payload.first)?.properties?.qr == null
         }
