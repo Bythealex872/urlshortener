@@ -6,6 +6,8 @@ package es.unizar.urlshortener.core
 interface ClickRepositoryService {
     fun findByKey(id: Long): Click?
     fun save(cl: Click): Click
+
+    fun updateUAByIp(ip: String, browser: String, platform: String)
 }
 
 /**

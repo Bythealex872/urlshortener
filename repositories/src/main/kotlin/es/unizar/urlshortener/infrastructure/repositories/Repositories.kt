@@ -1,5 +1,6 @@
 package es.unizar.urlshortener.infrastructure.repositories
 
+import es.unizar.urlshortener.core.UserAgent
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.transaction.annotation.Transactional
@@ -31,4 +32,9 @@ interface ShortUrlEntityRepository : JpaRepository<ShortUrlEntity, String> {
  */
 interface ClickEntityRepository : JpaRepository<ClickEntity, Long>{
     fun findByid(id: Long): ClickEntity?
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE ClickEntity c SET c.browser = :browser, c.platform = :platform WHERE c.ip = :ip")
+    fun updateUAByIp(ip: String, browser: String, platform: String)
 }

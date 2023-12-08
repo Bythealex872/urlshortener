@@ -11,6 +11,7 @@ import es.unizar.urlshortener.core.UserAgent
 interface UserAgentInfoUseCase {
     fun getUserAgentInfoByKey(key: String): Map<String, Any>?
     fun returnUserAgentInfo(UAstring: String): UserAgent?
+
 }
 
 /**

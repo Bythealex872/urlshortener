@@ -1,9 +1,6 @@
 package es.unizar.urlshortener.infrastructure.repositories
 
-import es.unizar.urlshortener.core.Click
-import es.unizar.urlshortener.core.ClickRepositoryService
-import es.unizar.urlshortener.core.ShortUrl
-import es.unizar.urlshortener.core.ShortUrlRepositoryService
+import es.unizar.urlshortener.core.*
 
 /**
  * Implementation of the port [ClickRepositoryService].
@@ -13,6 +10,8 @@ class ClickRepositoryServiceImpl(
 ) : ClickRepositoryService {
     override fun findByKey(id: Long): Click? = clickEntityRepository.findByid(id)?.toDomain()
     override fun save(cl: Click): Click = clickEntityRepository.save(cl.toEntity()).toDomain()
+
+    override fun updateUAByIp(ip: String, browser: String, platform: String) = clickEntityRepository.updateUAByIp(ip, browser, platform)
 }
 
 /**
