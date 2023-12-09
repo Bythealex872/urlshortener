@@ -1,11 +1,7 @@
 package es.unizar.urlshortener.core.usecases
 
-import com.blueconic.browscap.Capabilities
-import com.blueconic.browscap.UserAgentService
-import es.unizar.urlshortener.core.ClickProperties
-import es.unizar.urlshortener.core.Redirection
-import es.unizar.urlshortener.core.RedirectionNotFound
-import es.unizar.urlshortener.core.ShortUrlRepositoryService
+import es.unizar.urlshortener.core.*
+
 
 /**
  * Given a key returns a [Redirection] that contains a [URI target][Redirection.target]
@@ -34,8 +30,10 @@ class RedirectUseCaseImpl(
             throw RedirectionNotFound(key)
         }
         if(!shortUrl.properties.safe){
-            // Cambiar throw
-            throw RedirectionNotFound(key)
+            throw RetryAfterException()
+        }
+        if(shortUrl.redirection == null){
+            throw RedirectionForbiden(key)
         }
 
         logClickUseCase.logClick(key, ip, UA)

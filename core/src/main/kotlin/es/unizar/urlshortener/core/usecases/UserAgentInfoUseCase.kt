@@ -2,6 +2,7 @@ package es.unizar.urlshortener.core.usecases
 
 import com.blueconic.browscap.Capabilities
 import com.blueconic.browscap.UserAgentService
+import es.unizar.urlshortener.core.RedirectionNotFound
 import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import es.unizar.urlshortener.core.UserAgent
 
@@ -24,7 +25,13 @@ class UserAgentInfoUseCaseImpl(
 
     override fun getUserAgentInfoByKey(key: String): Map<String, Any>? {
         val shortUrl = shortUrlRepository.findByKey(key)
-
+        if (shortUrl == null) {
+            throw RedirectionNotFound(key)
+        }
+        if(!shortUrl.properties.safe){
+            // Cambiar throw
+            throw RedirectionNotFound(key)
+        }
         return shortUrl?.let {
             mapOf(
                     "id" to key,
