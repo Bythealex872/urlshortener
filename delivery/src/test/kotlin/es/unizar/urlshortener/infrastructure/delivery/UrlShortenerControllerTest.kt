@@ -20,6 +20,10 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.junit.jupiter.api.Assertions
 import java.time.OffsetDateTime
+import org.springframework.mock.web.MockMultipartFile
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 
 @WebMvcTest
@@ -224,7 +228,19 @@ class UrlShortenerControllerTest {
         createCSVUseCase.buildCsvContent(csvOutputs)
         Assertions.assertTrue(true)
     }
+    @Test
+    fun `processCsvFile returns a bad request when CSV format is invalid`() {
+        val csvContent = "url1,1,extraColumn\nurl2,0\n"
+        val file = MockMultipartFile("file", "test.csv", "text/csv", csvContent.toByteArray())
 
+        mockMvc.perform(
+            multipart("/api/bulk")
+                .file(file)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.statusCode").value(400))
+    }
     @Test
     fun `Return User-Agent info return a redirect with the information when the key exist`(){
 

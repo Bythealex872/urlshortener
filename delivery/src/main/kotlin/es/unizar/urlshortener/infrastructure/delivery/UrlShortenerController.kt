@@ -218,6 +218,9 @@ class UrlShortenerControllerImpl(
                 .build()
 
             val lines = csvReader.readAll()
+            if (lines.any { it.size != 2}) {
+                return ResponseEntity("Error en el formato del archivo CSV", HttpStatus.BAD_REQUEST)
+            }
             for (line in lines) {
                 if (line.size >= 2) {
                     val uri = line[0].trim()
@@ -230,17 +233,17 @@ class UrlShortenerControllerImpl(
                         )
                     )
                     if(qrCodeIndicator == "1"){
-                        
+
                         val urlRecortada = linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
                         sendQR.sendQR(Pair(create.hash, urlRecortada.toString()))
                         csvOutputList.add(CsvOutput(uri, "$urlRecortada", "$urlRecortada/qr","hola"))
                     }
                     else{
-                        
+
                         val urlRecortada = linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
                         csvOutputList.add(CsvOutput(uri, "$urlRecortada", "no_qr","hola"))
                     }
-            
+
 
                 } else {
                     // Handle the case where the CSV line does not have enough fields
@@ -258,12 +261,13 @@ class UrlShortenerControllerImpl(
 
             return ResponseEntity(csvContent, headers, HttpStatus.CREATED)
         } catch (e: CsvException) {
-            // Handle CSV validation exception
             logger.error("Error processing CSV file", e)
-   
             return ResponseEntity("Error en el formato del archivo CSV", HttpStatus.BAD_REQUEST)
         } 
     }
+
+                
+
   
 
     /* 
