@@ -42,7 +42,7 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
     }
 
     @ResponseBody
-    @ExceptionHandler(value = [RedirectionNotFound::class])
+    @ExceptionHandler(value = [RedirectionForbiden::class])
     @ResponseStatus(HttpStatus.FORBIDDEN)
     fun redirectionForbiden(ex: RedirectionForbiden) = ErrorMessage(HttpStatus.FORBIDDEN.value(), ex.message)
 }
