@@ -73,7 +73,7 @@ class UrlShortenerControllerTest {
 
         given(redirectUseCase.redirectTo("key", "", "")).willReturn(Redirection("http://example.com/"))
 
-        mockMvc.perform(get("/{id}", "key"))
+        mockMvc.perform(get("/{id}", "key").header("User-Agent", ""))
             .andExpect(status().isTemporaryRedirect)
             .andExpect(redirectedUrl("http://example.com/"))
 
