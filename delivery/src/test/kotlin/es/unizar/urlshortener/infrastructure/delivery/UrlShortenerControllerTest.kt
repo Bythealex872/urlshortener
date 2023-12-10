@@ -55,18 +55,12 @@ class UrlShortenerControllerTest {
 
     @MockBean
     private lateinit var userAgentInfoUseCase: UserAgentInfoUseCase
-
-    @MockBean
-    private lateinit var shortUrlRepository: ShortUrlRepositoryService
     
     @MockBean
     private lateinit var sendQR: SendQR
 
     @MockBean
     private lateinit var sendSafeBrowser: SendSafeBrowser
-
-    @MockBean
-    private lateinit var rateLimiter: RateLimiter
 
     @Test
     fun `redirectTo returns a redirect when the key exists and no userAgent`() {
@@ -169,30 +163,30 @@ class UrlShortenerControllerTest {
     @Test
     fun `qrCode returns not found when url does not exist`() {
         given(
-            shortUrlRepository.findByKey("nonexistent")
-        ).willReturn(null)
+            createQRCodeUseCase.getQRCode("nonexistent")
+        ).willAnswer { throw RedirectionNotFound("nonexistent") }
         mockMvc.perform(get("/{id}/qr", "nonexistent"))
             .andDo(print())
             .andExpect(status().isNotFound)
-            .andExpect(jsonPath("$.error").value("URL no encontrada"))
+            .andExpect(jsonPath("$.statusCode").value(404))
     }
     @Test
     fun `qrCode returns bad request when qr code is not available`() {
         given(
-            shortUrlRepository.findByKey("nonexistent")
-        ).willReturn(ShortUrl("nonexistent", Redirection("http://example.com"), OffsetDateTime.now()))
+            createQRCodeUseCase.getQRCode("nonexistent")
+        ).willAnswer { throw RetryAfterException() }
         mockMvc.perform(get("/{id}/qr", "nonexistent"))
             .andDo(print())
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.error").value("Código QR no disponible"))
+            .andExpect(jsonPath("$.statusCode").value(400))
     }
     @Test
     fun `qrCode returns qr code image when qr code is available`() {
         val qrCodeBytes = ByteArray(100) // Supongamos que es un QR generado
         val url = ShortUrl("existent", Redirection("http://example.com"), OffsetDateTime.now(), ShortUrlProperties(qr = qrCodeBytes))
         given(
-            shortUrlRepository.findByKey("existent")
-        ).willReturn(url)
+            createQRCodeUseCase.getQRCode("existent")
+        ).willReturn(qrCodeBytes)
         mockMvc.perform(get("/{id}/qr", "existent"))
             .andDo(print())
             .andExpect(status().isOk)

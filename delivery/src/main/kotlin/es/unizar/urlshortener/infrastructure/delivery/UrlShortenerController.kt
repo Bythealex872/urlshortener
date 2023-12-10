@@ -122,7 +122,6 @@ class UrlShortenerControllerImpl(
     val createQRCodeUseCase: CreateQRCodeUseCase,
     val createCSVUseCase : CreateCSVUseCase,
     val userAgentInfoUseCase: UserAgentInfoUseCase,
-    val shortUrlRepository: ShortUrlRepositoryService,
     val sendQR: SendQR
 ) : UrlShortenerController {
 
@@ -170,28 +169,17 @@ class UrlShortenerControllerImpl(
 
     @GetMapping("/{id}/qr")
     override fun qrCode(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Any> {
-    
-        val clientId = request.remoteAddr
-        val url = shortUrlRepository.findByKey(id)
+        val qrCodeResource = ByteArrayResource(createQRCodeUseCase.getQRCode(id))
+        logger.info("QR creado")
 
-        return when {
-            url == null -> ResponseEntity(ErrorResponse("URL no encontrada"), HttpStatus.NOT_FOUND)
-            url.properties.qr == null -> ResponseEntity(ErrorResponse("Código QR no disponible")
-                , HttpStatus.BAD_REQUEST)
-            else -> {
-                val qrCodeResource = ByteArrayResource(url.properties.qr!!)
-                logger.info("QR creado")
-
-                val headers = HttpHeaders().apply {
-                    contentType = MediaType.IMAGE_PNG
-                    cacheControl = "no-cache, no-store, must-revalidate"
-                    pragma = "no-cache"
-                    expires = 0
-                }
-
-                ResponseEntity(qrCodeResource, headers, HttpStatus.OK)
-            }
+        val headers = HttpHeaders().apply {
+            contentType = MediaType.IMAGE_PNG
+            cacheControl = "no-cache, no-store, must-revalidate"
+            pragma = "no-cache"
+            expires = 0
         }
+
+        return ResponseEntity(qrCodeResource, headers, HttpStatus.OK)
     }
 
     @PostMapping("/api/bulk", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
