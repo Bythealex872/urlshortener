@@ -219,7 +219,7 @@ class UrlShortenerControllerImpl(
 
             val lines = csvReader.readAll()
             if (lines.any { it.size != 2}) {
-                return ResponseEntity("Error en el formato del archivo CSV", HttpStatus.BAD_REQUEST)
+                return ResponseEntity(ErrorResponse("Error en el formato del archivo CSV"), HttpStatus.BAD_REQUEST)
             }
             for (line in lines) {
                 if (line.size >= 2) {
@@ -262,7 +262,7 @@ class UrlShortenerControllerImpl(
             return ResponseEntity(csvContent, headers, HttpStatus.CREATED)
         } catch (e: CsvException) {
             logger.error("Error processing CSV file", e)
-            return ResponseEntity("Error en el formato del archivo CSV", HttpStatus.BAD_REQUEST)
+            return ResponseEntity(ErrorResponse("Error en el formato del archivo CSV"), HttpStatus.BAD_REQUEST)
         } 
     }
 
