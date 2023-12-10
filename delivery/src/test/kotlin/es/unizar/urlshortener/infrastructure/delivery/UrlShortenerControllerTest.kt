@@ -70,34 +70,32 @@ class UrlShortenerControllerTest {
 
     @Test
     fun `redirectTo returns a redirect when the key exists and no userAgent`() {
-        given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/"))
+
+        given(redirectUseCase.redirectTo("key", "", "")).willReturn(Redirection("http://example.com/"))
 
         mockMvc.perform(get("/{id}", "key"))
             .andExpect(status().isTemporaryRedirect)
             .andExpect(redirectedUrl("http://example.com/"))
 
-        verify(logClickUseCase).logClick("key",
-                ClickProperties(ip = "127.0.0.1"))
+        verify(logClickUseCase).logClick("key", ip = "127.0.0.1", UA = "")
     }
 
     @Test
     fun `redirectTo returns a redirect when the key exists and userAgent`() {
-        given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/"))
-
-        // Simular el envío de un encabezado "User-Agent" en la solicitud
         val userAgentHeaderValue = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+
+        given(redirectUseCase.redirectTo("key", "", userAgentHeaderValue)).willReturn(Redirection("http://example.com/"))
 
         mockMvc.perform(get("/{id}", "key").header("User-Agent", userAgentHeaderValue))
                 .andExpect(status().isTemporaryRedirect)
                 .andExpect(redirectedUrl("http://example.com/"))
 
-        verify(logClickUseCase).logClick("key",
-                ClickProperties(ip = "127.0.0.1", browser = "Chrome", platform = "Win10"))
+        verify(logClickUseCase).logClick("key", ip = "127.0.0.1" , UA = userAgentHeaderValue)
     }
 
     @Test
     fun `redirectTo returns a not found when the key does not exist`() {
-        given(redirectUseCase.redirectTo("key"))
+        given(redirectUseCase.redirectTo("key", "", ""))
             .willAnswer { throw RedirectionNotFound("key") }
 
         mockMvc.perform(get("/{id}", "key"))
@@ -105,7 +103,7 @@ class UrlShortenerControllerTest {
             .andExpect(status().isNotFound)
             .andExpect(jsonPath("$.statusCode").value(404))
 
-        verify(logClickUseCase, never()).logClick("key", ClickProperties(ip = "127.0.0.1"))
+        verify(logClickUseCase, never()).logClick("key", ip = "127.0.0.1", UA = "")
     }
 
     @Test
