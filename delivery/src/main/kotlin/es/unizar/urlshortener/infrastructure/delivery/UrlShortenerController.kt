@@ -78,7 +78,7 @@ interface UrlShortenerController {
      */
     fun qrCode(id: String, request: HttpServletRequest): ResponseEntity<Any>
 
-    fun processCsvFile(@RequestPart("file") file: MultipartFile,request: HttpServletRequest): ResponseEntity<String>
+    fun processCsvFile(@RequestPart("file") file: MultipartFile,request: HttpServletRequest): ResponseEntity<Any>
     
     /**
     * Returns the user agent information from the map.
@@ -123,8 +123,7 @@ class UrlShortenerControllerImpl(
     val createCSVUseCase : CreateCSVUseCase,
     val userAgentInfoUseCase: UserAgentInfoUseCase,
     val shortUrlRepository: ShortUrlRepositoryService,
-    val sendQR: SendQR,
-    val rateLimiter: RateLimiter
+    val sendQR: SendQR
 ) : UrlShortenerController {
 
     //Variables privadas 
@@ -173,34 +172,24 @@ class UrlShortenerControllerImpl(
     override fun qrCode(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Any> {
     
         val clientId = request.remoteAddr
-        if (rateLimiter.isLimitExceeded(clientId)) {
-            val retryAfterMillis = rateLimiter.timeToNextRequest(clientId)
-            logger.info((retryAfterMillis / 1000).toString())
-            val headers = HttpHeaders().apply {
-                set("Retry-After", (retryAfterMillis / 1000).toString())
-            }
-            return ResponseEntity(ErrorResponse("Demasiadas peticiones"), headers
-                , HttpStatus.TOO_MANY_REQUESTS)
-        } else {
-            val url = shortUrlRepository.findByKey(id)
+        val url = shortUrlRepository.findByKey(id)
 
-            return when {
-                url == null -> ResponseEntity(ErrorResponse("URL no encontrada"), HttpStatus.NOT_FOUND)
-                url.properties.qr == null -> ResponseEntity(ErrorResponse("Código QR no disponible")
-                    , HttpStatus.BAD_REQUEST)
-                else -> {
-                    val qrCodeResource = ByteArrayResource(url.properties.qr!!)
-                    logger.info("QR creado")
+        return when {
+            url == null -> ResponseEntity(ErrorResponse("URL no encontrada"), HttpStatus.NOT_FOUND)
+            url.properties.qr == null -> ResponseEntity(ErrorResponse("Código QR no disponible")
+                , HttpStatus.BAD_REQUEST)
+            else -> {
+                val qrCodeResource = ByteArrayResource(url.properties.qr!!)
+                logger.info("QR creado")
 
-                    val headers = HttpHeaders().apply {
-                        contentType = MediaType.IMAGE_PNG
-                        cacheControl = "no-cache, no-store, must-revalidate"
-                        pragma = "no-cache"
-                        expires = 0
-                    }
-
-                    ResponseEntity(qrCodeResource, headers, HttpStatus.OK)
+                val headers = HttpHeaders().apply {
+                    contentType = MediaType.IMAGE_PNG
+                    cacheControl = "no-cache, no-store, must-revalidate"
+                    pragma = "no-cache"
+                    expires = 0
                 }
+
+                ResponseEntity(qrCodeResource, headers, HttpStatus.OK)
             }
         }
     }
@@ -209,7 +198,7 @@ class UrlShortenerControllerImpl(
     override fun processCsvFile(
         @RequestPart("file") file: MultipartFile,
         request: HttpServletRequest
-    ): ResponseEntity<String> {
+    ): ResponseEntity<Any> {
         try {
             val csvOutputList = mutableListOf<CsvOutput>()
             val csvParser = CSVParserBuilder().build()

@@ -200,20 +200,6 @@ class UrlShortenerControllerTest {
     }
 
     @Test
-    fun `qrCode returns too many requests when rate limit is exceeded`() {
-        val clientId = "127.0.0.1" // Ejemplo de una dirección IP
-        val retryAfterSeconds = 60L // Tiempo de espera en segundos
-        given(rateLimiter.isLimitExceeded(clientId)).willReturn(true)
-        given(rateLimiter.timeToNextRequest(clientId)).willReturn(retryAfterSeconds * 1000) // Convertir a milisegundos
-
-        mockMvc.perform(get("/{id}/qr", "existent").header("X-Forwarded-For", clientId))
-            .andDo(print())
-            .andExpect(status().isTooManyRequests)
-            .andExpect(header().string("Retry-After", retryAfterSeconds.toString()))
-            .andExpect(jsonPath("$.error").value("Demasiadas peticiones"))
-    }
-
-    @Test
     fun `Esto En C No Pasa`(){
         val csvOutputs = listOf(
             CsvOutput(
