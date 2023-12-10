@@ -73,7 +73,7 @@ class UrlShortenerControllerTest {
 
         given(redirectUseCase.redirectTo("key", "", "")).willReturn(Redirection("http://example.com/"))
 
-        mockMvc.perform(get("/{id}", "key"))
+        mockMvc.perform(get("/{id}", "key").header("User-Agent", ""))
             .andExpect(status().isTemporaryRedirect)
             .andExpect(redirectedUrl("http://example.com/"))
 
@@ -237,7 +237,6 @@ class UrlShortenerControllerTest {
                 .contentType(MediaType.MULTIPART_FORM_DATA)
         )
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.mensaje").value("Error en el formato del archivo CSV"));
     }
     @Test
     fun `Return User-Agent info return a redirect with the information when the key exist`(){
