@@ -237,7 +237,7 @@ class UrlShortenerControllerTest {
                 .contentType(MediaType.MULTIPART_FORM_DATA)
         )
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error").value("Error en el formato del archivo CSV"));
+        .andExpect(jsonPath("$.error").value("Error en el formato del archivo CSV"))
     }
     @Test
     fun `Return User-Agent info return a redirect with the information when the key exist`(){
