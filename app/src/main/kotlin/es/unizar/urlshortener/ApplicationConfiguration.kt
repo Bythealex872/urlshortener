@@ -50,7 +50,7 @@ class ApplicationConfiguration(
     @Bean
     fun safeBrowsingUseCase() = SafeBrowsingUseCaseImpl(safeBrowsingService())
     @Bean
-    fun createQRCodeUseCase() = CreateQRCodeUseCaseImpl(shortUrlRepositoryService())
+    fun createQRCodeUseCase() = QRCodeUseCaseImpl(shortUrlRepositoryService())
     
     @Bean
     fun createCSVUseCase() = CreateCSVUseCaseImpl()

@@ -33,7 +33,7 @@ class RedirectUseCaseImpl(
             throw RetryAfterException()
         }
         if(shortUrl.redirection == null){
-            throw RedirectionForbiden(key)
+            throw RedirectionForbidden(key)
         }
 
         logClickUseCase.logClick(key, ip, UA)

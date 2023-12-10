@@ -9,17 +9,17 @@ import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 import java.io.ByteArrayOutputStream
 
-interface CreateQRCodeUseCase {
+interface QRCodeUseCase {
     fun createQRCode(id: String): ByteArray
     fun getQRCode(id: String): ByteArray
 }
 
 /**
- * Implementation of [CreateQRCodeUseCase].
+ * Implementation of [QRCodeUseCase].
  */
-class CreateQRCodeUseCaseImpl(
+class QRCodeUseCaseImpl(
     private val shortUrlRepository: ShortUrlRepositoryService,
-) : CreateQRCodeUseCase {
+) : QRCodeUseCase {
     
     override fun createQRCode(id: String): ByteArray { 
         val qrCodeImage = generateQrCodeImage(id)
@@ -27,17 +27,14 @@ class CreateQRCodeUseCaseImpl(
     }
 
     override fun getQRCode(id: String): ByteArray {
-        val shortUrl = shortUrlRepository.findByKey(id)
+        val shortUrl = shortUrlRepository.findByKey(id) ?: throw RedirectionNotFound(id)
 
         // Verifica si la URI recortada no existe
-        if (shortUrl == null) {
-            throw RedirectionNotFound(id)
-        }
         if(!shortUrl.properties.safe || shortUrl.properties.qr == null){
             throw RetryAfterException()
         }
         if(shortUrl.redirection.mode != 307){
-            throw RedirectionForbiden(id)
+            throw RedirectionForbidden(id)
         }
 
         return shortUrl.properties.qr

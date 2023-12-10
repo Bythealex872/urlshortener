@@ -1,7 +1,7 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
 import es.unizar.urlshortener.core.InvalidUrlException
-import es.unizar.urlshortener.core.RedirectionForbiden
+import es.unizar.urlshortener.core.RedirectionForbidden
 import es.unizar.urlshortener.core.RedirectionNotFound
 import es.unizar.urlshortener.core.RetryAfterException
 import org.springframework.http.HttpHeaders
@@ -33,7 +33,7 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun retryAfterException(ex: RetryAfterException): ResponseEntity<ErrorMessage> {
         val headers = HttpHeaders()
-        headers.set(HttpHeaders.RETRY_AFTER, ex.message)
+        headers.set(HttpHeaders.RETRY_AFTER, "20")
         return ResponseEntity(ErrorMessage(
                 statusCode = HttpStatus.BAD_REQUEST.value(),
                 message = ex.message,
@@ -42,9 +42,9 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
     }
 
     @ResponseBody
-    @ExceptionHandler(value = [RedirectionForbiden::class])
+    @ExceptionHandler(value = [RedirectionForbidden::class])
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    fun redirectionForbiden(ex: RedirectionForbiden) = ErrorMessage(HttpStatus.FORBIDDEN.value(), ex.message)
+    fun redirectionForbidden(ex: RedirectionForbidden) = ErrorMessage(HttpStatus.FORBIDDEN.value(), ex.message)
 }
 
 data class ErrorMessage(

@@ -13,43 +13,19 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 import java.net.URI
-import javax.imageio.ImageIO
-import java.io.ByteArrayOutputStream
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.web.multipart.MultipartFile
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
-import org.springframework.web.client.RestTemplate
-import org.springframework.web.util.UriComponentsBuilder
-import com.blueconic.browscap.Capabilities
-import com.blueconic.browscap.UserAgentParser
 import com.blueconic.browscap.UserAgentService
 import es.unizar.urlshortener.core.*
 import com.opencsv.*
 import com.opencsv.exceptions.CsvException
-import com.opencsv.exceptions.CsvValidationException
 import es.unizar.urlshortener.core.usecases.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.messaging.simp.SimpMessagingTemplate
 import jakarta.websocket.*
-import jakarta.websocket.CloseReason.CloseCodes
 import jakarta.websocket.server.ServerEndpoint
-import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.runApplication
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 import org.springframework.stereotype.Component
-import org.springframework.web.socket.server.standard.ServerEndpointExporter
-import org.springframework.web.socket.server.standard.SpringConfigurator
-import java.util.*
-import org.springframework.context.ApplicationContext
-import org.springframework.context.ApplicationContextAware
-import es.unizar.urlshortener.*
-
-
 
 
 /**
@@ -74,7 +50,7 @@ interface UrlShortenerController {
     /**
      * Returns a QR code with the url identified by its [id].
      *
-     * **Note**: Delivery of use cases [CreateQRCodeUseCase].
+     * **Note**: Delivery of use cases [QRCodeUseCase].
      */
     fun qrCode(id: String, request: HttpServletRequest): ResponseEntity<Any>
 
@@ -119,14 +95,12 @@ class UrlShortenerControllerImpl(
     val redirectUseCase: RedirectUseCase,
     val logClickUseCase: LogClickUseCase,
     val createShortUrlUseCase: CreateShortUrlUseCase,
-    val createQRCodeUseCase: CreateQRCodeUseCase,
+    val createQRCodeUseCase: QRCodeUseCase,
     val createCSVUseCase : CreateCSVUseCase,
     val userAgentInfoUseCase: UserAgentInfoUseCase,
     val sendQR: SendQR
 ) : UrlShortenerController {
 
-    //Variables privadas 
-    private val parser = UserAgentService().loadParser()
     private val logger: Logger = LoggerFactory.getLogger(UrlShortenerControllerImpl::class.java)
 
     @GetMapping("/{id:(?!api|index).*}")

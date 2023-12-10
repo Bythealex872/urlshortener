@@ -48,7 +48,7 @@ class UrlShortenerControllerTest {
     private lateinit var createShortUrlUseCase: CreateShortUrlUseCase
 
     @MockBean
-    private lateinit var createQRCodeUseCase: CreateQRCodeUseCase
+    private lateinit var createQRCodeUseCase: QRCodeUseCase
 
     @MockBean
     private lateinit var createCSVUseCase: CreateCSVUseCase
