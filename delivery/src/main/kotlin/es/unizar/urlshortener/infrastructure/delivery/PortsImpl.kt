@@ -26,6 +26,9 @@ class HashServiceImpl : HashService {
     override fun hasUrl(url: String) = Hashing.murmur3_32_fixed().hashString(url, StandardCharsets.UTF_8).toString()
 }
 
+/**
+ * Implementation of the port [LinkToService].
+ */
 class LinkToImpl : LinkToService {
     override fun link(id: String) = linkTo<UrlShortenerControllerImpl> { redirectTo(id, null) }.toUri()
 }

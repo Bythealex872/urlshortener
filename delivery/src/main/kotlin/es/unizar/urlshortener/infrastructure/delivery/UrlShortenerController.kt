@@ -96,8 +96,7 @@ class UrlShortenerControllerImpl(
     val createShortUrlUseCase: CreateShortUrlUseCase,
     val createQRCodeUseCase: QRCodeUseCase,
     val createCSVUseCase : CreateCSVUseCase,
-    val userAgentInfoUseCase: UserAgentInfoUseCase,
-    val qrRequestService: QRRequestService
+    val userAgentInfoUseCase: UserAgentInfoUseCase
 ) : UrlShortenerController {
 
     private val logger: Logger = LoggerFactory.getLogger(UrlShortenerControllerImpl::class.java)
@@ -117,6 +116,7 @@ class UrlShortenerControllerImpl(
     override fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut> =
         createShortUrlUseCase.create(
             url = data.url,
+            qrRequest = data.qrRequest,
             data = ShortUrlProperties(
                 ip = request.remoteAddr,
                 sponsor = data.sponsor
@@ -126,11 +126,7 @@ class UrlShortenerControllerImpl(
             val linkCreate = { hash: String -> linkTo<UrlShortenerControllerImpl> { redirectTo(hash, null) }.toUri() }
 
             val url = linkCreate(it.hash)
-
-            if (data.qrRequest!!) {
-                qrRequestService.sendQRMessage(Pair(it.hash, url.toString()))
-            }
-            val qr = if(data.qrRequest) "$url/qr" else ""
+            val qr = if(data.qrRequest!!) "$url/qr" else ""
             val h = HttpHeaders().apply {
                 location = url
             }
@@ -147,7 +143,7 @@ class UrlShortenerControllerImpl(
     @GetMapping("/{id}/qr")
     override fun qrCode(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<ByteArrayResource> {
         val qrCodeResource = ByteArrayResource(createQRCodeUseCase.getQRCode(id))
-        logger.info("QR creado")
+        logger.info("QR pedido")
 
         val headers = HttpHeaders().apply {
             contentType = MediaType.IMAGE_PNG
@@ -198,28 +194,26 @@ class UrlShortenerControllerImpl(
     }
 
     private fun processCsvLine(line: Array<String>, request: HttpServletRequest): CsvOutput {
-        lateinit var create:ShortUrl
-        lateinit var urlRecortada : URI
-        var errorMessage :String?= "No Error"
         val uri = line[0].trim()
         val qrCodeIndicator = line[1].trim()
+        var errorMessage: String? = "No Error"
+        var urlRecortada: String? = null
+        var qrUrl: String? = null
+
         try {
-            create = createShortUrlUseCase.create(
-                    url = uri,
-                    data = ShortUrlProperties(ip = request.remoteAddr)
+            val create = createShortUrlUseCase.create(
+                url = uri,
+                qrRequest = qrCodeIndicator == "1",
+                data = ShortUrlProperties(ip = request.remoteAddr)
             )
-             urlRecortada = linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
-        }catch (e : Exception){
+            val uriObj = linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
+            urlRecortada = uriObj.toString()
+            qrUrl = if (qrCodeIndicator == "1") "$urlRecortada/qr" else "no_qr"
+        } catch (e: Exception) {
             errorMessage = e.message
         }
 
-
-        if (qrCodeIndicator == "1") {
-            qrRequestService.sendQRMessage(Pair(create.hash, urlRecortada.toString()))
-            return CsvOutput(uri, "$urlRecortada", "$urlRecortada/qr", "$errorMessage")
-        } else {
-            return CsvOutput(uri, "$urlRecortada", "no_qr", "$errorMessage")
-        }
+        return CsvOutput(uri, urlRecortada ?: "Error", qrUrl ?: "Error", errorMessage!!)
     }
 
 

@@ -46,6 +46,10 @@ interface HashService {
     fun hasUrl(url: String): String
 }
 
+interface LinkToService {
+    fun link(id: String) : URI
+}
+
 interface QRRequestService {
     fun sendQRMessage(p: Pair<String, String>)
 }
@@ -56,8 +60,4 @@ interface UserAgentRequestService {
 
 interface SafeBrowsingRequestService {
     fun sendSafeBrowsingMessage(p: Pair<String, String>)
-}
-
-interface LinkToService {
-    fun link(id: String) : URI
 }
