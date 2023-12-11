@@ -1,5 +1,7 @@
 package es.unizar.urlshortener.core
 
+import java.net.URI
+
 /**
  * [ClickRepositoryService] is the port to the repository that provides persistence to [Clicks][Click].
  */
@@ -54,4 +56,8 @@ interface UserAgentRequestService {
 
 interface SafeBrowsingRequestService {
     fun sendSafeBrowsingMessage(p: Pair<String, String>)
+}
+
+interface LinkToService {
+    fun link(id: String) : URI
 }

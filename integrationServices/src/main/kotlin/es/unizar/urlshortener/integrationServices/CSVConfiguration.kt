@@ -1,5 +1,8 @@
 package es.unizar.urlshortener.integrationServices
 
+import es.unizar.urlshortener.core.LinkToService
+import es.unizar.urlshortener.core.ShortUrlProperties
+import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import org.springframework.web.socket.server.standard.ServerEndpointExporter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -45,7 +48,9 @@ class WebSocketConfig{
 @Configuration
 @EnableIntegration
 @EnableScheduling
-class CSVCodeIntegrationConfiguration {
+class CSVCodeIntegrationConfiguration(
+    private val linkToService: LinkToService
+) {
 
     companion object {
         private const val CSV_CREATION_CORE_POOL_SIZE = 2
@@ -68,18 +73,19 @@ class CSVCodeIntegrationConfiguration {
     fun csvCreationChannel(): MessageChannel = ExecutorChannel(csvCreationExecutor())
 
     @Bean
-    fun csvFlow(/*createShortUrlUseCase: CreateShortUrlUseCase*/): IntegrationFlow =
+    fun csvFlow(createShortUrlUseCase: CreateShortUrlUseCase): IntegrationFlow =
             integrationFlow(csvCreationChannel()) {
         transform<Pair<String,Session >>{ payload ->
 
             logger.info("Debug")
-//           val parts = payload.first.split(",")
-//            val uri = parts[0].trim()
-//            //val qr = parts[1].trim()
-//            val create = createShortUrlUseCase.create(
-//                url = uri,
-//                data = ShortUrlProperties()
-//            )
+            val parts = payload.first.split(",")
+            val uri = parts[0].trim()
+            val qr = parts[1].trim()
+            val create = createShortUrlUseCase.create(
+                url = uri,
+                data = ShortUrlProperties()
+            )
+            val aa = linkToService.link(create.hash)
             payload.second.basicRemote.sendText("hola")
             true
         }

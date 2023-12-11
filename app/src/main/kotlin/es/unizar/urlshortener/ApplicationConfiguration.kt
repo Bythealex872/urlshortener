@@ -4,15 +4,13 @@ package es.unizar.urlshortener
 
 import es.unizar.urlshortener.core.usecases.*
 import es.unizar.urlshortener.infrastructure.delivery.HashServiceImpl
+import es.unizar.urlshortener.infrastructure.delivery.LinkToImpl
 import es.unizar.urlshortener.infrastructure.delivery.ValidatorServiceImpl
 import es.unizar.urlshortener.infrastructure.repositories.ClickEntityRepository
 import es.unizar.urlshortener.infrastructure.repositories.ClickRepositoryServiceImpl
 import es.unizar.urlshortener.infrastructure.repositories.ShortUrlEntityRepository
 import es.unizar.urlshortener.infrastructure.repositories.ShortUrlRepositoryServiceImpl
-import es.unizar.urlshortener.integrationServices.QRCodeIntegrationConfiguration
-import es.unizar.urlshortener.integrationServices.QRRequestGateway
-import es.unizar.urlshortener.integrationServices.SafeBrowsingConfiguration
-import es.unizar.urlshortener.integrationServices.SafeBrowsingServiceImpl
+import es.unizar.urlshortener.integrationServices.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -26,10 +24,13 @@ import org.springframework.context.annotation.Configuration
 class ApplicationConfiguration(
     @Autowired val shortUrlEntityRepository: ShortUrlEntityRepository,
     @Autowired val clickEntityRepository: ClickEntityRepository,
-    @Autowired val qrRequestImpl: QRRequestGateway
+    @Autowired val qrRequestImpl: QRRequestGateway,
 ) {
     @Bean
     fun qrRequestService() = qrRequestImpl
+
+    @Bean
+    fun linkToService() = LinkToImpl()
 
     @Bean
     fun clickRepositoryService() = ClickRepositoryServiceImpl(clickEntityRepository)
@@ -69,5 +70,8 @@ class ApplicationConfiguration(
 
     @Bean
     fun safeBrowsingIntegration() = SafeBrowsingConfiguration(shortUrlRepositoryService())
+
+    @Bean
+    fun csvIntegration() = CSVCodeIntegrationConfiguration(linkToService())
 
 }
