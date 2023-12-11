@@ -1,4 +1,4 @@
-package es.unizar.urlshortener
+package es.unizar.urlshortener.integrationServices
 
 import org.springframework.web.socket.server.standard.ServerEndpointExporter
 import org.springframework.context.annotation.Bean
@@ -7,17 +7,14 @@ import org.springframework.integration.channel.ExecutorChannel
 import org.springframework.integration.dsl.IntegrationFlow
 import org.springframework.integration.dsl.integrationFlow
 import org.springframework.messaging.MessageChannel
-import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import org.springframework.integration.config.EnableIntegration
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.web.socket.config.annotation.EnableWebSocket
-import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import java.util.concurrent.Executor
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 //import jakarta.websocket.*
-import es.unizar.urlshortener.core.ShortUrlProperties
 import jakarta.websocket.Session
 
 /* 
@@ -71,8 +68,8 @@ class CSVCodeIntegrationConfiguration {
     fun csvCreationChannel(): MessageChannel = ExecutorChannel(csvCreationExecutor())
 
     @Bean
-    fun csvFlow(/*createShortUrlUseCase: CreateShortUrlUseCase*/): IntegrationFlow = integrationFlow {
-        channel(csvCreationChannel())
+    fun csvFlow(/*createShortUrlUseCase: CreateShortUrlUseCase*/): IntegrationFlow =
+            integrationFlow(csvCreationChannel()) {
         transform<Pair<String,Session >>{ payload ->
 
             logger.info("Debug")

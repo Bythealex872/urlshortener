@@ -1,20 +1,32 @@
 package es.unizar.urlshortener.integrationServices
 
 import es.unizar.urlshortener.core.QRRequestService
-import org.springframework.beans.factory.annotation.Autowired
+import es.unizar.urlshortener.core.SafeBrowsingRequestService
+import es.unizar.urlshortener.core.UserAgentRequestService
+import jakarta.websocket.Session
 import org.springframework.integration.annotation.MessagingGateway
 import org.springframework.integration.annotation.Gateway
-import org.springframework.stereotype.Component
-@Component
-class QRRequestImpl : QRRequestService {
-    @Autowired
-    lateinit var qrRequestGateway: QRRequestGateway
-    override fun requestQRcreation(p: Pair<String, String>) {
-        qrRequestGateway.sendToQRChannel(p)
-    }
-}
+
 @MessagingGateway
-interface QRRequestGateway {
+interface QRRequestGateway : QRRequestService {
     @Gateway(requestChannel = "qrCreationChannel")
-    fun sendToQRChannel(p: Pair<String, String>)
+    override fun sendQRMessage(p: Pair<String, String>)
+}
+
+@MessagingGateway
+interface UserAgentRequestGateway : UserAgentRequestService {
+    @Gateway(requestChannel = "uaReturnChannel")
+    override fun sendUserAgentMessage(p: Pair<String, String>)
+}
+
+@MessagingGateway
+interface CSVRequestGateway {
+    @Gateway(requestChannel = "csvCreationChannel")
+    fun sendCSVMessage(p: Pair<String, Session>)
+}
+
+@MessagingGateway
+interface SafeBrowsingRequestGateway : SafeBrowsingRequestService {
+    @Gateway(requestChannel = "safeBrowsingChannel")
+    override fun sendSafeBrowsingMessage(p: Pair<String, String>)
 }

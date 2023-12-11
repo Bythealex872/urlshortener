@@ -1,4 +1,4 @@
-package es.unizar.urlshortener
+package es.unizar.urlshortener.integrationServices
 
 import es.unizar.urlshortener.core.ClickRepositoryService
 import org.springframework.context.annotation.Bean
@@ -11,7 +11,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import es.unizar.urlshortener.core.UserAgent
-import es.unizar.urlshortener.core.usecases.RedirectUseCase
 import es.unizar.urlshortener.core.usecases.UserAgentInfoUseCase
 import org.springframework.integration.annotation.ServiceActivator
 import org.springframework.integration.dsl.IntegrationFlow

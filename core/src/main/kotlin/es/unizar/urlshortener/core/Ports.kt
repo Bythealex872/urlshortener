@@ -45,5 +45,13 @@ interface HashService {
 }
 
 interface QRRequestService {
-    fun requestQRcreation(p: Pair<String, String>)
+    fun sendQRMessage(p: Pair<String, String>)
+}
+
+interface UserAgentRequestService {
+    fun sendUserAgentMessage(p: Pair<String, String>)
+}
+
+interface SafeBrowsingRequestService {
+    fun sendSafeBrowsingMessage(p: Pair<String, String>)
 }

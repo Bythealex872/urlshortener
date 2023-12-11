@@ -128,7 +128,7 @@ class UrlShortenerControllerImpl(
             val url = linkCreate(it.hash)
 
             if (data.qrRequest!!) {
-                qrRequestService.requestQRcreation(Pair(it.hash, url.toString()))
+                qrRequestService.sendQRMessage(Pair(it.hash, url.toString()))
             }
             val qr = if(data.qrRequest) "$url/qr" else ""
             val h = HttpHeaders().apply {
@@ -207,7 +207,7 @@ class UrlShortenerControllerImpl(
         val urlRecortada = linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
 
         if (qrCodeIndicator == "1") {
-            qrRequestService.requestQRcreation(Pair(create.hash, urlRecortada.toString()))
+            qrRequestService.sendQRMessage(Pair(create.hash, urlRecortada.toString()))
             return CsvOutput(uri, "$urlRecortada", "$urlRecortada/qr", "hola")
         } else {
             return CsvOutput(uri, "$urlRecortada", "no_qr", "hola")

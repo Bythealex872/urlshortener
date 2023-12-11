@@ -1,4 +1,4 @@
-package es.unizar.urlshortener
+package es.unizar.urlshortener.integrationServices
 
 import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import es.unizar.urlshortener.core.usecases.SafeBrowsingUseCase
@@ -58,8 +58,8 @@ class SafeBrowsingConfiguration(
 
 
     @Bean
-    fun safeBrowsingFlow(safeBrowsingUseCase: SafeBrowsingUseCase): IntegrationFlow = integrationFlow {
-        channel(safeBrowsingChannel())
+    fun safeBrowsingFlow(safeBrowsingUseCase: SafeBrowsingUseCase): IntegrationFlow =
+            integrationFlow(safeBrowsingChannel()) {
         filter<Pair<String, String>> { payload ->
             shortUrlRepository.findByKey(payload.first)?.properties?.safe == null
         }
@@ -72,7 +72,7 @@ class SafeBrowsingConfiguration(
     }
 
     @ServiceActivator(inputChannel = "safeUpdateChannel")
-    fun updateDatabase(payload:SafeBrowsingPayload) {
+    fun updateDatabase(payload: SafeBrowsingPayload) {
         shortUrlRepository.updateSafeStatusByHash(payload.id, payload.isSafe)
         logger.info("Safe actualizado para ${payload.id}")
     }

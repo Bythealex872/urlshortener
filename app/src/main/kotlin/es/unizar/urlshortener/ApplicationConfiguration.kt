@@ -10,7 +10,8 @@ import es.unizar.urlshortener.infrastructure.repositories.ClickRepositoryService
 import es.unizar.urlshortener.infrastructure.repositories.ShortUrlEntityRepository
 import es.unizar.urlshortener.infrastructure.repositories.ShortUrlRepositoryServiceImpl
 import es.unizar.urlshortener.integrationServices.QRCodeIntegrationConfiguration
-import es.unizar.urlshortener.integrationServices.QRRequestImpl
+import es.unizar.urlshortener.integrationServices.QRRequestGateway
+import es.unizar.urlshortener.integrationServices.SafeBrowsingConfiguration
 import es.unizar.urlshortener.integrationServices.SafeBrowsingServiceImpl
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
@@ -24,10 +25,11 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class ApplicationConfiguration(
     @Autowired val shortUrlEntityRepository: ShortUrlEntityRepository,
-    @Autowired val clickEntityRepository: ClickEntityRepository
+    @Autowired val clickEntityRepository: ClickEntityRepository,
+    @Autowired val qrRequestImpl: QRRequestGateway
 ) {
     @Bean
-    fun qrRequestService() = QRRequestImpl()
+    fun qrRequestService() = qrRequestImpl
 
     @Bean
     fun clickRepositoryService() = ClickRepositoryServiceImpl(clickEntityRepository)

@@ -5,6 +5,7 @@ plugins {
 dependencies {
     implementation(project(":core"))
     implementation("org.springframework.boot:spring-boot-starter-integration")
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("com.google.zxing:core:3.4.1")
     implementation("com.google.zxing:javase:3.4.1")
     implementation("com.google.apis:google-api-services-safebrowsing:v4-rev44-1.23.0")
