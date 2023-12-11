@@ -173,7 +173,7 @@ class UrlShortenerControllerImpl(
 
             val lines = csvReader.readAll()
             if (lines.any { it.size != 2}) {
-                //return ResponseEntity(ErrorResponse("Error en el formato del archivo CSV"), HttpStatus.BAD_REQUEST)
+                return ResponseEntity("Error en el formato del archivo CSV", HttpStatus.BAD_REQUEST)
             }
             for (line in lines) {
                 if (line.size >= 2) {
@@ -198,19 +198,27 @@ class UrlShortenerControllerImpl(
     }
 
     private fun processCsvLine(line: Array<String>, request: HttpServletRequest): CsvOutput {
+        lateinit var create:ShortUrl
+        lateinit var urlRecortada : URI
+        var errorMessage :String?= "No Error"
         val uri = line[0].trim()
         val qrCodeIndicator = line[1].trim()
-        val create = createShortUrlUseCase.create(
-                url = uri,
-                data = ShortUrlProperties(ip = request.remoteAddr)
-        )
-        val urlRecortada = linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
+        try {
+            create = createShortUrlUseCase.create(
+                    url = uri,
+                    data = ShortUrlProperties(ip = request.remoteAddr)
+            )
+             urlRecortada = linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
+        }catch (e : Exception){
+            errorMessage = e.message
+        }
+
 
         if (qrCodeIndicator == "1") {
             qrRequestService.sendQRMessage(Pair(create.hash, urlRecortada.toString()))
-            return CsvOutput(uri, "$urlRecortada", "$urlRecortada/qr", "hola")
+            return CsvOutput(uri, "$urlRecortada", "$urlRecortada/qr", "$errorMessage")
         } else {
-            return CsvOutput(uri, "$urlRecortada", "no_qr", "hola")
+            return CsvOutput(uri, "$urlRecortada", "no_qr", "$errorMessage")
         }
     }
 
@@ -218,8 +226,8 @@ class UrlShortenerControllerImpl(
 
 
 
+     
     /* 
-
     private fun shortenUri(uri: String): Pair<String, String> {
     // Analiza la URI proporcionada para obtener sus componentes
         val parsedUri = URI(uri)
@@ -241,8 +249,8 @@ class UrlShortenerControllerImpl(
                 "" to "debe ser una URI http o https"
             }
         }
-    }
-    */
+    }*/
+    
 
     @GetMapping("/api/link/{id}")
     override fun returnUserAgentInfo(@PathVariable id: String): ResponseEntity<Map<String, Any>>
@@ -276,7 +284,7 @@ class Luis : BulkEndpoint {
         logger.info("Message $message")
 
        val sendCsvBean = SpringContext.getBean(SendCSV::class.java)
-        sendCsvBean.sendCSV(Pair("$message", session))
+        sendCsvBean.sendCSV(Pair(message, session))
     }
 
     @OnError
