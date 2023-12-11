@@ -49,7 +49,7 @@ interface QRRequestService {
 }
 
 interface UserAgentRequestService {
-    fun sendUserAgentMessage(p: Pair<String, String>)
+    fun sendUserAgentMessage(p: Triple<String, String, String?>)
 }
 
 interface SafeBrowsingRequestService {

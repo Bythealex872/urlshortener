@@ -16,7 +16,7 @@ interface QRRequestGateway : QRRequestService {
 @MessagingGateway
 interface UserAgentRequestGateway : UserAgentRequestService {
     @Gateway(requestChannel = "uaReturnChannel")
-    override fun sendUserAgentMessage(p: Pair<String, String>)
+    override fun sendUserAgentMessage(p: Triple<String, String,String?>)
 }
 
 @MessagingGateway

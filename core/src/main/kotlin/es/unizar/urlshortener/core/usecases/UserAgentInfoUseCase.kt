@@ -14,7 +14,7 @@ private const val RETRYAFTER = 403
  * Given a key returns user agent information.
  */
 interface UserAgentInfoUseCase {
-    fun getUserAgentInfoByKey(key: String): Map<String, Any>?
+    fun getUserAgentInfoByKey(key: String): Map<String, Any>
     fun returnUserAgentInfo(uaString: String?): UserAgent?
 
 }
@@ -27,7 +27,7 @@ class UserAgentInfoUseCaseImpl(
 ) : UserAgentInfoUseCase {
     private val parser = UserAgentService().loadParser()
 
-    override fun getUserAgentInfoByKey(key: String): Map<String, Any>? {
+    override fun getUserAgentInfoByKey(key: String): Map<String, Any>{
         val shortUrl = shortUrlRepository.findByKey(key) ?: throw RedirectionNotFound(key)
         // Verifica si la URI recortada no existe
         if(!shortUrl.properties.safe){ // no valida, posible spam
