@@ -10,12 +10,14 @@ import com.google.api.services.safebrowsing.model.ThreatEntry
 import com.google.api.services.safebrowsing.model.ThreatInfo
 import java.util.*
 import java.util.Properties
+import java.io.IOException
 import es.unizar.urlshortener.core.SafeBrowsingService
+import org.slf4j.LoggerFactory
 /**
  * Verify if the url is safe with Google Safe Browsing.
  */
 
-private const val CONFIG = "config.properties"
+//private const val CONFIG = "config.properties"
 val GOOGLE_JSON_FACTORY: JacksonFactory = JacksonFactory.getDefaultInstance()
 val GOOGLE_THREAT_TYPES = listOf("MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE",
     "POTENTIALLY_HARMFUL_APPLICATION")
@@ -23,18 +25,27 @@ val GOOGLE_PLATFORM_TYPES = listOf("ANY_PLATFORM")
 val GOOGLE_THREAT_ENTRYTYPES = listOf("URL")
 var httpTransport: NetHttpTransport? = null
 
-class SafeBrowsingServiceImpl() : SafeBrowsingService {
+class SafeBrowsingServiceImpl : SafeBrowsingService {
 
     companion object {
         private val properties: Properties = loadProperties()
 
         private fun loadProperties(): Properties {
             val properties = Properties()
+            val logger = LoggerFactory.getLogger(SafeBrowsingServiceImpl::class.java)
+
             try {
-                properties.load(SafeBrowsingServiceImpl::class.java.getResourceAsStream("/config.properties"))
-            } catch (e: Exception) {
-                e.printStackTrace()
+                SafeBrowsingServiceImpl::class.java.getResourceAsStream("/config.properties").use { inputStream ->
+                    if (inputStream != null) {
+                        properties.load(inputStream)
+                    } else {
+                        logger.error("Unable to find 'config.properties'")
+                    }
+                }
+            } catch (e: IOException) {
+                logger.error("Error loading properties from 'config.properties'", e)
             }
+
             return properties
         }
 

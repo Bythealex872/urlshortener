@@ -1,4 +1,4 @@
-@file:Suppress("WildcardImport")
+@file:Suppress("WildcardImport", "LongParameterList")
 
 package es.unizar.urlshortener.infrastructure.delivery
 
@@ -16,7 +16,6 @@ import java.net.URI
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.bind.annotation.RequestPart
-import com.blueconic.browscap.UserAgentService
 import es.unizar.urlshortener.core.*
 import com.opencsv.*
 import com.opencsv.exceptions.CsvException
@@ -178,31 +177,8 @@ class UrlShortenerControllerImpl(
             }
             for (line in lines) {
                 if (line.size >= 2) {
-                    val uri = line[0].trim()
-                    val qrCodeIndicator = line[1].trim()
-                    // Rest of the code remains the same
-                    val create = createShortUrlUseCase.create(
-                        url = uri,
-                        data = ShortUrlProperties(
-                            ip = request.remoteAddr,
-                        )
-                    )
-                    if(qrCodeIndicator == "1"){
-
-                        val urlRecortada = linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
-                        qrRequestService.requestQRcreation(Pair(create.hash, urlRecortada.toString()))
-                        csvOutputList.add(CsvOutput(uri, "$urlRecortada", "$urlRecortada/qr","hola"))
-                    }
-                    else{
-
-                        val urlRecortada = linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
-                        csvOutputList.add(CsvOutput(uri, "$urlRecortada", "no_qr","hola"))
-                    }
-
-
+                    csvOutputList.add(processCsvLine(line, request))
                 } else {
-                    // Handle the case where the CSV line does not have enough fields
-                    // You can log an error, skip the line, or handle it based on your requirements
                     logger.warn("Invalid CSV line: $line")
                 }
             }
@@ -221,9 +197,26 @@ class UrlShortenerControllerImpl(
         } 
     }
 
-                
+    private fun processCsvLine(line: Array<String>, request: HttpServletRequest): CsvOutput {
+        val uri = line[0].trim()
+        val qrCodeIndicator = line[1].trim()
+        val create = createShortUrlUseCase.create(
+                url = uri,
+                data = ShortUrlProperties(ip = request.remoteAddr)
+        )
+        val urlRecortada = linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
 
-  
+        if (qrCodeIndicator == "1") {
+            qrRequestService.requestQRcreation(Pair(create.hash, urlRecortada.toString()))
+            return CsvOutput(uri, "$urlRecortada", "$urlRecortada/qr", "hola")
+        } else {
+            return CsvOutput(uri, "$urlRecortada", "no_qr", "hola")
+        }
+    }
+
+
+
+
 
     /* 
 
@@ -264,7 +257,7 @@ interface BulkEndpoint {
 
 @Component
 @ServerEndpoint("/api/bulk-fast")
-class Luis() : BulkEndpoint {
+class Luis : BulkEndpoint {
     private val logger: Logger = LoggerFactory.getLogger(Luis::class.java)
 
     @OnOpen
@@ -283,7 +276,7 @@ class Luis() : BulkEndpoint {
         logger.info("Message $message")
 
        val sendCsvBean = SpringContext.getBean(SendCSV::class.java)
-        sendCsvBean.SendCSV(Pair("$message", session))
+        sendCsvBean.sendCSV(Pair("$message", session))
     }
 
     @OnError

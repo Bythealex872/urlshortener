@@ -1,17 +1,16 @@
 package es.unizar.urlshortener.integrationServices
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class SafeBrowsingTest {
     private lateinit var safeBrowsing : SafeBrowsingServiceImpl
 
 
-    @BeforeEach
-    fun setup() {
-
-    }
+//    @BeforeEach
+//    fun setup() {
+//
+//    }
     @Test
     fun  `safe browser api return the malware testing url `() {
         // Prepara una instancia de SafeBrowsingImp
