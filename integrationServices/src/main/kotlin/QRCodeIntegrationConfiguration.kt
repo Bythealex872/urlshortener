@@ -1,4 +1,4 @@
-package es.unizar.urlshortener
+package es.unizar.urlshortener.integrationServices
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

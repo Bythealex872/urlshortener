@@ -57,7 +57,7 @@ class CSVCodeIntegrationConfiguration {
         private const val CSV_CREATION_THREAD_NAME = "csv-update-"
     }
 
-//    private val logger: Logger = LoggerFactory.getLogger(CSVCodeIntegrationConfiguration::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(CSVCodeIntegrationConfiguration::class.java)
 
     fun csvCreationExecutor(): Executor = ThreadPoolTaskExecutor().apply {
         corePoolSize = CSV_CREATION_CORE_POOL_SIZE
@@ -70,24 +70,24 @@ class CSVCodeIntegrationConfiguration {
     @Bean
     fun csvCreationChannel(): MessageChannel = ExecutorChannel(csvCreationExecutor())
 
-//    @Bean
-//    fun csvFlow(createShortUrlUseCase: CreateShortUrlUseCase): IntegrationFlow = integrationFlow {
-//        channel(csvCreationChannel())
-//        transform<Pair<String,Session >>{ payload ->
-//
-//            logger.info("Debug")
+    @Bean
+    fun csvFlow(/*createShortUrlUseCase: CreateShortUrlUseCase*/): IntegrationFlow = integrationFlow {
+        channel(csvCreationChannel())
+        transform<Pair<String,Session >>{ payload ->
+
+            logger.info("Debug")
 //           val parts = payload.first.split(",")
 //            val uri = parts[0].trim()
-//            val qr = parts[1].trim()
+//            //val qr = parts[1].trim()
 //            val create = createShortUrlUseCase.create(
 //                url = uri,
 //                data = ShortUrlProperties()
 //            )
-//            payload.second.basicRemote.sendText("hola")
-//            true
-//        }
-//
-//    }
+            payload.second.basicRemote.sendText("hola")
+            true
+        }
+
+    }
 }
 
 

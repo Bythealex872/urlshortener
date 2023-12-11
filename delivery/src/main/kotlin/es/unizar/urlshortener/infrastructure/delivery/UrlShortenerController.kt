@@ -98,7 +98,7 @@ class UrlShortenerControllerImpl(
     val createQRCodeUseCase: QRCodeUseCase,
     val createCSVUseCase : CreateCSVUseCase,
     val userAgentInfoUseCase: UserAgentInfoUseCase,
-    val sendQR: SendQR
+    val qrRequestService: QRRequestService
 ) : UrlShortenerController {
 
     private val logger: Logger = LoggerFactory.getLogger(UrlShortenerControllerImpl::class.java)
@@ -129,7 +129,7 @@ class UrlShortenerControllerImpl(
             val url = linkCreate(it.hash)
 
             if (data.qrRequest!!) {
-                sendQR.sendQR(Pair(it.hash, url.toString()))
+                qrRequestService.requestQRcreation(Pair(it.hash, url.toString()))
             }
             val qr = if(data.qrRequest) "$url/qr" else ""
             val h = HttpHeaders().apply {
@@ -190,7 +190,7 @@ class UrlShortenerControllerImpl(
                     if(qrCodeIndicator == "1"){
 
                         val urlRecortada = linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
-                        sendQR.sendQR(Pair(create.hash, urlRecortada.toString()))
+                        qrRequestService.requestQRcreation(Pair(create.hash, urlRecortada.toString()))
                         csvOutputList.add(CsvOutput(uri, "$urlRecortada", "$urlRecortada/qr","hola"))
                     }
                     else{

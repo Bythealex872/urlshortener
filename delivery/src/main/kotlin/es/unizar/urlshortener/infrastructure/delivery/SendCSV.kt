@@ -9,6 +9,6 @@ import jakarta.websocket.server.ServerEndpoint
 @MessagingGateway
 interface SendCSV {
 
-    @Gateway(requestChannel = "CSVCreationChannel")
+    @Gateway(requestChannel = "csvCreationChannel")
     fun SendCSV(p: Pair<String, Session>)
 }

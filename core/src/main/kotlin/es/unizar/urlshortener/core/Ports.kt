@@ -43,3 +43,7 @@ interface SafeBrowsingService {
 interface HashService {
     fun hasUrl(url: String): String
 }
+
+interface QRRequestService {
+    fun requestQRcreation(p: Pair<String, String>)
+}

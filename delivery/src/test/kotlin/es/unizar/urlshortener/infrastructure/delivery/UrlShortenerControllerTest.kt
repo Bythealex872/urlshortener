@@ -55,9 +55,9 @@ class UrlShortenerControllerTest {
 
     @MockBean
     private lateinit var userAgentInfoUseCase: UserAgentInfoUseCase
-    
+
     @MockBean
-    private lateinit var sendQR: SendQR
+    private lateinit var qrRequestService: QRRequestService
 
     @MockBean
     private lateinit var sendSafeBrowser: SendSafeBrowser
