@@ -13,43 +13,19 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 import java.net.URI
-import javax.imageio.ImageIO
-import java.io.ByteArrayOutputStream
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.web.multipart.MultipartFile
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
-import org.springframework.web.client.RestTemplate
-import org.springframework.web.util.UriComponentsBuilder
-import com.blueconic.browscap.Capabilities
-import com.blueconic.browscap.UserAgentParser
 import com.blueconic.browscap.UserAgentService
 import es.unizar.urlshortener.core.*
 import com.opencsv.*
 import com.opencsv.exceptions.CsvException
-import com.opencsv.exceptions.CsvValidationException
 import es.unizar.urlshortener.core.usecases.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.messaging.simp.SimpMessagingTemplate
 import jakarta.websocket.*
-import jakarta.websocket.CloseReason.CloseCodes
 import jakarta.websocket.server.ServerEndpoint
-import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.runApplication
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 import org.springframework.stereotype.Component
-import org.springframework.web.socket.server.standard.ServerEndpointExporter
-import org.springframework.web.socket.server.standard.SpringConfigurator
-import java.util.*
-import org.springframework.context.ApplicationContext
-import org.springframework.context.ApplicationContextAware
-import es.unizar.urlshortener.*
-
-
 
 
 /**
@@ -74,11 +50,11 @@ interface UrlShortenerController {
     /**
      * Returns a QR code with the url identified by its [id].
      *
-     * **Note**: Delivery of use cases [CreateQRCodeUseCase].
+     * **Note**: Delivery of use cases [QRCodeUseCase].
      */
     fun qrCode(id: String, request: HttpServletRequest): ResponseEntity<Any>
 
-    fun processCsvFile(@RequestPart("file") file: MultipartFile,request: HttpServletRequest): ResponseEntity<String>
+    fun processCsvFile(@RequestPart("file") file: MultipartFile,request: HttpServletRequest): ResponseEntity<Any>
     
     /**
     * Returns the user agent information from the map.
@@ -119,16 +95,12 @@ class UrlShortenerControllerImpl(
     val redirectUseCase: RedirectUseCase,
     val logClickUseCase: LogClickUseCase,
     val createShortUrlUseCase: CreateShortUrlUseCase,
-    val createQRCodeUseCase: CreateQRCodeUseCase,
+    val createQRCodeUseCase: QRCodeUseCase,
     val createCSVUseCase : CreateCSVUseCase,
     val userAgentInfoUseCase: UserAgentInfoUseCase,
-    val shortUrlRepository: ShortUrlRepositoryService,
-    val sendQR: SendQR,
-    val rateLimiter: RateLimiter
+    val sendQR: SendQR
 ) : UrlShortenerController {
 
-    //Variables privadas 
-    private val parser = UserAgentService().loadParser()
     private val logger: Logger = LoggerFactory.getLogger(UrlShortenerControllerImpl::class.java)
 
     @GetMapping("/{id:(?!api|index).*}")
@@ -171,45 +143,24 @@ class UrlShortenerControllerImpl(
 
     @GetMapping("/{id}/qr")
     override fun qrCode(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Any> {
-    
-        val clientId = request.remoteAddr
-        if (rateLimiter.isLimitExceeded(clientId)) {
-            val retryAfterMillis = rateLimiter.timeToNextRequest(clientId)
-            logger.info((retryAfterMillis / 1000).toString())
-            val headers = HttpHeaders().apply {
-                set("Retry-After", (retryAfterMillis / 1000).toString())
-            }
-            return ResponseEntity(ErrorResponse("Demasiadas peticiones"), headers
-                , HttpStatus.TOO_MANY_REQUESTS)
-        } else {
-            val url = shortUrlRepository.findByKey(id)
+        val qrCodeResource = ByteArrayResource(createQRCodeUseCase.getQRCode(id))
+        logger.info("QR creado")
 
-            return when {
-                url == null -> ResponseEntity(ErrorResponse("URL no encontrada"), HttpStatus.NOT_FOUND)
-                url.properties.qr == null -> ResponseEntity(ErrorResponse("Código QR no disponible")
-                    , HttpStatus.BAD_REQUEST)
-                else -> {
-                    val qrCodeResource = ByteArrayResource(url.properties.qr!!)
-                    logger.info("QR creado")
-
-                    val headers = HttpHeaders().apply {
-                        contentType = MediaType.IMAGE_PNG
-                        cacheControl = "no-cache, no-store, must-revalidate"
-                        pragma = "no-cache"
-                        expires = 0
-                    }
-
-                    ResponseEntity(qrCodeResource, headers, HttpStatus.OK)
-                }
-            }
+        val headers = HttpHeaders().apply {
+            contentType = MediaType.IMAGE_PNG
+            cacheControl = "no-cache, no-store, must-revalidate"
+            pragma = "no-cache"
+            expires = 0
         }
+
+        return ResponseEntity(qrCodeResource, headers, HttpStatus.OK)
     }
 
     @PostMapping("/api/bulk", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     override fun processCsvFile(
         @RequestPart("file") file: MultipartFile,
         request: HttpServletRequest
-    ): ResponseEntity<String> {
+    ): ResponseEntity<Any> {
         try {
             val csvOutputList = mutableListOf<CsvOutput>()
             val csvParser = CSVParserBuilder().build()

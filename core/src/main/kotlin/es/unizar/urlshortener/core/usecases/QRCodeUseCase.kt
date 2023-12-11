@@ -1,7 +1,6 @@
 package es.unizar.urlshortener.core.usecases
 
-import es.unizar.urlshortener.core.RedirectionNotFound
-import es.unizar.urlshortener.core.ShortUrlRepositoryService
+import es.unizar.urlshortener.core.*
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 import com.google.zxing.EncodeHintType
@@ -10,17 +9,35 @@ import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 import java.io.ByteArrayOutputStream
 
-interface CreateQRCodeUseCase {
+interface QRCodeUseCase {
     fun createQRCode(id: String): ByteArray
+    fun getQRCode(id: String): ByteArray
 }
 
 /**
- * Implementation of [CreateQRCodeUseCase].
+ * Implementation of [QRCodeUseCase].
  */
-class CreateQRCodeUseCaseImpl : CreateQRCodeUseCase {
+class QRCodeUseCaseImpl(
+    private val shortUrlRepository: ShortUrlRepositoryService,
+) : QRCodeUseCase {
+    
     override fun createQRCode(id: String): ByteArray { 
         val qrCodeImage = generateQrCodeImage(id)
         return convertToByteArray(qrCodeImage)
+    }
+
+    override fun getQRCode(id: String): ByteArray {
+        val shortUrl = shortUrlRepository.findByKey(id) ?: throw RedirectionNotFound(id)
+
+        // Verifica si la URI recortada no existe
+        if(!shortUrl.properties.safe || shortUrl.properties.qr == null){
+            throw RetryAfterException()
+        }
+        if(shortUrl.redirection.mode != 307){
+            throw RedirectionForbidden(id)
+        }
+
+        return shortUrl.properties.qr
     }
 
     companion object {

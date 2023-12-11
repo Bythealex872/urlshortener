@@ -1,27 +1,17 @@
 package es.unizar.urlshortener
 
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.integration.channel.ExecutorChannel
 import org.springframework.integration.dsl.IntegrationFlow
 import org.springframework.integration.dsl.integrationFlow
 import org.springframework.messaging.MessageChannel
-import org.springframework.integration.channel.PublishSubscribeChannel
-import org.springframework.integration.annotation.MessagingGateway
 import org.springframework.integration.annotation.ServiceActivator
-import org.springframework.integration.annotation.Gateway
-import org.springframework.stereotype.Component
-import org.springframework.scheduling.annotation.Scheduled
-import es.unizar.urlshortener.core.usecases.CreateQRCodeUseCase
+import es.unizar.urlshortener.core.usecases.QRCodeUseCase
 import org.springframework.integration.config.EnableIntegration
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.web.socket.config.annotation.EnableWebSocket
-import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker
-import org.springframework.web.socket.config.annotation.WebSocketConfigurer
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import java.util.concurrent.Executor
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
@@ -72,7 +62,7 @@ class QRCodeIntegrationConfiguration(
     fun qrUpdateChannel(): MessageChannel = ExecutorChannel(qrUpdateExecutor())
 
     @Bean
-    fun qrFlow(createQRCodeUseCase: CreateQRCodeUseCase): IntegrationFlow = integrationFlow(qrCreationChannel()) {
+    fun qrFlow(createQRCodeUseCase: QRCodeUseCase): IntegrationFlow = integrationFlow(qrCreationChannel()) {
         filter<Pair<String, String>> { payload ->
             shortUrlRepository.findByKey(payload.first)?.properties?.qr == null
         }
