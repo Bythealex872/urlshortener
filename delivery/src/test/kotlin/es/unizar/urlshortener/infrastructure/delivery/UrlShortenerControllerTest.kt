@@ -207,7 +207,7 @@ class UrlShortenerControllerTest {
         Assertions.assertTrue(true)
     }
 
-/*
+
    @Test
     fun `processCsvFile returns a bad request when CSV format is invalid`() {
         val csvContent = "url1,1,extraColumn\nurl2,0\n"
@@ -220,7 +220,7 @@ class UrlShortenerControllerTest {
         )
        .andExpect(status().isBadRequest())
     }
-*/
+
     @Test
     fun `return User-Agent info returns info when the key exists`() {
         val key = "someKey"

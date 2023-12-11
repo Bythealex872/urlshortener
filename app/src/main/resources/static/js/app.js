@@ -127,7 +127,9 @@ function processCSV(file) {
         const csvData = event.target.result.split('\n');
         csvData.forEach((line) => {
             console.log(line);
-            sendMessage(line);
+            if (line !== null && line !== "" && line !== undefined) {
+                sendMessage(line);
+            }
         });
     };
 
