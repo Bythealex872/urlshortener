@@ -51,7 +51,7 @@ interface UrlShortenerController {
      *
      * **Note**: Delivery of use cases [QRCodeUseCase].
      */
-    fun qrCode(id: String, request: HttpServletRequest): ResponseEntity<Any>
+    fun qrCode(id: String, request: HttpServletRequest): ResponseEntity<ByteArrayResource>
 
     fun processCsvFile(@RequestPart("file") file: MultipartFile,request: HttpServletRequest): ResponseEntity<Any>
     
@@ -145,7 +145,7 @@ class UrlShortenerControllerImpl(
         }
 
     @GetMapping("/{id}/qr")
-    override fun qrCode(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Any> {
+    override fun qrCode(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<ByteArrayResource> {
         val qrCodeResource = ByteArrayResource(createQRCodeUseCase.getQRCode(id))
         logger.info("QR creado")
 
@@ -254,7 +254,7 @@ class UrlShortenerControllerImpl(
 
     @GetMapping("/api/link/{id}")
     override fun returnUserAgentInfo(@PathVariable id: String): ResponseEntity<Map<String, Any>>
-        = ResponseEntity.ok(userAgentInfoUseCase.getUserAgentInfoByKey(id));
+        = ResponseEntity.ok(userAgentInfoUseCase.getUserAgentInfoByKey(id))
 }
 interface BulkEndpoint {
     fun onOpen(session: Session)

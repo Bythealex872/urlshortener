@@ -1,5 +1,8 @@
 package es.unizar.urlshortener.integrationServices
 
+import es.unizar.urlshortener.core.LinkToService
+import es.unizar.urlshortener.core.ShortUrlProperties
+import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCaseImpl
 import org.springframework.web.socket.server.standard.ServerEndpointExporter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -45,12 +48,15 @@ class WebSocketConfig{
 @Configuration
 @EnableIntegration
 @EnableScheduling
-class CSVCodeIntegrationConfiguration {
+class CSVCodeIntegrationConfiguration(
+        private val linkToService: LinkToService,
+
+) {
 
     companion object {
-        private const val CSV_CREATION_CORE_POOL_SIZE = 2
-        private const val CSV_CREATION_MAX_POOL_SIZE = 5
-        private const val CSV_CREATION_QUEUE_CAPACITY = 25
+        private const val CSV_CREATION_CORE_POOL_SIZE = 1
+        private const val CSV_CREATION_MAX_POOL_SIZE = 1
+        private const val CSV_CREATION_QUEUE_CAPACITY = 50
         private const val CSV_CREATION_THREAD_NAME = "csv-update-"
     }
 
@@ -68,22 +74,29 @@ class CSVCodeIntegrationConfiguration {
     fun csvCreationChannel(): MessageChannel = ExecutorChannel(csvCreationExecutor())
 
     @Bean
-    fun csvFlow(/*createShortUrlUseCase: CreateShortUrlUseCase*/): IntegrationFlow =
-            integrationFlow(csvCreationChannel()) {
-        transform<Pair<String,Session >>{ payload ->
+    fun csvFlow(createShortUrlUseCase: CreateShortUrlUseCaseImpl): IntegrationFlow = integrationFlow(csvCreationChannel()) {
+        handle<Pair<String, Session>> { payload, _ ->
+            try {
+                val (uri, session) = payload
+                logger.info("Procesando URI: $uri")
+                val parts = payload.first.split(",")
+                val trimmedUri = parts[0].trim()
+                // Crear URL corta
+                val create = createShortUrlUseCase.create(
+                        url = trimmedUri,
+                        data = ShortUrlProperties()
+                )
 
-            logger.info("Debug")
-//           val parts = payload.first.split(",")
-//            val uri = parts[0].trim()
-//            //val qr = parts[1].trim()
-//            val create = createShortUrlUseCase.create(
-//                url = uri,
-//                data = ShortUrlProperties()
-//            )
-            payload.second.basicRemote.sendText("hola")
-            true
+                // Obtener el enlace
+                val shortUrl = linkToService.link(create.hash).toString()
+
+                // Enviar mensaje a través de la sesión WebSocket
+                session.basicRemote.sendText(shortUrl)
+            } catch (e: Exception) {
+                logger.error("Error al procesar el mensaje: ${e.message}", e)
+                // Manejo adicional de excepciones si es necesario
+            }
         }
-
     }
 }
 
