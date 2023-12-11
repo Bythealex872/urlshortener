@@ -38,7 +38,7 @@ interface UrlShortenerController {
      *
      * **Note**: Delivery of use cases [RedirectUseCase] and [LogClickUseCase].
      */
-    fun redirectTo(id: String, request: HttpServletRequest): ResponseEntity<Unit>
+    fun redirectTo(id: String, request: HttpServletRequest?): ResponseEntity<Unit>
 
     /**
      * Creates a short url from details provided in [data].
@@ -104,13 +104,14 @@ class UrlShortenerControllerImpl(
     private val logger: Logger = LoggerFactory.getLogger(UrlShortenerControllerImpl::class.java)
 
     @GetMapping("/{id:(?!api|index).*}")
-    override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> =
-        redirectUseCase.redirectTo(id, request.remoteAddr, request.getHeader("User-Agent")).let {
-            logger.info("Redirección creada creada")
-            val headers = HttpHeaders()
-            headers.location = URI.create(it.target)
-            ResponseEntity<Unit>(headers, HttpStatus.valueOf(it.mode))
-        }
+    override fun redirectTo(@PathVariable id: String, request: HttpServletRequest?): ResponseEntity<Unit> =
+    redirectUseCase.redirectTo(id, request!!.remoteAddr, request.getHeader("User-Agent")).let {
+        logger.info("Redirección creada creada ${request.remoteAddr}")
+        val headers = HttpHeaders()
+        headers.location = URI.create(it.target)
+        ResponseEntity<Unit>(headers, HttpStatus.valueOf(it.mode))
+    }
+
 
 
     @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE])
@@ -123,11 +124,14 @@ class UrlShortenerControllerImpl(
             )
         ).let {
             logger.info("URL creada")
-            val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
+            val linkCreate = { hash: String -> linkTo<UrlShortenerControllerImpl> { redirectTo(hash, null) }.toUri() }
+
+            val url = linkCreate(it.hash)
+
             if (data.qrRequest!!) {
                 sendQR.sendQR(Pair(it.hash, url.toString()))
             }
-            val qr = if(data.qrRequest!!) "$url/qr" else ""
+            val qr = if(data.qrRequest) "$url/qr" else ""
             val h = HttpHeaders().apply {
                 location = url
             }

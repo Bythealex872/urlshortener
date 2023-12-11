@@ -1,13 +1,18 @@
 package es.unizar.urlshortener.core.usecases
 
-import es.unizar.urlshortener.core.*
+import es.unizar.urlshortener.core.RedirectionNotFound
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
+import es.unizar.urlshortener.core.RedirectionForbidden
+import es.unizar.urlshortener.core.RetryAfterException
+import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 import java.io.ByteArrayOutputStream
+
+private const val CORRECTO = 307
 
 interface QRCodeUseCase {
     fun createQRCode(id: String): ByteArray
@@ -18,7 +23,7 @@ interface QRCodeUseCase {
  * Implementation of [QRCodeUseCase].
  */
 class QRCodeUseCaseImpl(
-    private val shortUrlRepository: ShortUrlRepositoryService,
+        private val shortUrlRepository: ShortUrlRepositoryService,
 ) : QRCodeUseCase {
     
     override fun createQRCode(id: String): ByteArray { 
@@ -33,7 +38,7 @@ class QRCodeUseCaseImpl(
         if(!shortUrl.properties.safe || shortUrl.properties.qr == null){
             throw RetryAfterException()
         }
-        if(shortUrl.redirection.mode != 307){
+        if(shortUrl.redirection.mode != CORRECTO){
             throw RedirectionForbidden(id)
         }
 

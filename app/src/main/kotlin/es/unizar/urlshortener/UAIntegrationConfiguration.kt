@@ -82,7 +82,8 @@ class UAIntegrationConfiguration(
     }
     @ServiceActivator(inputChannel = "uaUpdateChannel")
     fun updateDatabase(payload: UAPayload) {
-        payload.ua.browser?.let { payload.ua.platform?.let { it1 -> clickRepository.updateUAByIp(payload.id, it, it1) } }
+        payload.ua.browser?.let {
+            payload.ua.platform?.let { it1 -> clickRepository.updateUAByIp(payload.id, it, it1) } }
         logger.info("UA actualizado para ${payload.id}")
     }
 }

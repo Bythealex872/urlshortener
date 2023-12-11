@@ -1,5 +1,5 @@
 package es.unizar.urlshortener.core.usecases
-import es.unizar.urlshortener.core.*
+import es.unizar.urlshortener.core.SafeBrowsingService
 
 /**
  * TO DO FOR WORKERS?
