@@ -89,10 +89,9 @@ class UrlShortenerControllerTest {
         //verify(logClickUseCase).logClick("key", ip = "127.0.0.1" , UA = userAgentHeaderValue)
     }
 
-    //TODO
 //    @Test
 //    fun `redirectTo returns a not found when the key does not exist`() {
-//        given(redirectUseCase.redirectTo("key", "", ""))
+//        given(redirectUseCase.redirectTo("key", "127.0.0.1", ""))
 //            .willAnswer { throw RedirectionNotFound("key") }
 //
 //        mockMvc.perform(get("/{id}", "key"))
