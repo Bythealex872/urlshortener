@@ -219,7 +219,7 @@ class UrlShortenerControllerImpl(
 
             val lines = csvReader.readAll()
             if (lines.any { it.size != 2}) {
-                return ResponseEntity(ErrorResponse("Error en el formato del archivo CSV"), HttpStatus.BAD_REQUEST)
+                //return ResponseEntity(ErrorResponse("Error en el formato del archivo CSV"), HttpStatus.BAD_REQUEST)
             }
             for (line in lines) {
                 if (line.size >= 2) {

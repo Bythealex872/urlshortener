@@ -10,7 +10,7 @@ import es.unizar.urlshortener.core.ClickRepositoryService
  * **Note**: This is an example of functionality.
  */
 interface LogClickUseCase {
-    fun logClick(key: String, ip:String, UA:String)
+    fun logClick(key: String, ip:String, UA:String?)
 }
 
 /**
@@ -21,7 +21,7 @@ class LogClickUseCaseImpl(
     private val userAgentInfoUseCase: UserAgentInfoUseCaseImpl
 
 ) : LogClickUseCase {
-    override fun logClick(key: String, ip:String, UA:String){
+    override fun logClick(key: String, ip:String, UA:String?){
         val ua = userAgentInfoUseCase.returnUserAgentInfo(UA)
         val cl = Click(
             hash = key,

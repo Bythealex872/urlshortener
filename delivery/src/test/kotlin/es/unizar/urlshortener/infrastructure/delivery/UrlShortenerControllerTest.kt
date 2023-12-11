@@ -71,7 +71,7 @@ class UrlShortenerControllerTest {
     @Test
     fun `redirectTo returns a redirect when the key exists and no userAgent`() {
 
-        given(redirectUseCase.redirectTo("key", "", "")).willReturn(Redirection("http://example.com/"))
+        given(redirectUseCase.redirectTo("key", "127.0.0.1", "")).willReturn(Redirection("http://example.com/"))
 
         mockMvc.perform(get("/{id}", "key").header("User-Agent", ""))
             .andExpect(status().isTemporaryRedirect)

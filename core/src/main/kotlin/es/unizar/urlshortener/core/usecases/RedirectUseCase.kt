@@ -10,7 +10,7 @@ import es.unizar.urlshortener.core.*
  * **Note**: This is an example of functionality.
  */
 interface RedirectUseCase {
-    fun redirectTo(key: String, ip: String, UA: String): Redirection
+    fun redirectTo(key: String, ip: String, UA: String?): Redirection
 
 }
 /**
@@ -22,18 +22,15 @@ class RedirectUseCaseImpl(
 
 ) : RedirectUseCase {
 
-    override fun redirectTo(key: String, ip: String, UA: String): Redirection {
-        val shortUrl = shortUrlRepository.findByKey(key)
+    override fun redirectTo(key: String, ip: String, UA: String?): Redirection {
+        val shortUrl = shortUrlRepository.findByKey(key) ?: throw RedirectionNotFound(key)
 
         // Verifica si la URI recortada no existe
-        if (shortUrl == null) {
-            throw RedirectionNotFound(key)
-        }
-        if(!shortUrl.properties.safe){
-            throw RetryAfterException()
-        }
-        if(shortUrl.redirection == null){
+        if(!shortUrl.properties.safe){ // no valida
             throw RedirectionForbiden(key)
+        }
+        if(shortUrl.redirection.mode == 403){ // posible spam
+            throw RetryAfterException()
         }
 
         logClickUseCase.logClick(key, ip, UA)

@@ -11,7 +11,7 @@ import es.unizar.urlshortener.core.UserAgent
  */
 interface UserAgentInfoUseCase {
     fun getUserAgentInfoByKey(key: String): Map<String, Any>?
-    fun returnUserAgentInfo(UAstring: String): UserAgent?
+    fun returnUserAgentInfo(UAstring: String?): UserAgent?
 
 }
 
@@ -43,7 +43,7 @@ class UserAgentInfoUseCaseImpl(
         }
     }
 
-    override fun returnUserAgentInfo(UAstring: String): UserAgent? {
+    override fun returnUserAgentInfo(UAstring: String?): UserAgent? {
         val capabilities: Capabilities = parser.parse(UAstring)
         val browser = capabilities.browser
         val platform = capabilities.platform
