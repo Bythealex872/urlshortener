@@ -19,6 +19,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.junit.jupiter.api.Assertions
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import java.time.OffsetDateTime
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
@@ -86,18 +88,18 @@ class UrlShortenerControllerTest {
         //verify(logClickUseCase).logClick("key", ip = "127.0.0.1" , UA = userAgentHeaderValue)
     }
 
-//    @Test
-//    fun `redirectTo returns a not found when the key does not exist`() {
-//        given(redirectUseCase.redirectTo("key", "127.0.0.1", ""))
-//            .willAnswer { throw RedirectionNotFound("key") }
-//
-//        mockMvc.perform(get("/{id}", "key"))
-//            .andDo(print())
-//            .andExpect(status().isNotFound)
-//            .andExpect(jsonPath("$.statusCode").value(404))
-//
-//        //verify(logClickUseCase, never()).logClick("key", ip = "127.0.0.1", ua = "")
-//    }
+    @Test
+    fun `redirectTo returns a not found when the key does not exist`() {
+        given(redirectUseCase.redirectTo("key", "127.0.0.1", null))
+            .willAnswer { throw RedirectionNotFound("key") }
+
+        mockMvc.perform(get("/{id}", "key"))
+            .andDo(print())
+            .andExpect(status().isNotFound)
+            .andExpect(jsonPath("$.statusCode").value(404))
+
+        //verify(logClickUseCase, never()).logClick("key", ip = "127.0.0.1", ua = "")
+    }
 
     @Test
     fun `creates returns a basic redirect if it can compute a hash`() {

@@ -23,7 +23,9 @@ import es.unizar.urlshortener.core.usecases.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import jakarta.websocket.*
+import jakarta.websocket.server.HandshakeRequest
 import jakarta.websocket.server.ServerEndpoint
+import jakarta.websocket.server.ServerEndpointConfig
 import org.springframework.stereotype.Component
 
 
@@ -260,7 +262,9 @@ interface BulkEndpoint {
 @Component
 @ServerEndpoint("/api/bulk-fast")
 class Luis : BulkEndpoint {
+
     private val logger: Logger = LoggerFactory.getLogger(Luis::class.java)
+
 
     @OnOpen
     override fun onOpen(session: Session) {

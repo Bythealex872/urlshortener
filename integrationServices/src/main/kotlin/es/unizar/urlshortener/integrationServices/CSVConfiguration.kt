@@ -42,7 +42,11 @@ override fun redirectTo(@PathVariable id: String): ResponseEntity<Unit> {
 class WebSocketConfig{
     @Bean
     fun serverEndpointExporter() = ServerEndpointExporter()
+
+
 }
+
+class WebSoketInterceptor {}
 
 
 @Configuration
