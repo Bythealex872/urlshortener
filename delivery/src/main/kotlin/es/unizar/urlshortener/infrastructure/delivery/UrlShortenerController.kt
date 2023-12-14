@@ -252,41 +252,6 @@ class UrlShortenerControllerImpl(
     override fun returnUserAgentInfo(@PathVariable id: String): ResponseEntity<Map<String, Any>>
         = ResponseEntity.ok(userAgentInfoUseCase.getUserAgentInfoByKey(id))
 }
-interface BulkEndpoint {
-    fun onOpen(session: Session)
-    fun onClose(session: Session, closeReason: CloseReason)
-    fun onMsg(message: String, session: Session)
-    fun onError(session: Session, errorReason: Throwable)
-}
-
-@Component
-@ServerEndpoint("/api/bulk-fast")
-class Luis : BulkEndpoint {
-
-    private val logger: Logger = LoggerFactory.getLogger(Luis::class.java)
 
 
-    @OnOpen
-    override fun onOpen(session: Session) {
-        logger.info("Server Connected ... Session ${session.id}")
-    }
 
-    @OnClose
-    override fun onClose(session: Session, closeReason: CloseReason) {
-        logger.info("Session ${session.id} closed because of ${closeReason.reasonPhrase}")
-    }
-
-    @OnMessage
-    override fun onMsg(message: String, session: Session) {
-        logger.info("Server Message ... Session ${session.id}")
-        logger.info("Message $message")
-
-       val sendCsvBean = SpringContext.getBean(SendCSV::class.java)
-        sendCsvBean.sendCSV(Pair(message, session))
-    }
-
-    @OnError
-    override fun onError(session: Session, errorReason: Throwable) {
-        logger.error("Session ${session.id} closed because of ${errorReason.javaClass.name}")
-    }
-}

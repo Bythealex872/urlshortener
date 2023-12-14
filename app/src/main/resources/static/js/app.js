@@ -66,7 +66,11 @@ let ws;
 
 function connect() {
     return new Promise((resolve, reject) => {
-        ws = new WebSocket("ws://localhost:8080/api/bulk-fast");
+        const host = window.location.hostname;
+        const port = 8080; // Replace with your actual server port
+        const wsUrl = `ws://${host}:${port}/api/fast-bulk`;
+
+        ws = new WebSocket(wsUrl);
 
         ws.onopen = function () {
             console.log("Connected to WebSocket");
@@ -114,8 +118,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     console.log("Please select a CSV file");
                 }
             })
-            .catch(() => {
-                console.log("WebSocket connection failed");
+            .catch((reason) => {
+                console.log("WebSocket connection failed: " + reason);
             });
     });
 });

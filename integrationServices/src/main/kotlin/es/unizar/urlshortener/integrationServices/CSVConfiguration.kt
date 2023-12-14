@@ -3,7 +3,7 @@ package es.unizar.urlshortener.integrationServices
 import es.unizar.urlshortener.core.LinkToService
 import es.unizar.urlshortener.core.ShortUrlProperties
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCaseImpl
-import org.springframework.web.socket.server.standard.ServerEndpointExporter
+
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.integration.channel.ExecutorChannel
@@ -14,14 +14,21 @@ import org.springframework.integration.config.EnableIntegration
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.web.socket.config.annotation.EnableWebSocket
 import java.util.concurrent.Executor
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 //import jakarta.websocket.*
-import jakarta.websocket.Session
-import jakarta.websocket.server.ServerEndpointConfig
-import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker
-import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer
+import org.springframework.http.server.ServerHttpRequest
+import org.springframework.http.server.ServerHttpResponse
+import org.springframework.web.socket.TextMessage
+import org.springframework.web.socket.WebSocketHandler
+import org.springframework.web.socket.WebSocketSession
+import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor
+import org.springframework.web.socket.config.annotation.EnableWebSocket
+import org.springframework.web.socket.config.annotation.WebSocketConfigurer
+import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
+import org.springframework.web.socket.handler.TextWebSocketHandler
+import org.springframework.web.socket.server.HandshakeInterceptor
+
 
 /* 
 override fun redirectTo(@PathVariable id: String): ResponseEntity<Unit> {
@@ -38,6 +45,65 @@ override fun redirectTo(@PathVariable id: String): ResponseEntity<Unit> {
 }*/
 
 
+
+@Configuration
+@EnableWebSocket
+class WebSocketConfig : WebSocketConfigurer {
+
+    override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
+        registry.addHandler(myHandler(), "/api/fast-bulk")
+            .addInterceptors(HttpSessionHandshakeInterceptor())
+            .setAllowedOrigins("*")
+    }
+
+    fun myHandler(): MyWebSocketHandler {
+        return MyWebSocketHandler()
+    }
+}
+
+class MyWebSocketHandler : TextWebSocketHandler() {
+
+    override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
+        println("Received message: ${message.payload}")
+        session.sendMessage(TextMessage("Hello from server"))
+        val sendCsvBean = SpringContext.getBean(CSVRequestGateway::class.java)
+        val laddr = session.localAddress
+        sendCsvBean.sendCSVMessage(Pair(message.payload, session))
+    }
+    override fun afterConnectionEstablished(session: WebSocketSession) {
+        val localAddress = session.attributes["localAddress"]
+        println("WebSocket session established from local address: $localAddress")
+    }
+
+}
+
+class MyHandshakeInterceptor : HandshakeInterceptor {
+
+    override fun beforeHandshake(
+        request: ServerHttpRequest,
+        response: ServerHttpResponse,
+        wsHandler: WebSocketHandler,
+        attributes: MutableMap<String, Any>
+    ): Boolean {
+        // Capture local address from the request
+        val localAddress = request.remoteAddress?.address?.hostAddress
+        println("Local Address: $localAddress")
+
+        // You can add attributes to be used in the WebSocket session
+        attributes["localAddress"] = localAddress ?: "unknown"
+        attributes["port"] = request.remoteAddress?.port ?: "unknown"
+        return true
+    }
+
+    override fun afterHandshake(
+        request: ServerHttpRequest,
+        response: ServerHttpResponse,
+        wsHandler: WebSocketHandler,
+        exception: Exception?
+    ) {
+        // Post-handshake logic
+    }
+}
 @Configuration
 @EnableIntegration
 @EnableScheduling
@@ -68,27 +134,50 @@ class CSVCodeIntegrationConfiguration(
 
     @Bean
     fun csvFlow(createShortUrlUseCase: CreateShortUrlUseCaseImpl): IntegrationFlow = integrationFlow(csvCreationChannel()) {
-        handle<Pair<String, Session>> { payload, _ ->
-            try {
+        handle<Pair<String, WebSocketSession>> { payload, _ ->
                 val (uri, session) = payload
                 logger.info("Procesando URI: $uri")
                 val parts = payload.first.split(",")
                 val trimmedUri = parts[0].trim()
+                var qr = parts[1]
+                logger.info("QR: $qr")
+                var qr_request = false
+                if (qr == "1"){
+                    qr_request = true
+                }
+                var error = "no_error"
+                lateinit var create: es.unizar.urlshortener.core.ShortUrl
                 // Crear URL corta
-                val create = createShortUrlUseCase.create(
+                try {
+                     create = createShortUrlUseCase.create(
                         url = trimmedUri,
-                        data = ShortUrlProperties()
-                )
+                        data = ShortUrlProperties(),
+                        qrRequest = qr_request
+                    )
+                }
+                catch (e : Exception){
+                    error = e.message.toString()
+                }
+                if (error == "no_error"){
+                    // Obtener el enlace
+                    val shortUrl = linkToService.link(create.hash).toString()
+                    logger.info("Enviando mensaje: $shortUrl")
+                    val address = session.localAddress
+                    val codedUri = "http:/$address$shortUrl"
+                    val qrUrl = if (qr == "1") "$codedUri/qr" else "no_qr"
+                    val final = "$trimmedUri,$codedUri,$qrUrl,$error"
+                    // Enviar mensaje a través de la sesión WebSocket
+                    session.sendMessage(TextMessage(final))
+                }
+                else{
+                    val final = "$trimmedUri,no_url,no_qr,$error"
+                    session.sendMessage(TextMessage(final))
+                }
 
-                // Obtener el enlace
-                val shortUrl = linkToService.link(create.hash).toString()
 
-                // Enviar mensaje a través de la sesión WebSocket
-                session.basicRemote.sendText(shortUrl)
-            } catch (e: Exception) {
-                logger.error("Error al procesar el mensaje: ${e.message}", e)
-                // Manejo adicional de excepciones si es necesario
-            }
+
+
+
         }
     }
 }

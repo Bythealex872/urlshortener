@@ -5,8 +5,12 @@ import es.unizar.urlshortener.core.HashService
 import es.unizar.urlshortener.core.LinkToService
 import es.unizar.urlshortener.core.ValidatorService
 import org.apache.commons.validator.routines.UrlValidator
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.linkTo
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 import java.nio.charset.StandardCharsets
+
 
 /**
  * Implementation of the port [ValidatorService].
@@ -31,4 +35,17 @@ class HashServiceImpl : HashService {
  */
 class LinkToImpl : LinkToService {
     override fun link(id: String) = linkTo<UrlShortenerControllerImpl> { redirectTo(id, null) }.toUri()
+    override fun buildRedirectUrl(id: String): String {
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+            .path(UrlShortenerControllerPaths.REDIRECT_PATH.replace("{id}", id))
+            .build()
+            .toUriString()
+    }
 }
+class UrlShortenerControllerPaths {
+    companion object {
+        const val REDIRECT_PATH = "/{id}"
+        // Agrega otras rutas según sea necesario
+    }
+}
+

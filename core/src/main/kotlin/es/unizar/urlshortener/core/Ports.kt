@@ -48,6 +48,7 @@ interface HashService {
 
 interface LinkToService {
     fun link(id: String) : URI
+    fun buildRedirectUrl(id: String): String
 }
 
 interface QRRequestService {
@@ -61,3 +62,4 @@ interface UserAgentRequestService {
 interface SafeBrowsingRequestService {
     fun sendSafeBrowsingMessage(p: Pair<String, String>)
 }
+

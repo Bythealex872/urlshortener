@@ -6,6 +6,7 @@ import es.unizar.urlshortener.core.UserAgentRequestService
 import jakarta.websocket.Session
 import org.springframework.integration.annotation.MessagingGateway
 import org.springframework.integration.annotation.Gateway
+import org.springframework.web.socket.WebSocketSession
 
 @MessagingGateway
 interface QRRequestGateway : QRRequestService {
@@ -22,7 +23,7 @@ interface UserAgentRequestGateway : UserAgentRequestService {
 @MessagingGateway
 interface CSVRequestGateway {
     @Gateway(requestChannel = "csvCreationChannel")
-    fun sendCSVMessage(p: Pair<String, Session>)
+     fun sendCSVMessage(p: Pair<String, WebSocketSession>)
 }
 
 @MessagingGateway
