@@ -1,10 +1,6 @@
 package es.unizar.urlshortener.core.usecases
 
-import es.unizar.urlshortener.core.Redirection
-import es.unizar.urlshortener.core.RedirectionForbidden
-import es.unizar.urlshortener.core.RedirectionNotFound
-import es.unizar.urlshortener.core.ShortUrlRepositoryService
-import es.unizar.urlshortener.core.RetryAfterException
+import es.unizar.urlshortener.core.*
 
 private const val RETRYAFTER = 403
 /**
@@ -22,7 +18,8 @@ interface RedirectUseCase {
  */
 class RedirectUseCaseImpl(
         private val shortUrlRepository: ShortUrlRepositoryService,
-        private val logClickUseCase: LogClickUseCase
+        private val logClickUseCase: LogClickUseCase,
+        private val uaService: UserAgentRequestService
 
 ) : RedirectUseCase {
 
@@ -37,8 +34,8 @@ class RedirectUseCaseImpl(
         if(shortUrl.redirection.mode == RETRYAFTER){ // no operativa
             throw RetryAfterException()
         }
-
-        logClickUseCase.logClick(key, ip, ua)
+        uaService.sendUserAgentMessage(Triple(key, ip, ua))
+        //logClickUseCase.logClick(key, ip, ua)
 
         // Devuelve la lógica de redirección
         return shortUrl.redirection

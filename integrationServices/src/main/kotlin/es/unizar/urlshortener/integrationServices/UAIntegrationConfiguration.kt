@@ -48,7 +48,7 @@ class UAIntegrationConfiguration(
 
     @Bean
     fun uaFlow(userAgentInfo: UserAgentInfoUseCase): IntegrationFlow = integrationFlow(uaUpdateChannel()) {
-        transform<Triple<String, String, String?>> { payload ->
+        handle<Triple<String, String, String?>> { payload, _ ->
             logClickUseCase.logClick(payload.first, payload.second, payload.third)
             logger.info("Código UA creado para ${payload.first}")
         }

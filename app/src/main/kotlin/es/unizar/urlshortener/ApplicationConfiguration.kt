@@ -2,6 +2,7 @@
 
 package es.unizar.urlshortener
 
+import es.unizar.urlshortener.core.UserAgentRequestService
 import es.unizar.urlshortener.core.usecases.*
 import es.unizar.urlshortener.infrastructure.delivery.HashServiceImpl
 import es.unizar.urlshortener.infrastructure.delivery.LinkToImpl
@@ -25,7 +26,11 @@ class ApplicationConfiguration(
     @Autowired val shortUrlEntityRepository: ShortUrlEntityRepository,
     @Autowired val clickEntityRepository: ClickEntityRepository,
     @Autowired val qrRequestImpl: QRRequestGateway,
+    @Autowired val userAgentRequestImpl: UserAgentRequestGateway,
 ) {
+
+    @Bean
+    fun uaRequestService() = userAgentRequestImpl
     @Bean
     fun qrRequestService() = qrRequestImpl
 
@@ -46,7 +51,7 @@ class ApplicationConfiguration(
     fun hashService() = HashServiceImpl()
 
     @Bean
-    fun redirectUseCase() = RedirectUseCaseImpl(shortUrlRepositoryService(), logClickUseCase())
+    fun redirectUseCase() = RedirectUseCaseImpl(shortUrlRepositoryService(), logClickUseCase(), uaRequestService())
 
     @Bean
     fun logClickUseCase() = LogClickUseCaseImpl(clickRepositoryService(), userAgentInfoUseCase())
@@ -64,7 +69,7 @@ class ApplicationConfiguration(
     fun createCSVUseCase() = CreateCSVUseCaseImpl()
 
     @Bean
-    fun userAgentInfoUseCase() = UserAgentInfoUseCaseImpl(shortUrlRepositoryService())
+    fun userAgentInfoUseCase() = UserAgentInfoUseCaseImpl(shortUrlRepositoryService(), clickRepositoryService())
 
     @Bean
     fun qrCodeIntegration() = QRCodeIntegrationConfiguration(shortUrlRepositoryService())

@@ -6,7 +6,7 @@ import java.net.URI
  * [ClickRepositoryService] is the port to the repository that provides persistence to [Clicks][Click].
  */
 interface ClickRepositoryService {
-    fun findByKey(id: Long): Click?
+    fun findByKey(id: String): Click?
     fun save(cl: Click): Click
 
     fun updateUAByIp(ip: String, browser: String, platform: String)

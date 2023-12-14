@@ -2,11 +2,7 @@ package es.unizar.urlshortener.core.usecases
 
 import com.blueconic.browscap.Capabilities
 import com.blueconic.browscap.UserAgentService
-import es.unizar.urlshortener.core.RedirectionForbidden
-import es.unizar.urlshortener.core.RedirectionNotFound
-import es.unizar.urlshortener.core.ShortUrlRepositoryService
-import es.unizar.urlshortener.core.UserAgent
-import es.unizar.urlshortener.core.RetryAfterException
+import es.unizar.urlshortener.core.*
 
 private const val RETRYAFTER = 403
 
@@ -23,7 +19,9 @@ interface UserAgentInfoUseCase {
  * Implementation of [UserAgentInfoUseCase].
  */
 class UserAgentInfoUseCaseImpl(
-        private val shortUrlRepository: ShortUrlRepositoryService
+        private val shortUrlRepository: ShortUrlRepositoryService,
+        private val clickRepository: ClickRepositoryService
+
 ) : UserAgentInfoUseCase {
     private val parser = UserAgentService().loadParser()
 
@@ -36,11 +34,10 @@ class UserAgentInfoUseCaseImpl(
         if(shortUrl.redirection.mode == RETRYAFTER){ // no operativa
             throw RetryAfterException()
         }
-        return shortUrl.let {
+        val click = clickRepository.findByKey(key) ?: throw RedirectionNotFound(key)
+        return click.let {
             mapOf(
-                    "id" to key,
                     "hash" to it.hash,
-                    "redirection" to it.redirection.target,
                     "created" to it.created.toString(),
                     "properties" to it.properties
             )

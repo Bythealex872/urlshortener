@@ -19,6 +19,9 @@ import java.util.concurrent.Executor
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 //import jakarta.websocket.*
 import jakarta.websocket.Session
+import jakarta.websocket.server.ServerEndpointConfig
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker
+import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer
 
 /* 
 override fun redirectTo(@PathVariable id: String): ResponseEntity<Unit> {
@@ -33,20 +36,6 @@ override fun redirectTo(@PathVariable id: String): ResponseEntity<Unit> {
     headers.location = URI.create(redirectResult.target)
     return ResponseEntity<Unit>(headers, HttpStatus.valueOf(redirectResult.mode))
 }*/
-
-
-
-
-@Configuration
-@EnableWebSocket
-class WebSocketConfig{
-    @Bean
-    fun serverEndpointExporter() = ServerEndpointExporter()
-
-
-}
-
-class WebSoketInterceptor {}
 
 
 @Configuration
