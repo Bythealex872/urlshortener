@@ -173,6 +173,9 @@ class UrlShortenerControllerImpl(
             if (lines.any { it.size != 2}) {
                 return ResponseEntity("Error en el formato del archivo CSV", HttpStatus.BAD_REQUEST)
             }
+            if (lines.isEmpty()) {
+                return ResponseEntity("El archivo CSV está vacío", HttpStatus.OK)
+            }
             for (line in lines) {
                 if (line.size >= 2) {
                     csvOutputList.add(processCsvLine(line, request))
