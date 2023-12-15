@@ -26,13 +26,9 @@ class ApplicationConfiguration(
     @Autowired val shortUrlEntityRepository: ShortUrlEntityRepository,
     @Autowired val clickEntityRepository: ClickEntityRepository,
     @Autowired val qrRequestImpl: QRRequestGateway,
-    @Autowired val userAgentRequestImpl: UserAgentRequestGateway,
+    @Autowired val userAgentRequestImpl: UserAgentRequestGateway
 ) {
 
-    @Bean
-    fun uaRequestService() = userAgentRequestImpl
-    @Bean
-    fun qrRequestService() = qrRequestImpl
 
     @Bean
     fun linkToService() = LinkToImpl()
@@ -51,7 +47,7 @@ class ApplicationConfiguration(
     fun hashService() = HashServiceImpl()
 
     @Bean
-    fun redirectUseCase() = RedirectUseCaseImpl(shortUrlRepositoryService(), logClickUseCase(), uaRequestService())
+    fun redirectUseCase() = RedirectUseCaseImpl(shortUrlRepositoryService(), userAgentRequestImpl)
 
     @Bean
     fun logClickUseCase() = LogClickUseCaseImpl(clickRepositoryService(), userAgentInfoUseCase())
@@ -59,14 +55,14 @@ class ApplicationConfiguration(
     @Bean
     fun createShortUrlUseCase() =
         CreateShortUrlUseCaseImpl(shortUrlRepositoryService(), validatorService()
-            , hashService(), qrRequestService(), linkToService())
+            , hashService(), qrRequestImpl, linkToService())
     @Bean
     fun safeBrowsingUseCase() = SafeBrowsingUseCaseImpl(safeBrowsingService())
     @Bean
     fun createQRCodeUseCase() = QRCodeUseCaseImpl(shortUrlRepositoryService())
     
     @Bean
-    fun createCSVUseCase() = CreateCSVUseCaseImpl()
+    fun createCSVUseCase() = CreateCSVUseCaseImpl(createShortUrlUseCase(), linkToService())
 
     @Bean
     fun userAgentInfoUseCase() = UserAgentInfoUseCaseImpl(shortUrlRepositoryService(), clickRepositoryService())
@@ -79,5 +75,8 @@ class ApplicationConfiguration(
 
     @Bean
     fun csvIntegration() = CSVCodeIntegrationConfiguration(linkToService())
+
+    @Bean
+    fun uaIntegration() = UAIntegrationConfiguration()
 
 }

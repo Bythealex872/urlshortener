@@ -17,10 +17,8 @@ interface RedirectUseCase {
  * Implementation of [RedirectUseCase].
  */
 class RedirectUseCaseImpl(
-        private val shortUrlRepository: ShortUrlRepositoryService,
-        private val logClickUseCase: LogClickUseCase,
-        private val uaService: UserAgentRequestService
-
+    private val shortUrlRepository: ShortUrlRepositoryService,
+    private val uaService: UserAgentRequestService
 ) : RedirectUseCase {
 
     override fun redirectTo(key: String, ip: String, ua: String?): Redirection {
@@ -34,6 +32,7 @@ class RedirectUseCaseImpl(
         if(shortUrl.redirection.mode == RETRYAFTER){ // no operativa
             throw RetryAfterException()
         }
+
         uaService.sendUserAgentMessage(Triple(key, ip, ua))
         //logClickUseCase.logClick(key, ip, ua)
 

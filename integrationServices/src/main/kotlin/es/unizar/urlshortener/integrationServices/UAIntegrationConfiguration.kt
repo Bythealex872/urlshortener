@@ -22,9 +22,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 @Configuration
 @EnableIntegration
 @EnableScheduling
-class UAIntegrationConfiguration(
-    private val logClickUseCase: LogClickUseCase
-) {
+class UAIntegrationConfiguration {
 
     companion object {
         private const val UA_UPDATE_CORE_POOL_SIZE = 2
@@ -47,7 +45,7 @@ class UAIntegrationConfiguration(
 
 
     @Bean
-    fun uaFlow(userAgentInfo: UserAgentInfoUseCase): IntegrationFlow = integrationFlow(uaUpdateChannel()) {
+    fun uaFlow(logClickUseCase: LogClickUseCase): IntegrationFlow = integrationFlow(uaUpdateChannel()) {
         handle<Triple<String, String, String?>> { payload, _ ->
             logClickUseCase.logClick(payload.first, payload.second, payload.third)
             logger.info("Código UA creado para ${payload.first}")

@@ -136,50 +136,66 @@ class CSVCodeIntegrationConfiguration(
     @Bean
     fun csvFlow(createShortUrlUseCase: CreateShortUrlUseCaseImpl): IntegrationFlow = integrationFlow(csvCreationChannel()) {
         handle<Pair<String, WebSocketSession>> { payload, _ ->
-                val (uri, session) = payload
-                logger.info("Procesando URI: $uri")
-                val parts = payload.first.split(",")
-                val trimmedUri = parts[0].trim()
-                var qr = parts[1]
-                logger.info("QR: $qr")
-                var qrRequest = false
-                if (qr == "1"){
-                    qrRequest = true
+            val (uri, session) = payload
+            logger.info("Procesando URI: $uri")
+            val delimiter = detectDelimiter(uri)
+            val parts = uri.split(delimiter)
+            val trimmedUri = parts[0].trim()
+            var qr = parts[1]
+            logger.info("QR: $qr")
+            var qrRequest = false
+            if (qr == "1"){
+                qrRequest = true
+            }
+            var error = "no_error"
+            lateinit var create: es.unizar.urlshortener.core.ShortUrl
+            // Crear URL corta
+            try {
+                 create = createShortUrlUseCase.create(
+                    url = trimmedUri,
+                    data = ShortUrlProperties(),
+                    qrRequest = qrRequest
+                )
+            }
+            catch (e : Exception) {
+                error = e.message.toString()
+            }
+            if (error == "no_error") {
+                // Obtener el enlace
+                val shortUrl = linkToService.link(create.hash).toString()
+                logger.info("Enviando mensaje: $shortUrl")
+                val address = session.localAddress
+                val codedUri = "http:/$address$shortUrl"
+                val qrUrl = if (qr == "1") "$codedUri/qr" else "no_qr"
+                val final = "$trimmedUri,$codedUri,$qrUrl,$error"
+                // Enviar mensaje a través de la sesión WebSocket
+                synchronized(creationLock) {
+                    session.sendMessage(TextMessage(final))
                 }
-                var error = "no_error"
-                lateinit var create: es.unizar.urlshortener.core.ShortUrl
-                // Crear URL corta
-                try {
-                     create = createShortUrlUseCase.create(
-                        url = trimmedUri,
-                        data = ShortUrlProperties(),
-                        qrRequest = qrRequest
-                    )
-                }
-                catch (e : Exception){
-                    error = e.message.toString()
-                }
-                if (error == "no_error"){
-                    // Obtener el enlace
-                    val shortUrl = linkToService.link(create.hash).toString()
-                    logger.info("Enviando mensaje: $shortUrl")
-                    val address = session.localAddress
-                    val codedUri = "http:/$address$shortUrl"
-                    val qrUrl = if (qr == "1") "$codedUri/qr" else "no_qr"
-                    val final = "$trimmedUri,$codedUri,$qrUrl,$error"
+            } else {
+                val final = "$trimmedUri,no_url,no_qr,$error"
+                synchronized(creationLock) {
                     // Enviar mensaje a través de la sesión WebSocket
-                    synchronized(creationLock) {
-                        session.sendMessage(TextMessage(final))
-                    }
-                }else{
-                    val final = "$trimmedUri,no_url,no_qr,$error"
-                    synchronized(creationLock) {
-                        // Enviar mensaje a través de la sesión WebSocket
-                        session.sendMessage(TextMessage(final))
-                    }
+                    session.sendMessage(TextMessage(final))
                 }
-
+            }
         }
+    }
+
+    private fun detectDelimiter(line: String): Char {
+        val delimiters = listOf(',', ';', '\t', '|')
+        var maxCount = 0
+        var mostLikelyDelimiter = ','
+
+        for (delimiter in delimiters) {
+            val count = line.count { it == delimiter }
+            if (count > maxCount) {
+                maxCount = count
+                mostLikelyDelimiter = delimiter
+            }
+        }
+
+        return mostLikelyDelimiter
     }
 }
 

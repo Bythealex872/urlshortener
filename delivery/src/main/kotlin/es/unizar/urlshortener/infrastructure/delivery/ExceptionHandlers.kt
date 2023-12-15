@@ -1,9 +1,6 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
-import es.unizar.urlshortener.core.InvalidUrlException
-import es.unizar.urlshortener.core.RedirectionForbidden
-import es.unizar.urlshortener.core.RedirectionNotFound
-import es.unizar.urlshortener.core.RetryAfterException
+import es.unizar.urlshortener.core.*
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -45,6 +42,11 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(value = [RedirectionForbidden::class])
     @ResponseStatus(HttpStatus.FORBIDDEN)
     fun redirectionForbidden(ex: RedirectionForbidden) = ErrorMessage(HttpStatus.FORBIDDEN.value(), ex.message)
+
+    @ResponseBody
+    @ExceptionHandler(value = [CSVCouldNotBeProcessed::class])
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun csvCouldNotBeProcessed(ex: CSVCouldNotBeProcessed) = ErrorMessage(HttpStatus.BAD_REQUEST.value(), ex.message)
 }
 
 data class ErrorMessage(

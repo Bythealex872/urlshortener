@@ -23,7 +23,7 @@ interface QRCodeUseCase {
  * Implementation of [QRCodeUseCase].
  */
 class QRCodeUseCaseImpl(
-        private val shortUrlRepository: ShortUrlRepositoryService,
+    private val shortUrlRepository: ShortUrlRepositoryService,
 ) : QRCodeUseCase {
     
     override fun createQRCode(id: String): ByteArray { 
@@ -35,10 +35,10 @@ class QRCodeUseCaseImpl(
         val shortUrl = shortUrlRepository.findByKey(id) ?: throw RedirectionNotFound(id)
 
         // Verifica si la URI recortada no existe
-        if(!shortUrl.properties.safe || shortUrl.properties.qr == null){
+        if (!shortUrl.properties.safe || shortUrl.properties.qr == null) {
             throw RetryAfterException()
         }
-        if(shortUrl.redirection.mode != CORRECTO){
+        if (shortUrl.redirection.mode != CORRECTO) {
             throw RedirectionForbidden(id)
         }
 

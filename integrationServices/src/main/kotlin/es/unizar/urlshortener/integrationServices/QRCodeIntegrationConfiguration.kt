@@ -66,10 +66,11 @@ class QRCodeIntegrationConfiguration(
         filter<Pair<String, String>> { payload ->
             shortUrlRepository.findByKey(payload.first)?.properties?.qr == null
         }
-        transform<Pair<String, String>>  { payload -> 
-            val qrCode = createQRCodeUseCase.createQRCode(payload.second)
-            logger.info("Código QR creado para ${payload.first}")
-            QRCodePayload(payload.first, qrCode)
+        transform<Pair<String, String>>  { payload ->
+            val (id, shortUrl) = payload
+            val qrCode = createQRCodeUseCase.createQRCode(shortUrl)
+            logger.info("Código QR creado para $id")
+            QRCodePayload(id, qrCode)
         } 
         channel(qrUpdateChannel())
     }

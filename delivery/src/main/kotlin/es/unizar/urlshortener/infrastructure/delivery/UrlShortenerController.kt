@@ -162,99 +162,22 @@ class UrlShortenerControllerImpl(
         @RequestPart("file") file: MultipartFile,
         request: HttpServletRequest
     ): ResponseEntity<Any> {
-        try {
-            val csvOutputList = mutableListOf<CsvOutput>()
-            val csvParser = CSVParserBuilder().build()
-            val csvReader = CSVReaderBuilder(file.inputStream.bufferedReader())
-                .withCSVParser(csvParser)
-                .build()
-
-            val lines = csvReader.readAll()
-            if (lines.any { it.size != 2}) {
-                return ResponseEntity("Error en el formato del archivo CSV", HttpStatus.BAD_REQUEST)
-            }
-            if (lines.isEmpty()) {
-                return ResponseEntity("El archivo CSV está vacío", HttpStatus.OK)
-            }
-            for (line in lines) {
-                if (line.size >= 2) {
-                    csvOutputList.add(processCsvLine(line, request))
-                } else {
-                    logger.warn("Invalid CSV line: $line")
-                }
-            }
-
-            val csvContent = createCSVUseCase.buildCsvContent(csvOutputList)
-            val headers = HttpHeaders()
-            headers.contentType = MediaType.parseMediaType("text/csv")
-            headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=output.csv")
-            val firstShortenedUrl = csvOutputList.firstOrNull()?.shortenedUri
-            headers.set(HttpHeaders.LOCATION, firstShortenedUrl)
-
-            return ResponseEntity(csvContent, headers, HttpStatus.CREATED)
-        } catch (e: CsvException) {
-            logger.error("Error processing CSV file", e)
-            return ResponseEntity("Error en el formato del archivo CSV", HttpStatus.BAD_REQUEST)
-        } 
-    }
-
-    private fun processCsvLine(line: Array<String>, request: HttpServletRequest): CsvOutput {
-        val uri = line[0].trim()
-        val qrCodeIndicator = line[1].trim()
-        var errorMessage: String? = "no error"
-        var urlRecortada: String? = null
-        var qrUrl: String? = null
-
-        try {
-            val create = createShortUrlUseCase.create(
-                url = uri,
-                qrRequest = qrCodeIndicator == "1",
-                data = ShortUrlProperties(ip = request.remoteAddr)
-            )
-            val uriObj = linkTo<UrlShortenerControllerImpl> { redirectTo(create.hash, request) }.toUri()
-            urlRecortada = uriObj.toString()
-            qrUrl = if (qrCodeIndicator == "1") "$urlRecortada/qr" else "no_qr"
-        } catch (e: Exception) {
-            errorMessage = e.message
+        val inputStream = file.inputStream
+        val csvContent = createCSVUseCase.processAndBuildCsv(inputStream, request.remoteAddr)
+        val headers = HttpHeaders().apply {
+            contentType = MediaType.parseMediaType("text/csv")
+            set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=output.csv")
         }
 
-        return CsvOutput(uri, urlRecortada ?: "Error", qrUrl ?: "Error", errorMessage!!)
-    }
-
-
-
-
-
-     
-    /* 
-    private fun shortenUri(uri: String): Pair<String, String> {
-    // Analiza la URI proporcionada para obtener sus componentes
-        val parsedUri = URI(uri)
-
-        // Usa una estructura de control 'when' para manejar diferentes casos basados en el esquema de la URI
-        return when (parsedUri.scheme) {
-        // Si el esquema es 'http' o 'https', procesa la URI
-            "http", "https" -> {
-                // Simula el acortamiento de la URI. Aquí, simplemente se concatena un hash de la URI
-                // con una base de URL predefinida para crear una 'URI acortada'
-                val shortened = "http://short.uri/" + uri.hashCode()
-
-                // Devuelve un par (Pair) con la URI acortada y una cadena vacía para el mensaje de error
-                shortened to ""
-            }
-            // Para cualquier otro esquema (o si no hay esquema)
-            else -> {
-                // Devuelve un par con una cadena vacía para la URI acortada y un mensaje de error
-                "" to "debe ser una URI http o https"
-            }
+        // Si el contenido del CSV está vacío (es decir, el archivo estaba vacío), devuelve un mensaje adecuado
+        return if (csvContent.trim().isEmpty()) {
+            ResponseEntity("El archivo CSV está vacío.", HttpStatus.OK)
+        } else {
+            ResponseEntity(csvContent, headers, HttpStatus.CREATED)
         }
-    }*/
-    
+    }
 
     @GetMapping("/api/link/{id}")
     override fun returnUserAgentInfo(@PathVariable id: String): ResponseEntity<Map<String, Any>>
         = ResponseEntity.ok(userAgentInfoUseCase.getUserAgentInfoByKey(id))
 }
-
-
-

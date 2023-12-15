@@ -144,6 +144,7 @@ class UrlShortenerControllerTest {
         given(
             createShortUrlUseCase.create(
                 url = "http://example.com/",
+                qrRequest = true,
                 data = ShortUrlProperties(ip = "127.0.0.1")
             )
         ).willReturn(ShortUrl("f684a3c4", Redirection("http://example.com/")))
@@ -194,43 +195,59 @@ class UrlShortenerControllerTest {
     }
 
     @Test
-    fun `Esto En C No Pasa`(){
-        val csvOutputs = listOf(
-            CsvOutput(
-                originalUri = "https://example.com/long-url-1",
-                shortenedUri = "https://short.url/1",
-                qr = "https://short.url/1/qr",
-                explanation = "Primera URL acortada"
-            )
-        )
-        Assertions.assertTrue(true)
-    }
-
-
-   @Test
-    fun `processCsvFile returns a bad request when CSV format is invalid`() {
-        val csvContent = "url1,1,extraColumn\nurl2,0\n"
+    fun `processCsvFile returns a CSV file when format is valid`() {
+        val csvContent = "http://example.com,1\nhttp://example.org,0\n"
         val file = MockMultipartFile("file", "test.csv", "text/csv", csvContent.toByteArray())
 
-       mockMvc.perform(
-           multipart("/api/bulk")
-                .file(file)
-               .contentType(MediaType.MULTIPART_FORM_DATA)
-        )
-       .andExpect(status().isBadRequest())
-    }
-    @Test
-    fun `processCsvFile returns 200 when CSV is empty`() {
-        val csvContent = ""
-        val file = MockMultipartFile("file", "test.csv", "text/csv", csvContent.toByteArray())
+        given(
+            createCSVUseCase.processAndBuildCsv(any(), eq("127.0.0.1"))
+        ).willReturn("URI,URI_recortada,qr,Mensaje\nhttp://example.com,http://short.url/1,http://short.url/1/qr,Primera URL acortada\n")
 
         mockMvc.perform(
             multipart("/api/bulk")
                 .file(file)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
         )
-            .andExpect(status().isOk())
+            .andExpect(status().isCreated)
+            .andExpect(content().contentType("text/csv"))
+            .andExpect(content().string("URI,URI_recortada,qr,Mensaje\nhttp://example.com,http://short.url/1,http://short.url/1/qr,Primera URL acortada\n"))
+    }
 
+    @Test
+    fun `processCsvFile returns a bad request when CSV format is invalid`() {
+        val csvContent = "url1,1,extraColumn\nurl2,0\n"
+        val file = MockMultipartFile("file", "test.csv", "text/csv", csvContent.toByteArray())
+
+        given(
+            createCSVUseCase.processAndBuildCsv(any(), eq("127.0.0.1"))
+        ).willAnswer { throw CSVCouldNotBeProcessed() }
+
+        mockMvc.perform(
+            multipart("/api/bulk")
+                .file(file)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.statusCode").value(400))
+    }
+
+    @Test
+    fun `processCsvFile returns 200 when CSV is empty`() {
+        val csvContent = ""
+        val file = MockMultipartFile("file", "test.csv", "text/csv", csvContent.toByteArray())
+
+        // Simula una respuesta vacía en lugar de lanzar una excepción
+        given(
+            createCSVUseCase.processAndBuildCsv(any(), eq("127.0.0.1"))
+        ).willReturn("")
+
+        mockMvc.perform(
+            multipart("/api/bulk")
+                .file(file)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+        )
+            .andExpect(status().isOk)
+            .andExpect(content().string("El archivo CSV está vacío."))
     }
 
     @Test
@@ -238,7 +255,9 @@ class UrlShortenerControllerTest {
         val key = "someKey"
         val expectedResponse = mapOf("browser" to "Chrome", "os" to "Windows")
 
-        given(userAgentInfoUseCase.getUserAgentInfoByKey(key)).willReturn(expectedResponse)
+        given(
+            userAgentInfoUseCase.getUserAgentInfoByKey(key)
+        ).willReturn(expectedResponse)
 
         mockMvc.perform(get("/api/link/{id}", key))
                 .andDo(print())
@@ -251,7 +270,9 @@ class UrlShortenerControllerTest {
     @Test
     fun `return User-Agent info returns not found when the key does not exist`() {
         val key = "nonexistentKey"
-        given(userAgentInfoUseCase.getUserAgentInfoByKey(key)).willAnswer { throw RedirectionNotFound(key) }
+        given(
+            userAgentInfoUseCase.getUserAgentInfoByKey(key)
+        ).willAnswer { throw RedirectionNotFound(key) }
 
         mockMvc.perform(get("/api/link/{id}", key))
                 .andDo(print())
