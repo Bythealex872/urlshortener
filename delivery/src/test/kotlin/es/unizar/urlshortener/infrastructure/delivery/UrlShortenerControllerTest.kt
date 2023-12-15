@@ -219,6 +219,19 @@ class UrlShortenerControllerTest {
         )
        .andExpect(status().isBadRequest())
     }
+    @Test
+    fun `processCsvFile returns 200 when CSV is empty`() {
+        val csvContent = ""
+        val file = MockMultipartFile("file", "test.csv", "text/csv", csvContent.toByteArray())
+
+        mockMvc.perform(
+            multipart("/api/bulk")
+                .file(file)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+        )
+            .andExpect(status().isOk())
+
+    }
 
     @Test
     fun `return User-Agent info returns info when the key exists`() {

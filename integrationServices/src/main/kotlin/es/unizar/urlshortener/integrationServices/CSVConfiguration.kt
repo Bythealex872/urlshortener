@@ -76,7 +76,24 @@ class MyWebSocketHandler : TextWebSocketHandler() {
     }
 
 }
+class WebSocketSessionStorage {
+    companion object {
+        private val sessions = mutableMapOf<String, WebSocketSession>()
 
+        fun addSession(session: WebSocketSession) {
+
+            sessions[session.id] = session
+        }
+
+        fun removeSession(session: WebSocketSession) {
+            sessions.remove(session.id)
+        }
+
+        fun getSession(id: String): WebSocketSession? {
+            return sessions[id]
+        }
+    }
+}
 class MyHandshakeInterceptor : HandshakeInterceptor {
 
     override fun beforeHandshake(
@@ -113,10 +130,11 @@ class CSVCodeIntegrationConfiguration(
 ) {
 
     companion object {
-        private const val CSV_CREATION_CORE_POOL_SIZE = 1
-        private const val CSV_CREATION_MAX_POOL_SIZE = 1
-        private const val CSV_CREATION_QUEUE_CAPACITY = 50
+        private const val CSV_CREATION_CORE_POOL_SIZE = 2
+        private const val CSV_CREATION_MAX_POOL_SIZE = 4
+        private const val CSV_CREATION_QUEUE_CAPACITY = 25
         private const val CSV_CREATION_THREAD_NAME = "csv-update-"
+        private val creationLock = Object()
     }
 
     private val logger: Logger = LoggerFactory.getLogger(CSVCodeIntegrationConfiguration::class.java)
@@ -168,15 +186,10 @@ class CSVCodeIntegrationConfiguration(
                     val final = "$trimmedUri,$codedUri,$qrUrl,$error"
                     // Enviar mensaje a través de la sesión WebSocket
                     session.sendMessage(TextMessage(final))
-                }
-                else{
+                }else{
                     val final = "$trimmedUri,no_url,no_qr,$error"
                     session.sendMessage(TextMessage(final))
                 }
-
-
-
-
 
         }
     }
