@@ -194,14 +194,14 @@ class UrlShortenerControllerImpl(
             return ResponseEntity(csvContent, headers, HttpStatus.CREATED)
         } catch (e: CsvException) {
             logger.error("Error processing CSV file", e)
-            return ResponseEntity(ErrorResponse("Error en el formato del archivo CSV"), HttpStatus.BAD_REQUEST)
+            return ResponseEntity("Error en el formato del archivo CSV", HttpStatus.BAD_REQUEST)
         } 
     }
 
     private fun processCsvLine(line: Array<String>, request: HttpServletRequest): CsvOutput {
         val uri = line[0].trim()
         val qrCodeIndicator = line[1].trim()
-        var errorMessage: String? = "No Error"
+        var errorMessage: String? = "no error"
         var urlRecortada: String? = null
         var qrUrl: String? = null
 

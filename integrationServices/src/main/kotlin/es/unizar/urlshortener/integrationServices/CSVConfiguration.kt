@@ -76,24 +76,7 @@ class MyWebSocketHandler : TextWebSocketHandler() {
     }
 
 }
-class WebSocketSessionStorage {
-    companion object {
-        private val sessions = mutableMapOf<String, WebSocketSession>()
 
-        fun addSession(session: WebSocketSession) {
-
-            sessions[session.id] = session
-        }
-
-        fun removeSession(session: WebSocketSession) {
-            sessions.remove(session.id)
-        }
-
-        fun getSession(id: String): WebSocketSession? {
-            return sessions[id]
-        }
-    }
-}
 class MyHandshakeInterceptor : HandshakeInterceptor {
 
     override fun beforeHandshake(
@@ -159,9 +142,9 @@ class CSVCodeIntegrationConfiguration(
                 val trimmedUri = parts[0].trim()
                 var qr = parts[1]
                 logger.info("QR: $qr")
-                var qr_request = false
+                var qrRequest = false
                 if (qr == "1"){
-                    qr_request = true
+                    qrRequest = true
                 }
                 var error = "no_error"
                 lateinit var create: es.unizar.urlshortener.core.ShortUrl
@@ -170,7 +153,7 @@ class CSVCodeIntegrationConfiguration(
                      create = createShortUrlUseCase.create(
                         url = trimmedUri,
                         data = ShortUrlProperties(),
-                        qrRequest = qr_request
+                        qrRequest = qrRequest
                     )
                 }
                 catch (e : Exception){
@@ -205,27 +188,4 @@ class CSVCodeIntegrationConfiguration(
 
 
 
-/* 
-@Component
-class SpringContext : ApplicationContextAware {
 
-    override fun setApplicationContext(context: ApplicationContext) {
-        SpringContext.context = context
-    }
-
-    fun getApplicationContext(): ApplicationContext {
-        return context
-    }
-
-    companion object {
-        private lateinit var context: ApplicationContext
-        
-        internal fun setContext(applicationContext: ApplicationContext) {
-            context = applicationContext
-        }
-
-        inline fun <reified T> getBean(): T {
-            return context.getBean(T::class.java)
-        }
-    }
-}*/
