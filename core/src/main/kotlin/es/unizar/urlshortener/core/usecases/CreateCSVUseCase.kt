@@ -53,15 +53,16 @@ class CreateCSVUseCaseImpl(
 
         val lines = csvReader.readAll()
 
-        if (lines.any { it.size != 2 }) {
+        // Verificar los encabezados
+        if (lines.isEmpty() || lines.first().toList() != listOf("URI", "QR")) {
             throw CSVCouldNotBeProcessed()
         }
-        // Si el archivo CSV está vacío, devuelve una lista vacía en lugar de lanzar una excepción
-        if (lines.isEmpty()) {
-            return csvOutputList
-        }
 
-        for (line in lines) {
+        // Ignorar la primera línea (encabezados) y procesar las demás
+        for (line in lines.drop(1)) {
+            if (line.size != 2) {
+                throw CSVCouldNotBeProcessed()
+            }
             csvOutputList.add(processCsvLine(line.toList(), ip))
         }
 

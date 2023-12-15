@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.junit.jupiter.api.Assertions
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.springframework.http.HttpHeaders
 import java.time.OffsetDateTime
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
@@ -199,18 +200,22 @@ class UrlShortenerControllerTest {
         val csvContent = "http://example.com,1\nhttp://example.org,0\n"
         val file = MockMultipartFile("file", "test.csv", "text/csv", csvContent.toByteArray())
 
+        val csvOutput = "URI,URI_recortada,qr,Mensaje\nhttp://example.com,http://short.url/1,http://short.url/1/qr,Primera URL acortada\n"
+        val firstShortenedUri = "http://short.url/1"
+
         given(
-            createCSVUseCase.processAndBuildCsv(any(), eq("127.0.0.1"))
-        ).willReturn("URI,URI_recortada,qr,Mensaje\nhttp://example.com,http://short.url/1,http://short.url/1/qr,Primera URL acortada\n")
+                createCSVUseCase.processAndBuildCsv(any(), eq("127.0.0.1"))
+        ).willReturn(Pair(csvOutput, firstShortenedUri))
 
         mockMvc.perform(
             multipart("/api/bulk")
-                .file(file)
-                .contentType(MediaType.MULTIPART_FORM_DATA)
+                    .file(file)
+                    .contentType(MediaType.MULTIPART_FORM_DATA)
         )
             .andExpect(status().isCreated)
             .andExpect(content().contentType("text/csv"))
-            .andExpect(content().string("URI,URI_recortada,qr,Mensaje\nhttp://example.com,http://short.url/1,http://short.url/1/qr,Primera URL acortada\n"))
+            .andExpect(content().string(csvOutput))
+            .andExpect(header().string(HttpHeaders.LOCATION, firstShortenedUri))
     }
 
     @Test
@@ -239,7 +244,7 @@ class UrlShortenerControllerTest {
         // Simula una respuesta vacía en lugar de lanzar una excepción
         given(
             createCSVUseCase.processAndBuildCsv(any(), eq("127.0.0.1"))
-        ).willReturn("")
+        ).willReturn(Pair("",""))
 
         mockMvc.perform(
             multipart("/api/bulk")
