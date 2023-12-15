@@ -138,7 +138,7 @@ class CSVCodeIntegrationConfiguration(
     }
 
     private val logger: Logger = LoggerFactory.getLogger(CSVCodeIntegrationConfiguration::class.java)
-
+    private val creationLock = Object()
     fun csvCreationExecutor(): Executor = ThreadPoolTaskExecutor().apply {
         corePoolSize = CSV_CREATION_CORE_POOL_SIZE
         maxPoolSize = CSV_CREATION_MAX_POOL_SIZE
@@ -185,10 +185,15 @@ class CSVCodeIntegrationConfiguration(
                     val qrUrl = if (qr == "1") "$codedUri/qr" else "no_qr"
                     val final = "$trimmedUri,$codedUri,$qrUrl,$error"
                     // Enviar mensaje a través de la sesión WebSocket
-                    session.sendMessage(TextMessage(final))
+                    synchronized(creationLock) {
+                        session.sendMessage(TextMessage(final))
+                    }
                 }else{
                     val final = "$trimmedUri,no_url,no_qr,$error"
-                    session.sendMessage(TextMessage(final))
+                    synchronized(creationLock) {
+                        // Enviar mensaje a través de la sesión WebSocket
+                        session.sendMessage(TextMessage(final))
+                    }
                 }
 
         }
