@@ -163,10 +163,13 @@ class UrlShortenerControllerImpl(
         request: HttpServletRequest
     ): ResponseEntity<Any> {
         val inputStream = file.inputStream
-        val csvContent = createCSVUseCase.processAndBuildCsv(inputStream, request.remoteAddr)
+        val (csvContent, firstShortenedUri) = createCSVUseCase.processAndBuildCsv(inputStream, request.remoteAddr)
         val headers = HttpHeaders().apply {
             contentType = MediaType.parseMediaType("text/csv")
             set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=output.csv")
+            firstShortenedUri?.let {
+                location = URI.create(it)
+            }
         }
 
         // Si el contenido del CSV está vacío (es decir, el archivo estaba vacío), devuelve un mensaje adecuado

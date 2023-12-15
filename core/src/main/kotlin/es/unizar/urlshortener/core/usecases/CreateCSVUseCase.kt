@@ -10,7 +10,7 @@ import java.io.InputStreamReader
 
 
 interface CreateCSVUseCase {
-    fun processAndBuildCsv(inputStream: InputStream, ip: String?): String
+    fun processAndBuildCsv(inputStream: InputStream, ip: String?): Pair<String, String?>
 }
 
 class CreateCSVUseCaseImpl(
@@ -18,7 +18,7 @@ class CreateCSVUseCaseImpl(
     private val linkToService: LinkToService
 ) : CreateCSVUseCase{
 
-    override fun processAndBuildCsv(inputStream: InputStream, ip: String?): String {
+    override fun processAndBuildCsv(inputStream: InputStream, ip: String?): Pair<String, String?> {
         val byteArrayInputStream = toByteArrayInputStream(inputStream)
 
         // Detectar el separador
@@ -29,7 +29,8 @@ class CreateCSVUseCaseImpl(
         val csvOutputs = processCsvFile(byteArrayInputStream, separator, ip)
 
         // Construir el contenido del CSV
-        return buildCsvContent(csvOutputs, separator)
+        val firstShortenedUri = csvOutputs.firstOrNull()?.shortenedUri
+        return Pair(buildCsvContent(csvOutputs, separator), firstShortenedUri)
     }
 
     private fun buildCsvContent(outputList: List<CsvOutput>, separator: Char): String {
