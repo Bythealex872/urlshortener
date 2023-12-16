@@ -142,7 +142,6 @@ class CSVCodeIntegrationConfiguration(
             val parts = uri.split(delimiter)
             val trimmedUri = parts[0].trim()
             val qrRequest = parts[1].trim() == "1"
-            logger.info("QR request: $qrRequest")
             var error = "no_error"
             lateinit var create: es.unizar.urlshortener.core.ShortUrl
             // Crear URL corta
@@ -153,8 +152,18 @@ class CSVCodeIntegrationConfiguration(
                     qrRequest = qrRequest
                 )
             }
+
             catch (e : Exception) {
                 error = e.message.toString()
+            }
+            val safe: String = if (create.properties.safe == null) {
+                "The URL has not been checked."
+            } else {
+                if (create.properties.safe==true) {
+                    "The URL is safe."
+                } else {
+                    "The URL is not safe."
+                }
             }
             if (error == "no_error") {
                 // Obtener el enlace
@@ -163,13 +172,13 @@ class CSVCodeIntegrationConfiguration(
                 val address = session.localAddress
                 val codedUri = "http:/$address$shortUrl"
                 val qrUrl = if (qrRequest) "$codedUri/qr" else "no_qr"
-                val final = "$trimmedUri,$codedUri,$qrUrl,$error"
+                val final = "$trimmedUri,$codedUri,$qrUrl,$error,$safe"
                 // Enviar mensaje a través de la sesión WebSocket
                 synchronized(creationLock) {
                     session.sendMessage(TextMessage(final))
                 }
             } else {
-                val final = "$trimmedUri,no_url,no_qr,$error"
+                val final = "$trimmedUri,no_url,no_qr,$error,$safe"
                 synchronized(creationLock) {
                     // Enviar mensaje a través de la sesión WebSocket
                     session.sendMessage(TextMessage(final))

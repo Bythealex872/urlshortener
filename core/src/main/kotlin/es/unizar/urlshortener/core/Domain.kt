@@ -61,7 +61,8 @@ data class CsvOutput(
     val originalUri: String,
     val shortenedUri: String,
     val qr : String,
-    val explanation: String = ""
+    val explanation: String = "",
+    val status : String
 )
 
 data class UserAgent(
