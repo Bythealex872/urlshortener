@@ -38,7 +38,8 @@ class CreateCSVUseCaseImpl(
         csvContent.append("URI${separator}URI_recortada${separator}qr${separator}Mensaje\n")
 
         for (output in outputList) {
-            csvContent.append("${output.originalUri}$separator${output.shortenedUri}$separator${output.qr}$separator${output.explanation}\n")
+            csvContent.append("${output.originalUri}$separator${output.shortenedUri}$separator${output.qr}$separator" +
+                    "${output.explanation}$separator${output.status}\n")
         }
 
         return csvContent.toString()
