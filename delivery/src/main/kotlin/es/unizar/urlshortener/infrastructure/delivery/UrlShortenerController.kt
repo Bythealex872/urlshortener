@@ -73,9 +73,7 @@ data class ShortUrlDataOut(
     val properties: Map<String, Any> = emptyMap()
 )
 
-data class ErrorResponse(
-    val error: String
-)
+
 
 
 

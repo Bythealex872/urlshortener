@@ -4,8 +4,14 @@ package es.unizar.urlshortener.infrastructure.delivery
 
 import es.unizar.urlshortener.core.*
 import es.unizar.urlshortener.core.usecases.*
+import jakarta.websocket.ClientEndpoint
+import jakarta.websocket.ContainerProvider
+import jakarta.websocket.OnMessage
+import jakarta.websocket.Session
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
+import org.mockito.BDDMockito.never
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -16,13 +22,21 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpHeaders
+import java.time.OffsetDateTime
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import org.springframework.boot.test.web.server.LocalServerPort
+import java.net.URI
 
 
 @WebMvcTest
@@ -67,7 +81,6 @@ class UrlShortenerControllerTest {
             .andExpect(status().isTemporaryRedirect)
             .andExpect(redirectedUrl("http://example.com/"))
 
-        //verify(logClickUseCase).logClick("key", ip = "127.0.0.1", UA = "")
     }
 
     @Test
@@ -81,8 +94,6 @@ class UrlShortenerControllerTest {
         mockMvc.perform(get("/{id}", "key").header("User-Agent", userAgentHeaderValue))
                 .andExpect(status().isTemporaryRedirect)
                 .andExpect(redirectedUrl("http://example.com/"))
-
-        //verify(logClickUseCase).logClick("key", ip = "127.0.0.1" , UA = userAgentHeaderValue)
     }
 
     @Test
@@ -95,7 +106,27 @@ class UrlShortenerControllerTest {
             .andExpect(status().isNotFound)
             .andExpect(jsonPath("$.statusCode").value(404))
 
-        //verify(logClickUseCase, never()).logClick("key", ip = "127.0.0.1", ua = "")
+    }
+    @Test
+    fun `redirectTo returns a retry after when the key not safe`() {
+        given(redirectUseCase.redirectTo("key", "127.0.0.1", null))
+                .willAnswer { throw RetryAfterException() }
+
+        mockMvc.perform(get("/{id}", "key"))
+                .andDo(print())
+                .andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.statusCode").value(400))
+
+    }
+    @Test
+    fun `redirectTo returns a forbidden when the redirection mode is not correct`() {
+        given(redirectUseCase.redirectTo("key", "127.0.0.1", null))
+                .willAnswer { throw RedirectionForbidden("key") }
+
+        mockMvc.perform(get("/{id}", "key"))
+                .andDo(print())
+                .andExpect(status().isForbidden)
+                .andExpect(jsonPath("$.statusCode").value(403))
     }
 
     @Test
@@ -179,6 +210,18 @@ class UrlShortenerControllerTest {
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.statusCode").value(400))
     }
+
+    @Test
+    fun `qrCode returns a forbidden when redirection mode is not correct`() {
+        given(
+                createQRCodeUseCase.getQRCode("nonexistent")
+        ).willAnswer { throw RedirectionForbidden("nonexistent") }
+        mockMvc.perform(get("/{id}/qr", "nonexistent"))
+                .andDo(print())
+                .andExpect(status().isForbidden)
+                .andExpect(jsonPath("$.statusCode").value(403))
+    }
+
     @Test
     fun `qrCode returns qr code image when qr code is available`() {
         val qrCodeBytes = ByteArray(100) // Supongamos que es un QR generado
@@ -213,6 +256,9 @@ class UrlShortenerControllerTest {
             .andExpect(content().string(csvOutput))
             .andExpect(header().string(HttpHeaders.LOCATION, firstShortenedUri))
     }
+
+
+
 
     @Test
     fun `processCsvFile returns a bad request when CSV format is invalid`() {
@@ -281,4 +327,65 @@ class UrlShortenerControllerTest {
                 .andExpect(jsonPath("$.statusCode").value(404))
     }
 
+    @Test
+    fun `return User-Agent info returns retry after when the key is not safe`() {
+        val key = "nonexistentKey"
+        given(
+                userAgentInfoUseCase.getUserAgentInfoByKey(key)
+        ).willAnswer { throw RetryAfterException() }
+
+        mockMvc.perform(get("/api/link/{id}", key))
+                .andDo(print())
+                .andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.statusCode").value(400))
+    }
+
+    @Test
+    fun `return User-Agent info returns forbidden when the key is not safe`() {
+        val key = "nonexistentKey"
+        given(
+                userAgentInfoUseCase.getUserAgentInfoByKey(key)
+        ).willAnswer { throw RedirectionForbidden(key) }
+
+        mockMvc.perform(get("/api/link/{id}", key))
+                .andDo(print())
+                .andExpect(status().isForbidden)
+                .andExpect(jsonPath("$.statusCode").value(403))
+    }
+
 }
+/*
+@ClientEndpoint
+class ComplexClient(private val list: MutableList<String>) {
+
+    @OnMessage // Remove this line when you implement onMessage
+    fun onMessage(message: String, session: Session) {
+        list.add(message)
+            session.basicRemote.sendText("https://www.youtube.com/,1")
+
+    }
+}
+
+fun Any.connect(uri: String) {
+    ContainerProvider.getWebSocketContainer().connectToServer(this, URI(uri))
+}
+
+@SpringBootTest(webEnvironment = RANDOM_PORT)
+class ElizaServerTest {
+
+    @LocalServerPort
+    private var port: Int = 0
+
+    @Test
+    fun onOpen() {
+        val list = mutableListOf<String>()
+
+        val client = ComplexClient(list)
+        client.connect("ws://localhost:$port/api/fast-bulk")
+
+        // Assert that the expected substring is present in the list
+        val expectedSubstring = "https://www.youtube.com/,http://127.0.0.1:8080/6f12359f,http://127.0.0.1:8080/6f12359f/qr,no_error"
+        assertTrue(list.any { it.contains(expectedSubstring) })
+    }
+}
+*/
