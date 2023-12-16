@@ -29,10 +29,10 @@ class UserAgentInfoUseCaseImpl(
         val shortUrl = shortUrlRepository.findByKey(key) ?: throw RedirectionNotFound(key)
         val click = clickRepository.findByKey(key) ?: throw RedirectionNotFound(key)
         // Verifica si la URI recortada no existe
-        if(!shortUrl.properties.safe!!){ // no valida, posible spam
+        if(shortUrl.properties.safe == null){ // no valida, posible spam
             throw RetryAfterException()
         }
-        if(shortUrl.redirection.mode != CORRECTO){ // no operativa
+        if(!shortUrl.properties.safe){ // no operativa
             throw RedirectionForbidden(key)
         }
 

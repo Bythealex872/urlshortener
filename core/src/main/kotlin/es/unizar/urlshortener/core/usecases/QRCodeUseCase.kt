@@ -36,10 +36,10 @@ class QRCodeUseCaseImpl(
 
 
         // Verifica si la URI recortada no existe
-        if (!shortUrl.properties.safe!! || shortUrl.properties.qr == null) {
+        if (shortUrl.properties.safe == null || shortUrl.properties.qr == null) {
             throw RetryAfterException()
         }
-        if (shortUrl.redirection.mode != CORRECTO) {
+        if (!shortUrl.properties.safe) {
             throw RedirectionForbidden(id)
         }
 

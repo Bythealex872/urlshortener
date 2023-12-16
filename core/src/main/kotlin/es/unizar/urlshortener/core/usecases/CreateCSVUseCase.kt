@@ -49,7 +49,7 @@ class CreateCSVUseCaseImpl(
         val csvOutputList = mutableListOf<CsvOutput>()
 
         val csvReader = CSVReaderBuilder(InputStreamReader(inputStream)).withCSVParser(
-                CSVParserBuilder().withSeparator(separator).build()
+            CSVParserBuilder().withSeparator(separator).build()
         ).build()
 
         val lines = csvReader.readAll()
@@ -79,9 +79,9 @@ class CreateCSVUseCaseImpl(
         lateinit var safe : String
         try {
             val create = shortUrlUseCase.create(
-                    url = uri,
-                    qrRequest = qrCodeIndicator == "1",
-                    data = ShortUrlProperties(ip = ip)
+                url = uri,
+                qrRequest = qrCodeIndicator == "1",
+                data = ShortUrlProperties(ip = ip)
             )
             val uriObj = linkToService.link(create.hash)
             urlRecortada = uriObj.toString()
