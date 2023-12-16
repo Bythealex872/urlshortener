@@ -28,7 +28,7 @@ class UserAgentInfoUseCaseImpl(
     override fun getUserAgentInfoByKey(key: String): Map<String, Any>{
         val shortUrl = shortUrlRepository.findByKey(key) ?: throw RedirectionNotFound(key)
         // Verifica si la URI recortada no existe
-        if(!shortUrl.properties.safe){ // no valida, posible spam
+        if(!shortUrl.properties.safe!!){ // no valida, posible spam
             throw RedirectionForbidden(key)
         }
         if(shortUrl.redirection.mode == RETRYAFTER){ // no operativa

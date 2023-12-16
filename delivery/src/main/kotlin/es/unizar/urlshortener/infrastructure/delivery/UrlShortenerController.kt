@@ -17,16 +17,9 @@ import org.springframework.core.io.ByteArrayResource
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.bind.annotation.RequestPart
 import es.unizar.urlshortener.core.*
-import com.opencsv.*
-import com.opencsv.exceptions.CsvException
 import es.unizar.urlshortener.core.usecases.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import jakarta.websocket.*
-import jakarta.websocket.server.HandshakeRequest
-import jakarta.websocket.server.ServerEndpoint
-import jakarta.websocket.server.ServerEndpointConfig
-import org.springframework.stereotype.Component
 
 
 /**
@@ -135,7 +128,7 @@ class UrlShortenerControllerImpl(
             val response = ShortUrlDataOut(
                 url = url,
                 properties = mapOf(
-                    "safe" to it.properties.safe,
+                    "safe" to "Url aun no esta validada",
                     "qr" to qr
                 )
             )

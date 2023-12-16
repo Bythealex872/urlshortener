@@ -1,6 +1,5 @@
 package es.unizar.urlshortener.infrastructure.repositories
 
-import es.unizar.urlshortener.core.UserAgent
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.transaction.annotation.Transactional
@@ -16,8 +15,8 @@ interface ShortUrlEntityRepository : JpaRepository<ShortUrlEntity, String> {
     
     @Modifying
     @Transactional
-    @Query("UPDATE ShortUrlEntity s SET s.safe = :safe WHERE s.hash= :hash")
-    fun updateSafeStatusByHash(hash:  String, safe: Boolean)
+    @Query("UPDATE ShortUrlEntity s SET s.safe = :safe WHERE s.target= :target")
+    fun updateSafeStatusByTarget(target:  String, safe: Boolean)
 
     @Modifying
     @Transactional

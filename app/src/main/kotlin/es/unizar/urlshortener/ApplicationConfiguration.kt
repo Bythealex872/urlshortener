@@ -26,6 +26,7 @@ class ApplicationConfiguration(
     @Autowired val shortUrlEntityRepository: ShortUrlEntityRepository,
     @Autowired val clickEntityRepository: ClickEntityRepository,
     @Autowired val qrRequestImpl: QRRequestGateway,
+    @Autowired val safeBrowsingRequestImpl: SafeBrowsingRequestGateway,
     @Autowired val userAgentRequestImpl: UserAgentRequestGateway
 ) {
 
@@ -55,7 +56,7 @@ class ApplicationConfiguration(
     @Bean
     fun createShortUrlUseCase() =
         CreateShortUrlUseCaseImpl(shortUrlRepositoryService(), validatorService()
-            , hashService(), qrRequestImpl, linkToService())
+            , hashService(), qrRequestImpl,safeBrowsingRequestImpl, linkToService())
     @Bean
     fun safeBrowsingUseCase() = SafeBrowsingUseCaseImpl(safeBrowsingService())
     @Bean

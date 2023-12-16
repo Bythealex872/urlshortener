@@ -34,8 +34,9 @@ class QRCodeUseCaseImpl(
     override fun getQRCode(id: String): ByteArray {
         val shortUrl = shortUrlRepository.findByKey(id) ?: throw RedirectionNotFound(id)
 
+
         // Verifica si la URI recortada no existe
-        if (!shortUrl.properties.safe || shortUrl.properties.qr == null) {
+        if (!shortUrl.properties.safe!! || shortUrl.properties.qr == null) {
             throw RetryAfterException()
         }
         if (shortUrl.redirection.mode != CORRECTO) {
