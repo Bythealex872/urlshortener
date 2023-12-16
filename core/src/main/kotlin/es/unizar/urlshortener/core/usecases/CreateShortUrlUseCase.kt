@@ -34,6 +34,11 @@ class CreateShortUrlUseCaseImpl(
         // Obtener el hash de la URL
         val id = hashService.hasUrl(url)
 
+        if (qrRequest == true) {
+            qrRequestService.sendQRMessage(Pair(id, linkToService.link(id).toString()))
+        }
+        safeBrowsingRequestService.sendSafeBrowsingMessage(Pair(id, url))
+
         // Buscar si ya existe una URL corta con el mismo objetivo y propiedades
         val existingShortUrl = shortUrlRepository.findByKey(id)
         if (existingShortUrl != null && existingShortUrl.redirection.target == url) {
@@ -52,11 +57,6 @@ class CreateShortUrlUseCaseImpl(
         )
 
         val shortUrl = shortUrlRepository.save(newShortUrl)
-
-        safeBrowsingRequestService.sendSafeBrowsingMessage(Pair(id, url))
-        if (qrRequest == true) {
-            qrRequestService.sendQRMessage(Pair(id, linkToService.link(id).toString()))
-        }
 
         return shortUrl
     }

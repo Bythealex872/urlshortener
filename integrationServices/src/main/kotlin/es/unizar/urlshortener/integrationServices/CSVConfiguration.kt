@@ -141,12 +141,8 @@ class CSVCodeIntegrationConfiguration(
             val delimiter = detectDelimiter(uri)
             val parts = uri.split(delimiter)
             val trimmedUri = parts[0].trim()
-            var qr = parts[1]
-            logger.info("QR: $qr")
-            var qrRequest = false
-            if (qr == "1"){
-                qrRequest = true
-            }
+            val qrRequest = parts[1].trim() == "1"
+            logger.info("QR request: $qrRequest")
             var error = "no_error"
             lateinit var create: es.unizar.urlshortener.core.ShortUrl
             // Crear URL corta
@@ -166,7 +162,7 @@ class CSVCodeIntegrationConfiguration(
                 logger.info("Enviando mensaje: $shortUrl")
                 val address = session.localAddress
                 val codedUri = "http:/$address$shortUrl"
-                val qrUrl = if (qr == "1") "$codedUri/qr" else "no_qr"
+                val qrUrl = if (qrRequest) "$codedUri/qr" else "no_qr"
                 val final = "$trimmedUri,$codedUri,$qrUrl,$error"
                 // Enviar mensaje a través de la sesión WebSocket
                 synchronized(creationLock) {

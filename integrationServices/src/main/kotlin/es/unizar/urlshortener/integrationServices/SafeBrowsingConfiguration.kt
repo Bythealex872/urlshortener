@@ -99,6 +99,9 @@ class SafeBrowsingConfiguration(
                         1
                     )
                 }
+                expireGroupsUponTimeout(true)
+                sendPartialResultOnExpiry(true)
+                groupTimeout(TimeUnit.MINUTES.toMillis(1))
             }
             // Envía el lote de URLs al servicio de Safe Browsing
             transform <List<Pair<String, String>>> { payload ->
