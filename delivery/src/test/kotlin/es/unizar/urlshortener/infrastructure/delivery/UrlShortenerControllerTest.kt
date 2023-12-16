@@ -81,7 +81,6 @@ class UrlShortenerControllerTest {
             .andExpect(status().isTemporaryRedirect)
             .andExpect(redirectedUrl("http://example.com/"))
 
-        //verify(logClickUseCase).logClick("key", ip = "127.0.0.1", UA = "")
     }
 
     @Test
@@ -95,8 +94,6 @@ class UrlShortenerControllerTest {
         mockMvc.perform(get("/{id}", "key").header("User-Agent", userAgentHeaderValue))
                 .andExpect(status().isTemporaryRedirect)
                 .andExpect(redirectedUrl("http://example.com/"))
-
-        //verify(logClickUseCase).logClick("key", ip = "127.0.0.1" , UA = userAgentHeaderValue)
     }
 
     @Test
@@ -109,7 +106,27 @@ class UrlShortenerControllerTest {
             .andExpect(status().isNotFound)
             .andExpect(jsonPath("$.statusCode").value(404))
 
-        //verify(logClickUseCase, never()).logClick("key", ip = "127.0.0.1", ua = "")
+    }
+    @Test
+    fun `redirectTo returns a retry after when the key not safe`() {
+        given(redirectUseCase.redirectTo("key", "127.0.0.1", null))
+                .willAnswer { throw RetryAfterException() }
+
+        mockMvc.perform(get("/{id}", "key"))
+                .andDo(print())
+                .andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.statusCode").value(400))
+
+    }
+    @Test
+    fun `redirectTo returns a forbidden when the redirection mode is not correct`() {
+        given(redirectUseCase.redirectTo("key", "127.0.0.1", null))
+                .willAnswer { throw RedirectionForbidden("key") }
+
+        mockMvc.perform(get("/{id}", "key"))
+                .andDo(print())
+                .andExpect(status().isForbidden)
+                .andExpect(jsonPath("$.statusCode").value(403))
     }
 
     @Test
@@ -193,6 +210,18 @@ class UrlShortenerControllerTest {
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.statusCode").value(400))
     }
+
+    @Test
+    fun `qrCode returns a forbidden when redirection mode is not correct`() {
+        given(
+                createQRCodeUseCase.getQRCode("nonexistent")
+        ).willAnswer { throw RedirectionForbidden("nonexistent") }
+        mockMvc.perform(get("/{id}/qr", "nonexistent"))
+                .andDo(print())
+                .andExpect(status().isForbidden)
+                .andExpect(jsonPath("$.statusCode").value(403))
+    }
+
     @Test
     fun `qrCode returns qr code image when qr code is available`() {
         val qrCodeBytes = ByteArray(100) // Supongamos que es un QR generado
@@ -296,6 +325,32 @@ class UrlShortenerControllerTest {
                 .andDo(print())
                 .andExpect(status().isNotFound)
                 .andExpect(jsonPath("$.statusCode").value(404))
+    }
+
+    @Test
+    fun `return User-Agent info returns retry after when the key is not safe`() {
+        val key = "nonexistentKey"
+        given(
+                userAgentInfoUseCase.getUserAgentInfoByKey(key)
+        ).willAnswer { throw RetryAfterException() }
+
+        mockMvc.perform(get("/api/link/{id}", key))
+                .andDo(print())
+                .andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.statusCode").value(400))
+    }
+
+    @Test
+    fun `return User-Agent info returns forbidden when the key is not safe`() {
+        val key = "nonexistentKey"
+        given(
+                userAgentInfoUseCase.getUserAgentInfoByKey(key)
+        ).willAnswer { throw RedirectionForbidden(key) }
+
+        mockMvc.perform(get("/api/link/{id}", key))
+                .andDo(print())
+                .andExpect(status().isForbidden)
+                .andExpect(jsonPath("$.statusCode").value(403))
     }
 
 }

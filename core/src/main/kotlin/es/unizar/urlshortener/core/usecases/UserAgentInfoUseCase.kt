@@ -4,7 +4,7 @@ import com.blueconic.browscap.Capabilities
 import com.blueconic.browscap.UserAgentService
 import es.unizar.urlshortener.core.*
 
-private const val RETRYAFTER = 403
+private const val CORRECTO = 307
 
 /**
  * Given a key returns user agent information.
@@ -27,14 +27,15 @@ class UserAgentInfoUseCaseImpl(
 
     override fun getUserAgentInfoByKey(key: String): Map<String, Any>{
         val shortUrl = shortUrlRepository.findByKey(key) ?: throw RedirectionNotFound(key)
+        val click = clickRepository.findByKey(key) ?: throw RedirectionNotFound(key)
         // Verifica si la URI recortada no existe
         if(!shortUrl.properties.safe){ // no valida, posible spam
-            throw RedirectionForbidden(key)
-        }
-        if(shortUrl.redirection.mode == RETRYAFTER){ // no operativa
             throw RetryAfterException()
         }
-        val click = clickRepository.findByKey(key) ?: throw RedirectionNotFound(key)
+        if(shortUrl.redirection.mode != CORRECTO){ // no operativa
+            throw RedirectionForbidden(key)
+        }
+
         return click.let {
             mapOf(
                     "hash" to it.hash,
