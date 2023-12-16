@@ -2,7 +2,8 @@ package es.unizar.urlshortener.core.usecases
 
 import es.unizar.urlshortener.core.*
 
-private const val RETRYAFTER = 403
+private const val CORRECTO = 307
+
 /**
  * Given a key returns a [Redirection] that contains a [URI target][Redirection.target]
  * and an [HTTP redirection mode][Redirection.mode].
@@ -27,10 +28,10 @@ class RedirectUseCaseImpl(
 
         // Verifica si la URI recortada no existe
         if(!shortUrl.properties.safe){ // no valida, posible spam
-            throw RedirectionForbidden(key)
-        }
-        if(shortUrl.redirection.mode == RETRYAFTER){ // no operativa
             throw RetryAfterException()
+        }
+        if(shortUrl.redirection.mode != CORRECTO){ // no operativa
+            throw RedirectionForbidden(key)
         }
 
         uaService.sendUserAgentMessage(Triple(key, ip, ua))
