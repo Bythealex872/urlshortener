@@ -75,7 +75,7 @@ class CreateCSVUseCaseImpl(
         var errorMessage: String? = "no error"
         var urlRecortada: String? = null
         var qrUrl: String? = null
-
+        lateinit var safe : String
         try {
             val create = shortUrlUseCase.create(
                     url = uri,
@@ -85,11 +85,21 @@ class CreateCSVUseCaseImpl(
             val uriObj = linkToService.link(create.hash)
             urlRecortada = uriObj.toString()
             qrUrl = if (qrCodeIndicator == "1") "$urlRecortada/qr" else "no_qr"
+            safe = if (create.properties.safe == null) {
+                "The URL has not been checked."
+            } else {
+                if (create.properties.safe) {
+                    "The URL is safe."
+                } else {
+                    "The URL is not safe."
+                }
+            }
         } catch (e: Exception) {
             errorMessage = e.message
         }
 
-        return CsvOutput(uri, urlRecortada ?: "Error", qrUrl ?: "Error", errorMessage!!)
+
+        return CsvOutput(uri, urlRecortada ?: "Error", qrUrl ?: "Error", errorMessage!!, safe)
     }
 
     private fun detectCsvSeparator(inputStream: InputStream): Char {
