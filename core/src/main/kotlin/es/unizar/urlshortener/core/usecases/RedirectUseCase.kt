@@ -1,8 +1,9 @@
+@file:Suppress("WildcardImport")
+
 package es.unizar.urlshortener.core.usecases
 
 import es.unizar.urlshortener.core.*
 
-private const val CORRECTO = 307
 
 /**
  * Given a key returns a [Redirection] that contains a [URI target][Redirection.target]
@@ -18,8 +19,8 @@ interface RedirectUseCase {
  * Implementation of [RedirectUseCase].
  */
 class RedirectUseCaseImpl(
-    private val shortUrlRepository: ShortUrlRepositoryService,
-    private val uaService: UserAgentRequestService
+        private val shortUrlRepository: ShortUrlRepositoryService,
+        private val uaService: UserAgentRequestService
 ) : RedirectUseCase {
 
     override fun redirectTo(key: String, ip: String, ua: String?): Redirection {
@@ -27,10 +28,10 @@ class RedirectUseCaseImpl(
         val shortUrl = shortUrlRepository.findByKey(key) ?: throw RedirectionNotFound(key)
 
         // Verifica si la URI recortada no existe
-        if(!shortUrl.properties.safe!!){ // no valida, posible spam
+        if(shortUrl.properties.safe == null){ // no valida, posible spam
             throw RetryAfterException()
         }
-        if(shortUrl.redirection.mode != CORRECTO){ // no operativa
+        if(!shortUrl.properties.safe){ // no operativa
             throw RedirectionForbidden(key)
         }
 

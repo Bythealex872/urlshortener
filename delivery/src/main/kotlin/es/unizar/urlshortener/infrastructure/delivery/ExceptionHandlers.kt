@@ -1,3 +1,5 @@
+@file:Suppress("WildcardImport")
+
 package es.unizar.urlshortener.infrastructure.delivery
 
 import es.unizar.urlshortener.core.*
@@ -30,7 +32,7 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun retryAfterException(ex: RetryAfterException): ResponseEntity<ErrorMessage> {
         val headers = HttpHeaders()
-        headers.set(HttpHeaders.RETRY_AFTER, "20")
+        headers.set(HttpHeaders.RETRY_AFTER, "60")
         return ResponseEntity(ErrorMessage(
                 statusCode = HttpStatus.BAD_REQUEST.value(),
                 message = ex.message,

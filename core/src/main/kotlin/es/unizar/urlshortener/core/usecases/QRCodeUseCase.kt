@@ -12,8 +12,6 @@ import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 import java.io.ByteArrayOutputStream
 
-private const val CORRECTO = 307
-
 interface QRCodeUseCase {
     fun createQRCode(id: String): ByteArray
     fun getQRCode(id: String): ByteArray
@@ -34,11 +32,11 @@ class QRCodeUseCaseImpl(
     override fun getQRCode(id: String): ByteArray {
         val shortUrl = shortUrlRepository.findByKey(id) ?: throw RedirectionNotFound(id)
 
-
-        // Verifica si la URI recortada no existe
+        // Verifica si la URI recortada no existe y si todavía no tiene QR
         if (shortUrl.properties.safe == null || shortUrl.properties.qr == null) {
             throw RetryAfterException()
         }
+        // Verifica si la URI es segura
         if (!shortUrl.properties.safe) {
             throw RedirectionForbidden(id)
         }

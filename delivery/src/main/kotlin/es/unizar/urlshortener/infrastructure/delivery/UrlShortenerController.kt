@@ -85,7 +85,6 @@ data class ShortUrlDataOut(
 @RestController
 class UrlShortenerControllerImpl(
     val redirectUseCase: RedirectUseCase,
-    val logClickUseCase: LogClickUseCase,
     val createShortUrlUseCase: CreateShortUrlUseCase,
     val createQRCodeUseCase: QRCodeUseCase,
     val createCSVUseCase : CreateCSVUseCase,

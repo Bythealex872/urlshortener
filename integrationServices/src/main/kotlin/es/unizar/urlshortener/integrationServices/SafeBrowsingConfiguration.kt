@@ -29,8 +29,8 @@ class SafeBrowsingConfiguration(
     private val shortUrlRepository: ShortUrlRepositoryService
 ) {
     companion object {
-        private const val SAFE_CREATION_CORE_POOL_SIZE = 1
-        private const val SAFE_CREATION_MAX_POOL_SIZE = 1
+        private const val SAFE_CREATION_CORE_POOL_SIZE = 2
+        private const val SAFE_CREATION_MAX_POOL_SIZE = 5
         private const val SAFE_CREATION_QUEUE_CAPACITY = 25
         private const val SAFE_CREATION_THREAD_NAME = "safe-browsing"
 
@@ -86,7 +86,6 @@ class SafeBrowsingConfiguration(
                 SafeBrowsingPayload(payload.second, isSafe)
             }
             */
-
             aggregate {
                 // Establece el almacenamiento de mensajes y el procesador de grupo
                 messageStore(messageStore())
@@ -94,11 +93,7 @@ class SafeBrowsingConfiguration(
 
                 // Configura el tamaño del lote (N URLs) y el tiempo límite (1 minuto)
                 correlationStrategy { "defaultCorrelationId" }
-                releaseStrategy { group ->
-                    group.size() >= 5 || System.currentTimeMillis() - group.timestamp >= TimeUnit.MINUTES.toMillis(
-                        1
-                    )
-                }
+                //releaseStrategy { group -> group.size() >= GROUP_SIZE }
                 expireGroupsUponTimeout(true)
                 sendPartialResultOnExpiry(true)
                 groupTimeout(TimeUnit.MINUTES.toMillis(1))

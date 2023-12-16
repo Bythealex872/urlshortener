@@ -48,7 +48,6 @@ interface HashService {
 
 interface LinkToService {
     fun link(id: String) : URI
-    fun buildRedirectUrl(id: String): String
 }
 
 interface QRRequestService {

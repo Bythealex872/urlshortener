@@ -55,9 +55,6 @@ class UrlShortenerControllerTest {
     private lateinit var redirectUseCase: RedirectUseCase
 
     @MockBean
-    private lateinit var logClickUseCase: LogClickUseCase
-
-    @MockBean
     private lateinit var createShortUrlUseCase: CreateShortUrlUseCase
 
     @MockBean
@@ -239,7 +236,8 @@ class UrlShortenerControllerTest {
         val csvContent = "http://example.com,1\nhttp://example.org,0\n"
         val file = MockMultipartFile("file", "test.csv", "text/csv", csvContent.toByteArray())
 
-        val csvOutput = "URI,URI_recortada,qr,Mensaje\nhttp://example.com,http://short.url/1,http://short.url/1/qr,Primera URL acortada\n"
+        val csvOutput = "URI,URI_recortada,QR,Mensaje,Estado de validacion\n" +
+                "http://example.com,http://short.url/1,http://short.url/1/qr,Primera URL acortada,URL segura\n"
         val firstShortenedUri = "http://short.url/1"
 
         given(
@@ -256,9 +254,6 @@ class UrlShortenerControllerTest {
             .andExpect(content().string(csvOutput))
             .andExpect(header().string(HttpHeaders.LOCATION, firstShortenedUri))
     }
-
-
-
 
     @Test
     fun `processCsvFile returns a bad request when CSV format is invalid`() {
@@ -384,7 +379,8 @@ class ElizaServerTest {
         client.connect("ws://localhost:$port/api/fast-bulk")
 
         // Assert that the expected substring is present in the list
-        val expectedSubstring = "https://www.youtube.com/,http://127.0.0.1:8080/6f12359f,http://127.0.0.1:8080/6f12359f/qr,no_error"
+        val expectedSubstring = "https://www.youtube.com/, +
+            http://127.0.0.1:8080/6f12359f,http://127.0.0.1:8080/6f12359f/qr,no_error"
         assertTrue(list.any { it.contains(expectedSubstring) })
     }
 }

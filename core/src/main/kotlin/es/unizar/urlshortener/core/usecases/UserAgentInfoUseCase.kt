@@ -1,10 +1,11 @@
+@file:Suppress("WildcardImport")
+
 package es.unizar.urlshortener.core.usecases
 
 import com.blueconic.browscap.Capabilities
 import com.blueconic.browscap.UserAgentService
 import es.unizar.urlshortener.core.*
 
-private const val CORRECTO = 307
 
 /**
  * Given a key returns user agent information.
@@ -19,9 +20,8 @@ interface UserAgentInfoUseCase {
  * Implementation of [UserAgentInfoUseCase].
  */
 class UserAgentInfoUseCaseImpl(
-        private val shortUrlRepository: ShortUrlRepositoryService,
-        private val clickRepository: ClickRepositoryService
-
+    private val shortUrlRepository: ShortUrlRepositoryService,
+    private val clickRepository: ClickRepositoryService
 ) : UserAgentInfoUseCase {
     private val parser = UserAgentService().loadParser()
 
@@ -38,9 +38,9 @@ class UserAgentInfoUseCaseImpl(
 
         return click.let {
             mapOf(
-                    "hash" to it.hash,
-                    "created" to it.created.toString(),
-                    "properties" to it.properties
+                "hash" to it.hash,
+                "created" to it.created.toString(),
+                "properties" to it.properties
             )
         }
     }
