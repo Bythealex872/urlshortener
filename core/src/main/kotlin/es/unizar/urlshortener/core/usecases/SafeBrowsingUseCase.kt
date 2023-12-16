@@ -18,7 +18,6 @@ class SafeBrowsingUseCaseImpl(
 
 
     override fun urlsAreSafe(urlList: List<String>) : List<String> {
-
         return safeBrowsingService.urlsAreSafe(urlList)
     }
 

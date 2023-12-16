@@ -18,7 +18,7 @@ interface ClickRepositoryService {
 interface ShortUrlRepositoryService {
     fun findByKey(id: String): ShortUrl?
     fun save(su: ShortUrl): ShortUrl
-    fun updateSafeStatusByHash(hash: String, safe: Boolean)
+    fun updateSafeStatusByTarget(target: String, safe: Boolean)
     fun updateQRCodeByHash(hash: String, qr: ByteArray)
 }
 

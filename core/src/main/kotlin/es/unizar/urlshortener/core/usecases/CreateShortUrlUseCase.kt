@@ -22,6 +22,7 @@ class CreateShortUrlUseCaseImpl(
     private val validatorService: ValidatorService,
     private val hashService: HashService,
     private val qrRequestService: QRRequestService,
+    private val safeBrowsingRequestService: SafeBrowsingRequestService,
     private val linkToService: LinkToService
 ) : CreateShortUrlUseCase {
     override fun create(url: String, qrRequest: Boolean?, data: ShortUrlProperties): ShortUrl {
@@ -45,7 +46,6 @@ class CreateShortUrlUseCaseImpl(
             hash = id,
             redirection = Redirection(target = url),
             properties = ShortUrlProperties(
-                safe = data.safe,
                 ip = data.ip,
                 sponsor = data.sponsor,
             )
@@ -53,6 +53,7 @@ class CreateShortUrlUseCaseImpl(
 
         val shortUrl = shortUrlRepository.save(newShortUrl)
 
+        safeBrowsingRequestService.sendSafeBrowsingMessage(Pair(id, url))
         if (qrRequest == true) {
             qrRequestService.sendQRMessage(Pair(id, linkToService.link(id).toString()))
         }
