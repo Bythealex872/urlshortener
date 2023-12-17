@@ -52,7 +52,6 @@ class SafeBrowsingConfiguration(
         setThreadNamePrefix(SAFE_CREATION_THREAD_NAME)
         initialize()
     }
-
     fun safeUpdateExecutor(): Executor = ThreadPoolTaskExecutor().apply {
         corePoolSize = SAFE_UPDATE_CORE_POOL_SIZE
         maxPoolSize = SAFE_UPDATE_MAX_POOL_SIZE
@@ -60,32 +59,38 @@ class SafeBrowsingConfiguration(
         setThreadNamePrefix(SAFE_UPDATE_THREAD_NAME)
         initialize()
     }
-
+    /*
+    * Configuración del canal para Safe Browsing.
+    */
     @Bean
     fun safeBrowsingChannel(): MessageChannel = ExecutorChannel(safeBrowsingExecutor())
-
+    /*
+    * Configuración del canal para la actualización del estado seguro.
+    */
     @Bean
     fun safeUpdateChannel(): MessageChannel = ExecutorChannel(safeUpdateExecutor())
+    /*
+    * Configuración de la tienda de grupos de mensajes.
+    */
     @Bean
     fun messageStore(): MessageGroupStore = SimpleMessageStore()
 
     // Declara el MessageGroupProcessor como un Bean
+
+    /*
+     * Configuración del procesador de grupo de mensajes como un Bean.
+     */
     @Bean
     fun messageGroupProcessor(): MessageGroupProcessor = DefaultAggregatingMessageGroupProcessor()
-
+    /*
+    * Configuración del flujo de integración para Safe Browsing.
+    */
     @Bean
     fun safeBrowsingFlow(safeBrowsingUseCase: SafeBrowsingUseCase): IntegrationFlow =
         integrationFlow(safeBrowsingChannel()) {
             filter<Pair<String, String>> { payload ->
                 shortUrlRepository.findByKey(payload.first)?.properties?.safe == null
             }
-            /*
-            transform<Pair<String, String>> { payload ->
-                val isSafe = safeBrowsingUseCase.urlisSafe(payload.second)
-                logger.info("Consulta si la url ${payload.second} es segura")
-                SafeBrowsingPayload(payload.second, isSafe)
-            }
-            */
             aggregate {
                 // Establece el almacenamiento de mensajes y el procesador de grupo
                 messageStore(messageStore())
@@ -108,7 +113,9 @@ class SafeBrowsingConfiguration(
             }
             channel(safeUpdateChannel())
         }
-
+    /*
+    * Servicio activador para actualizar la base de datos con el estado seguro.
+    */
     @ServiceActivator(inputChannel = "safeUpdateChannel")
     fun updateDatabase(payloads: List<SafeBrowsingPayload>) {
         payloads.forEach { payload ->

@@ -27,11 +27,9 @@ class UserAgentInfoUseCaseImpl(
 ) : UserAgentInfoUseCase {
     private val parser = UserAgentService().loadParser()
     private val logger: Logger = LoggerFactory.getLogger(UserAgentInfoUseCaseImpl::class.java)
-    // Método para obtener información del agente de usuario a partir de una clave
-    // Parámetros:
-    // - key: Clave única asociada a una URL corta
-    // Valor de retorno:
-    // - Map<String, Any>: Mapa que contiene información sobre el agente de usuario
+    /** Método para obtener información del agente de usuario a partir de una clave
+    * @param key: Clave única asociada a una URL corta
+    * @return - Map<String, Any>: Mapa que contiene información sobre el agente de usuario*/
     override fun getUserAgentInfoByKey(key: String): Map<String, Any>{
         logger.info("Buscando $key para obtener información del agente de usuario")
         val click = clickRepository.findByKey(key)
@@ -62,11 +60,9 @@ class UserAgentInfoUseCaseImpl(
             )
         }
     }
-    /* Método para devolver información del agente de usuario a partir de una cadena de agente de usuario
-    Parámetros:
-     - uaString: Cadena que representa el agente de usuario
-     Valor de retorno:
-     - UserAgent: Objeto que contiene información sobre el agente de usuario (navegador y plataforma)*/
+    /** Método para devolver información del agente de usuario a partir de una cadena de agente de usuario
+    * @param uaString: Cadena que representa el agente de usuario
+    * @return UserAgent: Objeto que contiene información sobre el agente de usuario (navegador y plataforma)*/
     override fun returnUserAgentInfo(uaString: String?): UserAgent {
         logger.info("Parseando el agente de usuario")
         val capabilities: Capabilities = parser.parse(uaString)

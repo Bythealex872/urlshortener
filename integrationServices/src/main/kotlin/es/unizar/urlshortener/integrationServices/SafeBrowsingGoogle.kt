@@ -55,11 +55,21 @@ class SafeBrowsingServiceImpl : SafeBrowsingService {
         private val GOOGLE_CLIENT_VERSION: String = properties.getProperty("google.client.version")
         private val GOOGLE_APPLICATION_NAME: String = properties.getProperty("google.application.name")
     }
-
+    /**
+     * Verifica si una URL es segura utilizando Google Safe Browsing.
+     *
+     * @param url La URL a verificar.
+     * @return `true` si la URL es segura, `false` en caso contrario.
+     */
     override fun isSafe(url: String): Boolean {
         return urlsAreSafe(listOf(url)).size == 0
     }
-
+    /**
+     * Verifica si una lista de URLs son seguras utilizando Google Safe Browsing.
+     *
+     * @param urls Lista de URLs a verificar.
+     * @return Lista de URLs que se consideran no seguras.
+     */
     override fun urlsAreSafe(urls: List<String>) : List<String> {
         logger.info("Comprobando URLs con Google Safe Browsing")
         httpTransport = GoogleNetHttpTransport.newTrustedTransport()
@@ -85,6 +95,12 @@ class SafeBrowsingServiceImpl : SafeBrowsingService {
         logger.info("URLs seguras: ${urls - threadList}")
         return threadList
     }
+    /**
+     * Crea una petición para encontrar amenazas en las URLs proporcionadas utilizando Google Safe Browsing.
+     *
+     * @param urls Lista de URLs a incluir en la petición.
+     * @return Objeto [FindThreatMatchesRequest] configurado con la información de las URLs.
+     */
     private fun createFindThreatMatchesRequest(urls: List<String>): FindThreatMatchesRequest {
         logger.info("Creando peticion a Google Safe Browsing")
 
