@@ -38,9 +38,9 @@ class UserAgentInfoUseCaseImpl(
 
         return click.let {
             mapOf(
-                    "hash" to it.hash,
-                    "created" to it.created.toString(),
-                    "properties" to it.properties
+                    "Hash" to it.hash,
+                    "Created" to it.created.toString(),
+                    "Properties" to it.properties,
             )
         }
     }
