@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory
  * **Note**: This is an example of functionality.
  */
 interface RedirectUseCase {
+
     /** Método para redireccionar a una URL corta dada su clave
     * @param key: Clave única asociada a una URL corta
     * @param ip: Dirección IP del usuario que realiza la redirección
@@ -30,6 +31,7 @@ class RedirectUseCaseImpl(
         private val uaService: UserAgentRequestService
 ) : RedirectUseCase {
     private val logger: Logger = LoggerFactory.getLogger(RedirectUseCaseImpl::class.java)
+
     /** Implementación del método para redireccionar a una URL corta
     * @param key: Clave única asociada a una URL corta
     * @param ip: Dirección IP del usuario que realiza la redirección

@@ -15,16 +15,17 @@ import javax.imageio.ImageIO
 import java.io.ByteArrayOutputStream
 
 interface QRCodeUseCase {
+
     /** Método para generar un código QR a partir de una ID
     * @param id: Identificador único asociado a una URL corta
     * @return ByteArray: Representación de bytes del código QR generado
     */
     fun createQRCode(id: String): ByteArray
+
     /** Método para obtener el código QR asociado a una ID
     * @param id: Identificador único asociado a una URL corta
     * @return ByteArray: Representación de bytes del código QR correspondiente a la ID
     */
-
     fun getQRCode(id: String): ByteArray
 }
 
@@ -32,9 +33,10 @@ interface QRCodeUseCase {
  * Implementation of [QRCodeUseCase].
  */
 class QRCodeUseCaseImpl(
-    private val shortUrlRepository: ShortUrlRepositoryService,
+    private val shortUrlRepository: ShortUrlRepositoryService
 ) : QRCodeUseCase {
     private val logger: Logger = LoggerFactory.getLogger(QRCodeUseCaseImpl::class.java)
+
     /** Implementación del método para generar un código QR
     * @param id: Identificador único asociado a una URL corta
     * @return ByteArray: Representación de bytes del código QR generado
@@ -44,6 +46,7 @@ class QRCodeUseCaseImpl(
         val qrCodeImage = generateQrCodeImage(id)
         return convertToByteArray(qrCodeImage)
     }
+
     /** Implementación del método para obtener el código QR
     * @param id: Identificador único asociado a una URL corta
     * @return ByteArray: Representación de bytes del código QR correspondiente a la ID
@@ -59,13 +62,13 @@ class QRCodeUseCaseImpl(
             logger.error("No se ha validado la URL todavia")
             throw RetryAfterException()
         }
-        if(shortUrl.properties.qr == null){
-            logger.error("No se ha generado el QR todavia")
-            throw RetryAfterException()
-        }
         if(!shortUrl.properties.safe){
             logger.error("La URI recortada no es segura")
             throw RedirectionForbidden(id)
+        }
+        if(shortUrl.properties.qr == null){
+            logger.error("No se ha generado el QR todavia")
+            throw RetryAfterException()
         }
 
         logger.info("Devolviendo el QR de $id")
@@ -76,8 +79,9 @@ class QRCodeUseCaseImpl(
         const val QR_CODE_WIDTH = 400
         const val QR_CODE_HEIGHT = 400
     }
+
     /** Método para generar una imagen de código QR a partir de una URL
-    * -@param url: URL para la cual se generará el código QR
+    * @param url: URL para la cual se generará el código QR
     * @return BufferedImage: Imagen que representa el código QR generado
     */
     private fun generateQrCodeImage(url: String): BufferedImage {
@@ -101,6 +105,7 @@ class QRCodeUseCaseImpl(
         logger.info("QR generado para $url")
         return image
     }
+
     /** Método para convertir una imagen a un array de bytes
     * @param image: Imagen a convertir
     * @return ByteArray: Representación de bytes de la imagen convertida

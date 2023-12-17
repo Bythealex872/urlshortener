@@ -5,6 +5,7 @@ package es.unizar.urlshortener.core.usecases
 import es.unizar.urlshortener.core.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
 /**
  * Given an url returns the key that is used to create a short URL.
  * When the url is created optional data may be added.
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory
  * **Note**: This is an example of functionality.
  */
 interface CreateShortUrlUseCase {
+
     /** Método para crear una URL corta a partir de una URL dada
      * @param url: URL original que se va a acortar
      * @param qrRequest: Indicador booleano opcional para solicitar la generación de un código QR

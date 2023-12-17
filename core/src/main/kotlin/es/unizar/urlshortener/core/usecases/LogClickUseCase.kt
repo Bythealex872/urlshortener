@@ -28,7 +28,6 @@ interface LogClickUseCase {
 class LogClickUseCaseImpl(
     private val clickRepository: ClickRepositoryService,
     private val userAgentInfoUseCase: UserAgentInfoUseCaseImpl
-
 ) : LogClickUseCase {
     private val logger: Logger = LoggerFactory.getLogger(LogClickUseCaseImpl::class.java)
 

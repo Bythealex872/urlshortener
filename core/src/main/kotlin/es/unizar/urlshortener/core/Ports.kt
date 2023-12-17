@@ -31,12 +31,6 @@ interface ValidatorService {
     fun isValid(url: String): Boolean
 }
 
-interface SafeBrowsingService {
-    fun isSafe(url: String): Boolean
-    fun urlsAreSafe(urls: List<String>): List<String>
-
-}
-
 /**
  * [HashService] is the port to the service that creates a hash from a URL.
  *
@@ -46,19 +40,42 @@ interface HashService {
     fun hasUrl(url: String): String
 }
 
-interface LinkToService {
-    fun link(id: String) : URI
+/**
+ * [SafeBrowsingService] is the port for a service that determines the safety status of URLs.
+ * It can check individual URLs or batches of URLs to assess whether they are deemed safe.
+ */
+interface SafeBrowsingService {
+    fun isSafe(url: String): Boolean
+    fun urlsAreSafe(urls: List<String>): List<String>
 }
 
+/**
+ * [LinkToService] provides a mechanism to create a URI based on a given identifier.
+ */
+interface LinkToService {
+    fun link(id: String): URI
+}
+
+/**
+ * [QRRequestService] is responsible for handling QR code generation requests.
+ * It takes a pair consisting of the identifier and the URL for which the QR code should be generated.
+ */
 interface QRRequestService {
     fun sendQRMessage(p: Pair<String, String>)
 }
 
+/**
+ * [UserAgentRequestService] is responsible for handling requests related to user agent information.
+ * It takes a triple consisting of the identifier, IP address, and optionally the previous user agent string.
+ */
 interface UserAgentRequestService {
     fun sendUserAgentMessage(p: Triple<String, String, String?>)
 }
 
+/**
+ * [SafeBrowsingRequestService] handles requests for safe browsing checks.
+ * It takes a pair of an identifier and a URL and initiates a process to determine if the URL is safe.
+ */
 interface SafeBrowsingRequestService {
     fun sendSafeBrowsingMessage(p: Pair<String, String>)
 }
-

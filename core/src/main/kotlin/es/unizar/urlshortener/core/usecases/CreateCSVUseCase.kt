@@ -12,6 +12,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 interface CreateCSVUseCase {
+
     /** Método para procesar un archivo CSV y construir su contenido
      * @param inputStream: Flujo de entrada que representa el contenido del archivo CSV
      * @param ip: Dirección IP opcional
@@ -49,6 +50,7 @@ class CreateCSVUseCaseImpl(
 
         return Pair(buildCsvContent(csvOutputs, separator), firstShortenedUri)
     }
+
     /** Método para construir el contenido del CSV a partir de la salida procesada
     * @param outputList: Lista de objetos CsvOutput, que contiene información procesada del CSV
     * @param separator: Carácter utilizado como separador en el CSV
@@ -67,6 +69,7 @@ class CreateCSVUseCaseImpl(
         logger.info("CSV construido")
         return csvContent.toString()
     }
+
     /** Método para procesar el archivo CSV y generar una lista de salida
     * @param inputStream: Flujo de entrada que representa el contenido del archivo CSV
     * @param separator: Carácter utilizado como separador en el CSV
@@ -125,7 +128,7 @@ class CreateCSVUseCaseImpl(
             shortUrl = uriObj.toString()
             qrUrl = if (qrCodeIndicator == "1") "$shortUrl/qr" else "no_qr"
             safe = if (create.properties.safe == null) {
-                "URL pendiente de validacion"
+                "URI de destino no validada todavia"
             } else {
                 if (create.properties.safe) {
                     "URL segura"

@@ -23,7 +23,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import org.springframework.web.socket.handler.TextWebSocketHandler
-import org.springframework.web.socket.server.HandshakeInterceptor
+
 /**
  * Configuración para WebSocket en la aplicación Spring.
  */
@@ -64,7 +64,6 @@ class MyWebSocketHandler : TextWebSocketHandler() {
 
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
         logger.info("Received message: ${message.payload}")
-        session.sendMessage(TextMessage("Hello from server"))
         val sendCsvBean = SpringContext.getBean(CSVRequestGateway::class.java)
         sendCsvBean.sendCSVMessage(Pair(message.payload, session))
     }
@@ -75,6 +74,7 @@ class MyWebSocketHandler : TextWebSocketHandler() {
      */
     override fun afterConnectionEstablished(session: WebSocketSession) {
         val localAddress = session.attributes["localAddress"]
+        session.sendMessage(TextMessage("Hello from server"))
         logger.info("WebSocket session established from local address: $localAddress")
     }
 
@@ -98,6 +98,7 @@ class CSVCodeIntegrationConfiguration(
 
     private val logger: Logger = LoggerFactory.getLogger(CSVCodeIntegrationConfiguration::class.java)
     private val creationLock = Object()
+
     /**
      * Devuelve un [Executor] para la ejecución de operaciones relacionadas con la creación de CSV.
      *
@@ -110,6 +111,7 @@ class CSVCodeIntegrationConfiguration(
         setThreadNamePrefix(CSV_CREATION_THREAD_NAME)
         initialize()
     }
+
     /**
      * Devuelve un canal [MessageChannel] asociado al [Executor] para la creación de CSV.
      *
@@ -117,6 +119,7 @@ class CSVCodeIntegrationConfiguration(
      */
     @Bean
     fun csvCreationChannel(): MessageChannel = ExecutorChannel(csvCreationExecutor())
+
     /**
      * Define un flujo de integración para la creación de CSV.
      *
@@ -153,15 +156,17 @@ class CSVCodeIntegrationConfiguration(
             catch (e : Exception) {
                 error = e.message.toString()
             }
+
             val safe: String = if (create.properties.safe == null) {
-                "The URL has not been checked."
+                "URI de destino no validada todavía"
             } else {
                 if (create.properties.safe==true) {
-                    "The URL is safe."
+                    "URL segura"
                 } else {
-                    "The URL is not safe."
+                    "URL no segura"
                 }
             }
+
             if (error == "no_error") {
                 val shortUrl = linkToService.link(create.hash).toString()
                 logger.info("Enviando mensaje: $shortUrl")

@@ -53,10 +53,12 @@ data class ClickProperties(
     val platform: String? = null,
     val country: String? = null
 )
-data class CsvInput(
-    val uri: String
-)
 
+/**
+ * [CsvOutput] is a data class representing the output of a CSV processing operation.
+ * It contains the original URI, the shortened URI, the QR code URL, an optional explanation message,
+ * and the status of the URL processing.
+ */
 data class CsvOutput(
     val originalUri: String,
     val shortenedUri: String,
@@ -65,6 +67,10 @@ data class CsvOutput(
     val status : String
 )
 
+/**
+ * [UserAgent] holds information about the user agent from which a request was made.
+ * It captures details about the browser type and the platform (operating system).
+ */
 data class UserAgent(
     val browser: String? = null,
     val platform: String? = null

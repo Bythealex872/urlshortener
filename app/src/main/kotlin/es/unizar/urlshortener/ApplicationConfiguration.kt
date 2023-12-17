@@ -2,7 +2,6 @@
 
 package es.unizar.urlshortener
 
-import es.unizar.urlshortener.core.UserAgentRequestService
 import es.unizar.urlshortener.core.usecases.*
 import es.unizar.urlshortener.infrastructure.delivery.HashServiceImpl
 import es.unizar.urlshortener.infrastructure.delivery.LinkToImpl
