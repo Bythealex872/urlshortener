@@ -3,7 +3,8 @@
 package es.unizar.urlshortener.core.usecases
 
 import es.unizar.urlshortener.core.*
-
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Given a key returns a [Redirection] that contains a [URI target][Redirection.target]
@@ -12,6 +13,7 @@ import es.unizar.urlshortener.core.*
  * **Note**: This is an example of functionality.
  */
 interface RedirectUseCase {
+
     fun redirectTo(key: String, ip: String, ua: String?): Redirection
 
 }
@@ -22,22 +24,27 @@ class RedirectUseCaseImpl(
         private val shortUrlRepository: ShortUrlRepositoryService,
         private val uaService: UserAgentRequestService
 ) : RedirectUseCase {
+    private val logger: Logger = LoggerFactory.getLogger(RedirectUseCaseImpl::class.java)
 
     override fun redirectTo(key: String, ip: String, ua: String?): Redirection {
-        println("RedirectUseCaseImpl: redirectTo: key: $key, ip: $ip, UA: $ua")
-        val shortUrl = shortUrlRepository.findByKey(key) ?: throw RedirectionNotFound(key)
-
-        // Verifica si la URI recortada no existe
-        if(shortUrl.properties.safe == null){ // no valida, posible spam
+        logger.info("Buscando $key para redireccionar")
+        val shortUrl = shortUrlRepository.findByKey(key)
+        if(shortUrl == null){
+            logger.error("No se ha encontrado la URI recortada")
+            throw RedirectionNotFound(key)
+        }
+        if(shortUrl.properties.safe == null){
+            logger.error("No se ha validado la URL")
             throw RetryAfterException()
         }
-        if(!shortUrl.properties.safe){ // no operativa
+        if(!shortUrl.properties.safe){
+            logger.error("La URI recortada no es segura")
             throw RedirectionForbidden(key)
         }
 
         uaService.sendUserAgentMessage(Triple(key, ip, ua))
         //logClickUseCase.logClick(key, ip, ua)
-
+        logger.info("Redirecting to ${shortUrl.redirection}")
         // Devuelve la lógica de redirección
         return shortUrl.redirection
     }

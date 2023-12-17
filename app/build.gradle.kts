@@ -1,8 +1,21 @@
+import kotlinx.kover.gradle.plugin.dsl.GroupingEntityType
+
 plugins {
     id("urlshortener.spring-app-conventions")
     kotlin("plugin.spring")
+    id("org.jetbrains.kotlinx.kover") version "0.7.4"
+}
+kover {
+    excludeJavaCode()
 }
 
+koverReport {
+    defaults {
+        log {
+            groupBy = GroupingEntityType.CLASS
+        }
+    }
+}
 dependencies {
     implementation(project(":core"))
     implementation(project(":delivery"))

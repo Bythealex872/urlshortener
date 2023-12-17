@@ -26,6 +26,7 @@ val GOOGLE_THREAT_ENTRYTYPES = listOf("URL")
 var httpTransport: NetHttpTransport? = null
 
 class SafeBrowsingServiceImpl : SafeBrowsingService {
+    val logger = LoggerFactory.getLogger(SafeBrowsingServiceImpl::class.java)
 
     companion object {
         private val properties: Properties = loadProperties()
@@ -60,6 +61,7 @@ class SafeBrowsingServiceImpl : SafeBrowsingService {
     }
 
     override fun urlsAreSafe(urls: List<String>) : List<String> {
+        logger.info("Comprobando URLs con Google Safe Browsing")
         httpTransport = GoogleNetHttpTransport.newTrustedTransport()
 
         val findThreatMatchesRequest: FindThreatMatchesRequest = createFindThreatMatchesRequest(urls)
@@ -80,9 +82,12 @@ class SafeBrowsingServiceImpl : SafeBrowsingService {
                 threadList.add(url)
             }
         }
+        logger.info("URLs seguras: ${urls - threadList}")
         return threadList
     }
     private fun createFindThreatMatchesRequest(urls: List<String>): FindThreatMatchesRequest {
+        logger.info("Creando peticion a Google Safe Browsing")
+
         val findThreatMatchesRequest = FindThreatMatchesRequest()
         val clientInfo = ClientInfo()
         clientInfo.setClientId(GOOGLE_CLIENT_ID)
@@ -100,6 +105,8 @@ class SafeBrowsingServiceImpl : SafeBrowsingService {
         }
         threatInfo.setThreatEntries(threatEntries)
         findThreatMatchesRequest.setThreatInfo(threatInfo)
+
+        logger.info("Peticion a Google Safe Browsing creada")
         return findThreatMatchesRequest
     }
 }

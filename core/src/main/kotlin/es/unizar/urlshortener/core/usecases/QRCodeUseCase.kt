@@ -8,6 +8,8 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import es.unizar.urlshortener.core.RedirectionForbidden
 import es.unizar.urlshortener.core.RetryAfterException
 import es.unizar.urlshortener.core.ShortUrlRepositoryService
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 import java.io.ByteArrayOutputStream
@@ -23,24 +25,35 @@ interface QRCodeUseCase {
 class QRCodeUseCaseImpl(
     private val shortUrlRepository: ShortUrlRepositoryService,
 ) : QRCodeUseCase {
-    
-    override fun createQRCode(id: String): ByteArray { 
+    private val logger: Logger = LoggerFactory.getLogger(QRCodeUseCaseImpl::class.java)
+
+    override fun createQRCode(id: String): ByteArray {
+        logger.info("Generando QR para $id")
         val qrCodeImage = generateQrCodeImage(id)
         return convertToByteArray(qrCodeImage)
     }
 
     override fun getQRCode(id: String): ByteArray {
-        val shortUrl = shortUrlRepository.findByKey(id) ?: throw RedirectionNotFound(id)
-
-        // Verifica si la URI recortada no existe y si todavía no tiene QR
-        if (shortUrl.properties.safe == null || shortUrl.properties.qr == null) {
+        logger.info("Buscando $id para crear qr")
+        val shortUrl = shortUrlRepository.findByKey(id)
+        if(shortUrl == null){
+            logger.error("No se ha encontrado la URI recortada")
+            throw RedirectionNotFound(id)
+        }
+        if(shortUrl.properties.safe == null){
+            logger.error("No se ha validado la URL todavia")
             throw RetryAfterException()
         }
-        // Verifica si la URI es segura
-        if (!shortUrl.properties.safe) {
+        if(shortUrl.properties.qr == null){
+            logger.error("No se ha generado el QR todavia")
+            throw RetryAfterException()
+        }
+        if(!shortUrl.properties.safe){
+            logger.error("La URI recortada no es segura")
             throw RedirectionForbidden(id)
         }
 
+        logger.info("Devolviendo el QR de $id")
         return shortUrl.properties.qr
     }
 
@@ -50,6 +63,7 @@ class QRCodeUseCaseImpl(
     }
 
     private fun generateQrCodeImage(url: String): BufferedImage {
+        logger.info("Generando QR para $url")
         val qrCodeWriter = QRCodeWriter()
         val hints = mapOf(
             EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.H
@@ -65,7 +79,8 @@ class QRCodeUseCaseImpl(
                 image.setRGB(x, y, if (bitMatrix.get(x, y)) 0xFF000000.toInt() else 0xFFFFFFFF.toInt())
             }
         }
-    
+
+        logger.info("QR generado para $url")
         return image
     }
 

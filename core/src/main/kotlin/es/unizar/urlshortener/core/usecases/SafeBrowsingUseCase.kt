@@ -16,9 +16,8 @@ class SafeBrowsingUseCaseImpl(
     private val safeBrowsingService: SafeBrowsingService
 ) : SafeBrowsingUseCase {
 
-
     override fun urlsAreSafe(urlList: List<String>) : List<String> {
-        return safeBrowsingService.urlsAreSafe(urlList)
+            return safeBrowsingService.urlsAreSafe(urlList)
     }
 
     override fun urlisSafe(url: String): Boolean {

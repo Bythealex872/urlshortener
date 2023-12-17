@@ -8,7 +8,8 @@ import es.unizar.urlshortener.core.*
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.io.InputStreamReader
-
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 interface CreateCSVUseCase {
     fun processAndBuildCsv(inputStream: InputStream, ip: String?): Pair<String, String?>
@@ -18,6 +19,7 @@ class CreateCSVUseCaseImpl(
     private val shortUrlUseCase: CreateShortUrlUseCase,
     private val linkToService: LinkToService
 ) : CreateCSVUseCase{
+    private val logger: Logger = LoggerFactory.getLogger(CreateCSVUseCaseImpl::class.java)
 
     override fun processAndBuildCsv(inputStream: InputStream, ip: String?): Pair<String, String?> {
         val byteArrayInputStream = toByteArrayInputStream(inputStream)
@@ -31,6 +33,9 @@ class CreateCSVUseCaseImpl(
 
         // Construir el contenido del CSV
         val firstShortenedUri = csvOutputs.firstOrNull()?.shortenedUri
+
+        logger.info("CSV generado")
+
         return Pair(buildCsvContent(csvOutputs, separator), firstShortenedUri)
     }
 
