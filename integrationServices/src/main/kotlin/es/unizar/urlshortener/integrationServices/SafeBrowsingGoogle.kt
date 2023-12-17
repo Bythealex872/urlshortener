@@ -15,6 +15,7 @@ import es.unizar.urlshortener.core.SafeBrowsingService
 import org.slf4j.LoggerFactory
 /**
  * Verify if the url is safe with Google Safe Browsing.
+ * Code based in https://github.com/kalinchih/google-safe_browsing-api-v4
  */
 
 //private const val CONFIG = "config.properties"
@@ -26,7 +27,6 @@ val GOOGLE_THREAT_ENTRYTYPES = listOf("URL")
 var httpTransport: NetHttpTransport? = null
 
 class SafeBrowsingServiceImpl : SafeBrowsingService {
-    val logger = LoggerFactory.getLogger(SafeBrowsingServiceImpl::class.java)
 
     companion object {
         private val properties: Properties = loadProperties()
@@ -55,23 +55,17 @@ class SafeBrowsingServiceImpl : SafeBrowsingService {
         private val GOOGLE_CLIENT_VERSION: String = properties.getProperty("google.client.version")
         private val GOOGLE_APPLICATION_NAME: String = properties.getProperty("google.application.name")
     }
-    /**
-     * Verifica si una URL es segura utilizando Google Safe Browsing.
-     *
-     * @param url La URL a verificar.
-     * @return `true` si la URL es segura, `false` en caso contrario.
-     */
+
     override fun isSafe(url: String): Boolean {
         return urlsAreSafe(listOf(url)).size == 0
     }
     /**
-     * Verifica si una lista de URLs son seguras utilizando Google Safe Browsing.
+     * Verify if the urls are safe with Google Safe Browsing.
      *
-     * @param urls Lista de URLs a verificar.
-     * @return Lista de URLs que se consideran no seguras.
+     * @param urls The list of URLs to check.
+     * @return The list of unsafe URLs.
      */
     override fun urlsAreSafe(urls: List<String>) : List<String> {
-        logger.info("Comprobando URLs con Google Safe Browsing")
         httpTransport = GoogleNetHttpTransport.newTrustedTransport()
 
         val findThreatMatchesRequest: FindThreatMatchesRequest = createFindThreatMatchesRequest(urls)
@@ -92,18 +86,15 @@ class SafeBrowsingServiceImpl : SafeBrowsingService {
                 threadList.add(url)
             }
         }
-        logger.info("URLs seguras: ${urls - threadList}")
         return threadList
     }
     /**
-     * Crea una petición para encontrar amenazas en las URLs proporcionadas utilizando Google Safe Browsing.
+     * Create a FindThreatMatchesRequest object.
      *
-     * @param urls Lista de URLs a incluir en la petición.
-     * @return Objeto [FindThreatMatchesRequest] configurado con la información de las URLs.
+     * @param urls The list of URLs to check.
+     * @return The FindThreatMatchesRequest object.
      */
     private fun createFindThreatMatchesRequest(urls: List<String>): FindThreatMatchesRequest {
-        logger.info("Creando peticion a Google Safe Browsing")
-
         val findThreatMatchesRequest = FindThreatMatchesRequest()
         val clientInfo = ClientInfo()
         clientInfo.setClientId(GOOGLE_CLIENT_ID)
@@ -121,8 +112,6 @@ class SafeBrowsingServiceImpl : SafeBrowsingService {
         }
         threatInfo.setThreatEntries(threatEntries)
         findThreatMatchesRequest.setThreatInfo(threatInfo)
-
-        logger.info("Peticion a Google Safe Browsing creada")
         return findThreatMatchesRequest
     }
 }

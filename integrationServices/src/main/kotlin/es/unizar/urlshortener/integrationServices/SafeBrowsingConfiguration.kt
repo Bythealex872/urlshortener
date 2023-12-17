@@ -14,7 +14,6 @@ import org.springframework.integration.config.EnableIntegration
 import org.springframework.integration.dsl.IntegrationFlow
 import org.springframework.integration.dsl.integrationFlow
 import org.springframework.integration.store.MessageGroupStore
-import org.springframework.integration.store.MessageStore
 import org.springframework.integration.store.SimpleMessageStore
 import org.springframework.messaging.MessageChannel
 import org.springframework.scheduling.annotation.EnableScheduling
@@ -38,7 +37,7 @@ class SafeBrowsingConfiguration(
         private const val SAFE_UPDATE_MAX_POOL_SIZE = 5
         private const val SAFE_UPDATE_QUEUE_CAPACITY = 25
         private const val SAFE_UPDATE_THREAD_NAME = "safe-update"
-
+        private const val TIME_LIMIT = 1L
     }
 
     private val logger: Logger = LoggerFactory.getLogger(SafeBrowsingConfiguration::class.java)
@@ -75,8 +74,6 @@ class SafeBrowsingConfiguration(
     @Bean
     fun messageStore(): MessageGroupStore = SimpleMessageStore()
 
-    // Declara el MessageGroupProcessor como un Bean
-
     /*
      * Configuración del procesador de grupo de mensajes como un Bean.
      */
@@ -101,7 +98,7 @@ class SafeBrowsingConfiguration(
                 //releaseStrategy { group -> group.size() >= GROUP_SIZE }
                 expireGroupsUponTimeout(true)
                 sendPartialResultOnExpiry(true)
-                groupTimeout(TimeUnit.MINUTES.toMillis(1))
+                groupTimeout(TimeUnit.MINUTES.toMillis(TIME_LIMIT))
             }
             // Envía el lote de URLs al servicio de Safe Browsing
             transform <List<Pair<String, String>>> { payload ->
@@ -114,8 +111,8 @@ class SafeBrowsingConfiguration(
             channel(safeUpdateChannel())
         }
     /*
-    * Servicio activador para actualizar la base de datos con el estado seguro.
-    */
+    * Configuración del flujo de integración para la actualización del estado seguro.
+     */
     @ServiceActivator(inputChannel = "safeUpdateChannel")
     fun updateDatabase(payloads: List<SafeBrowsingPayload>) {
         payloads.forEach { payload ->
