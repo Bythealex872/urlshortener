@@ -24,14 +24,14 @@ class CreateCSVUseCaseImpl(
     override fun processAndBuildCsv(inputStream: InputStream, ip: String?): Pair<String, String?> {
         val byteArrayInputStream = toByteArrayInputStream(inputStream)
 
-        // Detectar el separador
+        logger.info("Detectando separador de CSV")
         val separator = detectCsvSeparator(byteArrayInputStream)
         byteArrayInputStream.reset() // Reiniciar para la próxima lectura
 
-        // Procesar el archivo CSV
         val csvOutputs = processCsvFile(byteArrayInputStream, separator, ip)
 
         // Construir el contenido del CSV
+
         val firstShortenedUri = csvOutputs.firstOrNull()?.shortenedUri
 
         logger.info("CSV generado")
@@ -41,6 +41,7 @@ class CreateCSVUseCaseImpl(
 
     private fun buildCsvContent(outputList: List<CsvOutput>, separator: Char): String {
         val csvContent = StringBuilder()
+        logger.info("Construyendo CSV")
         csvContent.append("URI${separator}URI_recortada${separator}QR${separator}" +
                 "Mensaje${separator}Estado de validación\n")
 
@@ -48,7 +49,7 @@ class CreateCSVUseCaseImpl(
             csvContent.append("${output.originalUri}$separator${output.shortenedUri}$separator" +
                     "${output.qr}$separator${output.explanation}$separator${output.status}\n")
         }
-
+        logger.info("CSV construido")
         return csvContent.toString()
     }
 
@@ -61,19 +62,21 @@ class CreateCSVUseCaseImpl(
 
         val lines = csvReader.readAll()
 
-        // Verificar los encabezados
+        logger.info("Procesando CSV")
         if (lines.isEmpty() || lines.first().toList() != listOf("URI", "QR")) {
+            logger.error("Formato de CSV no válido")
             throw CSVCouldNotBeProcessed()
         }
 
         // Ignorar la primera línea (encabezados) y procesar las demás
         for (line in lines.drop(1)) {
             if (line.size != 2) {
+                logger.error("Formato de CSV no válido")
                 throw CSVCouldNotBeProcessed()
             }
             csvOutputList.add(processCsvLine(line.toList(), ip))
         }
-
+        logger.info("CSV procesado")
         return csvOutputList
     }
 
@@ -85,6 +88,7 @@ class CreateCSVUseCaseImpl(
         var shortUrl: String? = null
         var qrUrl: String? = null
         lateinit var safe : String
+        logger.info("Procesando URI: $uri")
         try {
             val create = shortUrlUseCase.create(
                 url = uri,
@@ -104,20 +108,22 @@ class CreateCSVUseCaseImpl(
                 }
             }
         } catch (e: Exception) {
+            logger.error("Error al procesar URI: $uri")
             errorMessage = e.message
         }
 
-
+        logger.info("URI procesada: $uri")
         return CsvOutput(uri, shortUrl ?: "Error", qrUrl ?: "Error", errorMessage!!, safe)
     }
 
     private fun detectCsvSeparator(inputStream: InputStream): Char {
+        logger.info("Detectando separador de CSV")
         inputStream.bufferedReader().use { reader ->
-            val line = reader.readLine() ?: return ',' // Default to comma if file is empty
+            val line = reader.readLine() ?: return ',' // Si el archivo está vacío, devuelve la coma como separador
 
             val possibleSeparators = arrayOf(',', ';', '\t', '|')
             val separatorCounts = possibleSeparators.associateWith { line.count { ch -> ch == it } }
-
+            logger.info("Separador detectado: ${separatorCounts.maxByOrNull { it.value }?.key}")
             return separatorCounts.maxByOrNull { it.value }?.key ?: ','
         }
     }
