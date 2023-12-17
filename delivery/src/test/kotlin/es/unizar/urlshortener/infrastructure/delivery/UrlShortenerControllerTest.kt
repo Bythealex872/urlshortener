@@ -4,6 +4,10 @@ package es.unizar.urlshortener.infrastructure.delivery
 
 import es.unizar.urlshortener.core.*
 import es.unizar.urlshortener.core.usecases.*
+import jakarta.websocket.ClientEndpoint
+import jakarta.websocket.ContainerProvider
+import jakarta.websocket.OnMessage
+import jakarta.websocket.Session
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.mockito.BDDMockito.never
@@ -19,14 +23,20 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpHeaders
 import java.time.OffsetDateTime
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import org.springframework.boot.test.web.server.LocalServerPort
+import java.net.URI
 
 
 @WebMvcTest
@@ -43,9 +53,6 @@ class UrlShortenerControllerTest {
 
     @MockBean
     private lateinit var redirectUseCase: RedirectUseCase
-
-    @MockBean
-    private lateinit var logClickUseCase: LogClickUseCase
 
     @MockBean
     private lateinit var createShortUrlUseCase: CreateShortUrlUseCase
@@ -229,7 +236,8 @@ class UrlShortenerControllerTest {
         val csvContent = "http://example.com,1\nhttp://example.org,0\n"
         val file = MockMultipartFile("file", "test.csv", "text/csv", csvContent.toByteArray())
 
-        val csvOutput = "URI,URI_recortada,qr,Mensaje\nhttp://example.com,http://short.url/1,http://short.url/1/qr,Primera URL acortada\n"
+        val csvOutput = "URI,URI_recortada,QR,Mensaje,Estado de validacion\n" +
+                "http://example.com,http://short.url/1,http://short.url/1/qr,Primera URL acortada,URL segura\n"
         val firstShortenedUri = "http://short.url/1"
 
         given(
@@ -341,3 +349,39 @@ class UrlShortenerControllerTest {
     }
 
 }
+/*
+@ClientEndpoint
+class ComplexClient(private val list: MutableList<String>) {
+
+    @OnMessage // Remove this line when you implement onMessage
+    fun onMessage(message: String, session: Session) {
+        list.add(message)
+            session.basicRemote.sendText("https://www.youtube.com/,1")
+
+    }
+}
+
+fun Any.connect(uri: String) {
+    ContainerProvider.getWebSocketContainer().connectToServer(this, URI(uri))
+}
+
+@SpringBootTest(webEnvironment = RANDOM_PORT)
+class ElizaServerTest {
+
+    @LocalServerPort
+    private var port: Int = 0
+
+    @Test
+    fun onOpen() {
+        val list = mutableListOf<String>()
+
+        val client = ComplexClient(list)
+        client.connect("ws://localhost:$port/api/fast-bulk")
+
+        // Assert that the expected substring is present in the list
+        val expectedSubstring = "https://www.youtube.com/, +
+            http://127.0.0.1:8080/6f12359f,http://127.0.0.1:8080/6f12359f/qr,no_error"
+        assertTrue(list.any { it.contains(expectedSubstring) })
+    }
+}
+*/

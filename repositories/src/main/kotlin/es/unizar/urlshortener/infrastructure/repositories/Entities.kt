@@ -38,9 +38,10 @@ class ShortUrlEntity(
     val created: OffsetDateTime,
     val owner: String?,
     val mode: Int,
-    val safe: Boolean,
+    val safe: Boolean?,
     val ip: String?,
     val country: String?,
     @Lob  // Indica que el campo es un objeto grande
     val qr: ByteArray?
 )
+

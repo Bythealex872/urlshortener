@@ -35,17 +35,4 @@ class HashServiceImpl : HashService {
  */
 class LinkToImpl : LinkToService {
     override fun link(id: String) = linkTo<UrlShortenerControllerImpl> { redirectTo(id, null) }.toUri()
-    override fun buildRedirectUrl(id: String): String {
-        return ServletUriComponentsBuilder.fromCurrentContextPath()
-            .path(UrlShortenerControllerPaths.REDIRECT_PATH.replace("{id}", id))
-            .build()
-            .toUriString()
-    }
 }
-class UrlShortenerControllerPaths {
-    companion object {
-        const val REDIRECT_PATH = "/{id}"
-        // Agrega otras rutas según sea necesario
-    }
-}
-

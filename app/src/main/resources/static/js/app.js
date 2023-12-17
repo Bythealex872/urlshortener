@@ -129,9 +129,9 @@ function processCSV(file) {
 
     reader.onload = function (event) {
         const csvData = event.target.result.split('\n');
-        csvData.forEach((line) => {
-            console.log(line);
-            if (line !== null && line !== "" && line !== undefined) {
+        csvData.forEach((line, index) => {
+            // Ignore the first line (index 0)
+            if (index > 0 && line !== null && line !== "" && line !== undefined) {
                 sendMessage(line);
             }
         });

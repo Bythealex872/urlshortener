@@ -18,7 +18,7 @@ interface ClickRepositoryService {
 interface ShortUrlRepositoryService {
     fun findByKey(id: String): ShortUrl?
     fun save(su: ShortUrl): ShortUrl
-    fun updateSafeStatusByHash(hash: String, safe: Boolean)
+    fun updateSafeStatusByTarget(target: String, safe: Boolean)
     fun updateQRCodeByHash(hash: String, qr: ByteArray)
 }
 
@@ -48,7 +48,6 @@ interface HashService {
 
 interface LinkToService {
     fun link(id: String) : URI
-    fun buildRedirectUrl(id: String): String
 }
 
 interface QRRequestService {

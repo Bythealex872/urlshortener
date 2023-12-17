@@ -1,5 +1,6 @@
-package es.unizar.urlshortener.core.usecases
+@file:Suppress("WildcardImport")
 
+package es.unizar.urlshortener.core.usecases
 
 import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReaderBuilder
@@ -35,10 +36,12 @@ class CreateCSVUseCaseImpl(
 
     private fun buildCsvContent(outputList: List<CsvOutput>, separator: Char): String {
         val csvContent = StringBuilder()
-        csvContent.append("URI${separator}URI_recortada${separator}qr${separator}Mensaje\n")
+        csvContent.append("URI${separator}URI_recortada${separator}QR${separator}" +
+                "Mensaje${separator}Estado de validación\n")
 
         for (output in outputList) {
-            csvContent.append("${output.originalUri}$separator${output.shortenedUri}$separator${output.qr}$separator${output.explanation}\n")
+            csvContent.append("${output.originalUri}$separator${output.shortenedUri}$separator" +
+                    "${output.qr}$separator${output.explanation}$separator${output.status}\n")
         }
 
         return csvContent.toString()
@@ -48,7 +51,7 @@ class CreateCSVUseCaseImpl(
         val csvOutputList = mutableListOf<CsvOutput>()
 
         val csvReader = CSVReaderBuilder(InputStreamReader(inputStream)).withCSVParser(
-                CSVParserBuilder().withSeparator(separator).build()
+            CSVParserBuilder().withSeparator(separator).build()
         ).build()
 
         val lines = csvReader.readAll()
@@ -69,27 +72,38 @@ class CreateCSVUseCaseImpl(
         return csvOutputList
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun processCsvLine(line: List<String>, ip: String?): CsvOutput {
         val uri = line[0].trim()
         val qrCodeIndicator = line[1].trim()
         var errorMessage: String? = "no error"
-        var urlRecortada: String? = null
+        var shortUrl: String? = null
         var qrUrl: String? = null
-
+        lateinit var safe : String
         try {
             val create = shortUrlUseCase.create(
-                    url = uri,
-                    qrRequest = qrCodeIndicator == "1",
-                    data = ShortUrlProperties(ip = ip)
+                url = uri,
+                qrRequest = qrCodeIndicator == "1",
+                data = ShortUrlProperties(ip = ip)
             )
             val uriObj = linkToService.link(create.hash)
-            urlRecortada = uriObj.toString()
-            qrUrl = if (qrCodeIndicator == "1") "$urlRecortada/qr" else "no_qr"
+            shortUrl = uriObj.toString()
+            qrUrl = if (qrCodeIndicator == "1") "$shortUrl/qr" else "no_qr"
+            safe = if (create.properties.safe == null) {
+                "URL pendiente de validacion"
+            } else {
+                if (create.properties.safe) {
+                    "URL segura"
+                } else {
+                    "URL no segura"
+                }
+            }
         } catch (e: Exception) {
             errorMessage = e.message
         }
 
-        return CsvOutput(uri, urlRecortada ?: "Error", qrUrl ?: "Error", errorMessage!!)
+
+        return CsvOutput(uri, shortUrl ?: "Error", qrUrl ?: "Error", errorMessage!!, safe)
     }
 
     private fun detectCsvSeparator(inputStream: InputStream): Char {

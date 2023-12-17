@@ -28,8 +28,8 @@ class ShortUrlRepositoryServiceImpl(
     override fun findByKey(id: String): ShortUrl? = shortUrlEntityRepository.findByHash(id)?.toDomain()
 
     override fun save(su: ShortUrl): ShortUrl = shortUrlEntityRepository.save(su.toEntity()).toDomain()
-    override fun updateSafeStatusByHash(hash: String, safe: Boolean) =
-            shortUrlEntityRepository.updateSafeStatusByHash(hash, safe)
+    override fun updateSafeStatusByTarget(target: String, safe: Boolean) =
+            shortUrlEntityRepository.updateSafeStatusByTarget(target, safe)
     override fun updateQRCodeByHash(hash: String, qr: ByteArray) =
             shortUrlEntityRepository.updateQRCodeByHash(hash, qr)
 }

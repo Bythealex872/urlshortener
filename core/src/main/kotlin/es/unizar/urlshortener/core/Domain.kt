@@ -37,7 +37,7 @@ data class Redirection(
 data class ShortUrlProperties(
     val ip: String? = null,
     val sponsor: String? = null,
-    val safe: Boolean = true,
+    val safe: Boolean? = null,
     val owner: String? = null,
     val country: String? = null,
     val qr: ByteArray? = null
@@ -61,7 +61,8 @@ data class CsvOutput(
     val originalUri: String,
     val shortenedUri: String,
     val qr : String,
-    val explanation: String = ""
+    val explanation: String = "",
+    val status : String
 )
 
 data class UserAgent(

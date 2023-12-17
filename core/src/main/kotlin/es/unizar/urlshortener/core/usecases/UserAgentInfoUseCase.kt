@@ -1,10 +1,11 @@
+@file:Suppress("WildcardImport")
+
 package es.unizar.urlshortener.core.usecases
 
 import com.blueconic.browscap.Capabilities
 import com.blueconic.browscap.UserAgentService
 import es.unizar.urlshortener.core.*
 
-private const val CORRECTO = 307
 
 /**
  * Given a key returns user agent information.
@@ -19,9 +20,8 @@ interface UserAgentInfoUseCase {
  * Implementation of [UserAgentInfoUseCase].
  */
 class UserAgentInfoUseCaseImpl(
-        private val shortUrlRepository: ShortUrlRepositoryService,
-        private val clickRepository: ClickRepositoryService
-
+    private val shortUrlRepository: ShortUrlRepositoryService,
+    private val clickRepository: ClickRepositoryService
 ) : UserAgentInfoUseCase {
     private val parser = UserAgentService().loadParser()
 
@@ -29,18 +29,18 @@ class UserAgentInfoUseCaseImpl(
         val shortUrl = shortUrlRepository.findByKey(key) ?: throw RedirectionNotFound(key)
         val click = clickRepository.findByKey(key) ?: throw RedirectionNotFound(key)
         // Verifica si la URI recortada no existe
-        if(!shortUrl.properties.safe){ // no valida, posible spam
+        if(shortUrl.properties.safe == null){ // no valida, posible spam
             throw RetryAfterException()
         }
-        if(shortUrl.redirection.mode != CORRECTO){ // no operativa
+        if(!shortUrl.properties.safe){ // no operativa
             throw RedirectionForbidden(key)
         }
 
         return click.let {
             mapOf(
-                    "Hash" to it.hash,
-                    "Created" to it.created.toString(),
-                    "Properties" to it.properties,
+                "Hash" to it.hash,
+                "Created" to it.created.toString(),
+                "Properties" to it.properties,
             )
         }
     }

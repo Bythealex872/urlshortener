@@ -29,23 +29,6 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import org.springframework.web.socket.handler.TextWebSocketHandler
 import org.springframework.web.socket.server.HandshakeInterceptor
 
-
-/* 
-override fun redirectTo(@PathVariable id: String): ResponseEntity<Unit> {
-    //Verifica si el id es un hash válido
-    if(redirectUseCase.redirectTo(id).mode == 404){
-        logger.error("Error 404: No se ha encontrado el hash")
-        return ResponseEntity.notFound().build()
-    }
-    logger.info("Redirección creada creada")
-    val redirectResult = redirectUseCase.redirectTo(id)
-    val headers = HttpHeaders()
-    headers.location = URI.create(redirectResult.target)
-    return ResponseEntity<Unit>(headers, HttpStatus.valueOf(redirectResult.mode))
-}*/
-
-
-
 @Configuration
 @EnableWebSocket
 class WebSocketConfig : WebSocketConfigurer {
@@ -63,53 +46,27 @@ class WebSocketConfig : WebSocketConfigurer {
 
 class MyWebSocketHandler : TextWebSocketHandler() {
 
+    private val logger: Logger = LoggerFactory.getLogger(MyWebSocketHandler::class.java)
+
+
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
-        println("Received message: ${message.payload}")
+        logger.info("Received message: ${message.payload}")
         session.sendMessage(TextMessage("Hello from server"))
         val sendCsvBean = SpringContext.getBean(CSVRequestGateway::class.java)
-        val laddr = session.localAddress
         sendCsvBean.sendCSVMessage(Pair(message.payload, session))
     }
     override fun afterConnectionEstablished(session: WebSocketSession) {
         val localAddress = session.attributes["localAddress"]
-        println("WebSocket session established from local address: $localAddress")
+        logger.info("WebSocket session established from local address: $localAddress")
     }
 
 }
 
-class MyHandshakeInterceptor : HandshakeInterceptor {
-
-    override fun beforeHandshake(
-        request: ServerHttpRequest,
-        response: ServerHttpResponse,
-        wsHandler: WebSocketHandler,
-        attributes: MutableMap<String, Any>
-    ): Boolean {
-        // Capture local address from the request
-        val localAddress = request.remoteAddress?.address?.hostAddress
-        println("Local Address: $localAddress")
-
-        // You can add attributes to be used in the WebSocket session
-        attributes["localAddress"] = localAddress ?: "unknown"
-        attributes["port"] = request.remoteAddress?.port ?: "unknown"
-        return true
-    }
-
-    override fun afterHandshake(
-        request: ServerHttpRequest,
-        response: ServerHttpResponse,
-        wsHandler: WebSocketHandler,
-        exception: Exception?
-    ) {
-        // Post-handshake logic
-    }
-}
 @Configuration
 @EnableIntegration
 @EnableScheduling
 class CSVCodeIntegrationConfiguration(
-        private val linkToService: LinkToService,
-
+        private val linkToService: LinkToService
 ) {
 
     companion object {
@@ -117,7 +74,6 @@ class CSVCodeIntegrationConfiguration(
         private const val CSV_CREATION_MAX_POOL_SIZE = 4
         private const val CSV_CREATION_QUEUE_CAPACITY = 25
         private const val CSV_CREATION_THREAD_NAME = "csv-update-"
-        private val creationLock = Object()
     }
 
     private val logger: Logger = LoggerFactory.getLogger(CSVCodeIntegrationConfiguration::class.java)
@@ -134,19 +90,21 @@ class CSVCodeIntegrationConfiguration(
     fun csvCreationChannel(): MessageChannel = ExecutorChannel(csvCreationExecutor())
 
     @Bean
-    fun csvFlow(createShortUrlUseCase: CreateShortUrlUseCaseImpl): IntegrationFlow = integrationFlow(csvCreationChannel()) {
+    @Suppress("TooGenericExceptionCaught")
+    fun csvFlow(createShortUrlUseCase: CreateShortUrlUseCaseImpl): IntegrationFlow =
+            integrationFlow(csvCreationChannel()) {
+        filter<Pair<String, WebSocketSession>> { payload ->
+            val (uri, _) = payload
+            val delimiter = detectDelimiter(uri)
+            !uri.startsWith("URI${delimiter}QR")
+        }
         handle<Pair<String, WebSocketSession>> { payload, _ ->
             val (uri, session) = payload
             logger.info("Procesando URI: $uri")
             val delimiter = detectDelimiter(uri)
             val parts = uri.split(delimiter)
             val trimmedUri = parts[0].trim()
-            var qr = parts[1]
-            logger.info("QR: $qr")
-            var qrRequest = false
-            if (qr == "1"){
-                qrRequest = true
-            }
+            val qrRequest = parts[1].trim() == "1"
             var error = "no_error"
             lateinit var create: es.unizar.urlshortener.core.ShortUrl
             // Crear URL corta
@@ -157,8 +115,18 @@ class CSVCodeIntegrationConfiguration(
                     qrRequest = qrRequest
                 )
             }
+
             catch (e : Exception) {
                 error = e.message.toString()
+            }
+            val safe: String = if (create.properties.safe == null) {
+                "The URL has not been checked."
+            } else {
+                if (create.properties.safe==true) {
+                    "The URL is safe."
+                } else {
+                    "The URL is not safe."
+                }
             }
             if (error == "no_error") {
                 // Obtener el enlace
@@ -166,14 +134,14 @@ class CSVCodeIntegrationConfiguration(
                 logger.info("Enviando mensaje: $shortUrl")
                 val address = session.localAddress
                 val codedUri = "http:/$address$shortUrl"
-                val qrUrl = if (qr == "1") "$codedUri/qr" else "no_qr"
-                val final = "$trimmedUri,$codedUri,$qrUrl,$error"
+                val qrUrl = if (qrRequest) "$codedUri/qr" else "no_qr"
+                val final = "$trimmedUri,$codedUri,$qrUrl,$error,$safe"
                 // Enviar mensaje a través de la sesión WebSocket
                 synchronized(creationLock) {
                     session.sendMessage(TextMessage(final))
                 }
             } else {
-                val final = "$trimmedUri,no_url,no_qr,$error"
+                val final = "$trimmedUri,no_url,no_qr,$error,$safe"
                 synchronized(creationLock) {
                     // Enviar mensaje a través de la sesión WebSocket
                     session.sendMessage(TextMessage(final))
@@ -198,10 +166,4 @@ class CSVCodeIntegrationConfiguration(
         return mostLikelyDelimiter
     }
 }
-
-
-
-
-
-
 

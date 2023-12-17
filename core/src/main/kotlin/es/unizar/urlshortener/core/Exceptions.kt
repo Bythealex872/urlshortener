@@ -4,7 +4,7 @@ class InvalidUrlException(url: String) : Exception("[$url] does not follow a sup
 
 class RedirectionNotFound(key: String) : Exception("[$key] is not known")
 
-class RetryAfterException : Exception("Rediccion no es segura, por favor espere 20 segundos")
+class RetryAfterException : Exception("Rediccion no es segura, por favor espere 60 segundos")
 
 class RedirectionForbidden(key: String) : Exception("Redirection for [$key] is forbiden")
 
