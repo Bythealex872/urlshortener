@@ -16,11 +16,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.Executor
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
-//import jakarta.websocket.*
-import org.springframework.http.server.ServerHttpRequest
-import org.springframework.http.server.ServerHttpResponse
 import org.springframework.web.socket.TextMessage
-import org.springframework.web.socket.WebSocketHandler
 import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor
 import org.springframework.web.socket.config.annotation.EnableWebSocket
@@ -95,7 +91,7 @@ class CSVCodeIntegrationConfiguration(
 
     companion object {
         private const val CSV_CREATION_CORE_POOL_SIZE = 2
-        private const val CSV_CREATION_MAX_POOL_SIZE = 4
+        private const val CSV_CREATION_MAX_POOL_SIZE = 5
         private const val CSV_CREATION_QUEUE_CAPACITY = 25
         private const val CSV_CREATION_THREAD_NAME = "csv-update-"
     }

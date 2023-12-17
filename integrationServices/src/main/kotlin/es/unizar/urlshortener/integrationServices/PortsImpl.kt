@@ -34,20 +34,6 @@ interface UserAgentRequestGateway : UserAgentRequestService {
     override fun sendUserAgentMessage(p: Triple<String, String,String?>)
 }
 /**
- * Interfaz de mensajería para la solicitud de procesamiento de URI desde un archivo CSV.
- */
-@MessagingGateway
-interface CSVRequestGateway {
-
-    /**
-     * Envia un mensaje para procesar una URI desde un archivo CSV.
-     *
-     * @param p Par que contiene la URI y la sesión WebSocket asociada.
-     */
-    @Gateway(requestChannel = "csvCreationChannel")
-     fun sendCSVMessage(p: Pair<String, WebSocketSession>)
-}
-/**
  * Interfaz de mensajería para la solicitud de verificación de seguridad de una URL.
  */
 @MessagingGateway
@@ -59,4 +45,19 @@ interface SafeBrowsingRequestGateway : SafeBrowsingRequestService {
      */
     @Gateway(requestChannel = "safeBrowsingChannel")
     override fun sendSafeBrowsingMessage(p: Pair<String, String>)
+}
+
+/**
+ * Interfaz de mensajería para la solicitud de procesamiento de URI desde un archivo CSV.
+ */
+@MessagingGateway
+interface CSVRequestGateway {
+
+    /**
+     * Envia un mensaje para procesar una URI desde un archivo CSV.
+     *
+     * @param p Par que contiene la URI y la sesión WebSocket asociada.
+     */
+    @Gateway(requestChannel = "csvCreationChannel")
+    fun sendCSVMessage(p: Pair<String, WebSocketSession>)
 }
