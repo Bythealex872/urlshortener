@@ -27,7 +27,7 @@ val GOOGLE_THREAT_ENTRYTYPES = listOf("URL")
 var httpTransport: NetHttpTransport? = null
 
 class SafeBrowsingServiceImpl : SafeBrowsingService {
-
+    val logger = LoggerFactory.getLogger(SafeBrowsingServiceImpl::class.java)
     companion object {
         private val properties: Properties = loadProperties()
 
@@ -57,15 +57,16 @@ class SafeBrowsingServiceImpl : SafeBrowsingService {
     }
 
     override fun isSafe(url: String): Boolean {
-        return urlsAreSafe(listOf(url)).size == 0
+        return urlsAreSafe(listOf(url)).isEmpty()
     }
     /**
-     * Verify if the urls are safe with Google Safe Browsing.
+     *Verifica si una lista de URLs son seguras utilizando Google Safe Browsing.
      *
-     * @param urls The list of URLs to check.
-     * @return The list of unsafe URLs.
+     * @param urls Lista de URLs a verificar.
+     * @return Lista de URLs que se consideran no seguras.
      */
     override fun urlsAreSafe(urls: List<String>) : List<String> {
+        logger.info("Comprobando URLs con Google Safe Browsing")
         httpTransport = GoogleNetHttpTransport.newTrustedTransport()
 
         val findThreatMatchesRequest: FindThreatMatchesRequest = createFindThreatMatchesRequest(urls)
@@ -91,10 +92,11 @@ class SafeBrowsingServiceImpl : SafeBrowsingService {
     /**
      * Create a FindThreatMatchesRequest object.
      *
-     * @param urls The list of URLs to check.
-     * @return The FindThreatMatchesRequest object.
+     * @param urls Lista de URLs a incluir en la petición.
+     * @return Objeto [FindThreatMatchesRequest] configurado con la información de las URLs.
      */
     private fun createFindThreatMatchesRequest(urls: List<String>): FindThreatMatchesRequest {
+        logger.info("Creando peticion a Google Safe Browsing")
         val findThreatMatchesRequest = FindThreatMatchesRequest()
         val clientInfo = ClientInfo()
         clientInfo.setClientId(GOOGLE_CLIENT_ID)
@@ -112,6 +114,7 @@ class SafeBrowsingServiceImpl : SafeBrowsingService {
         }
         threatInfo.setThreatEntries(threatEntries)
         findThreatMatchesRequest.setThreatInfo(threatInfo)
+        logger.info("Peticion a Google Safe Browsing creada")
         return findThreatMatchesRequest
     }
 }
