@@ -12,13 +12,12 @@ import org.slf4j.LoggerFactory
  * **Note**: This is an example of functionality.
  */
 interface CreateShortUrlUseCase {
-    // Método para crear una URL corta a partir de una URL dada
-    // Parámetros:
-    // - url: URL original que se va a acortar
-    // - qrRequest: Indicador booleano opcional para solicitar la generación de un código QR
-    // - data: Propiedades adicionales de la URL corta, como la dirección IP y el patrocinador
-    // Valor de retorno:
-    // - ShortUrl: Objeto que representa la URL corta creada
+    /** Método para crear una URL corta a partir de una URL dada
+     * @param url: URL original que se va a acortar
+     * @param qrRequest: Indicador booleano opcional para solicitar la generación de un código QR
+     * @param data: Propiedades adicionales de la URL corta, como la dirección IP y el patrocinador
+     * @return ShortUrl: Objeto que representa la URL corta creada
+     */
     fun create(url: String, qrRequest: Boolean? = false, data: ShortUrlProperties): ShortUrl
 }
 
@@ -34,13 +33,13 @@ class CreateShortUrlUseCaseImpl(
     private val linkToService: LinkToService
 ) : CreateShortUrlUseCase {
     private val logger: Logger = LoggerFactory.getLogger(CreateShortUrlUseCaseImpl::class.java)
-    // Implementación del método de la interfaz para crear una URL corta
-    // Parámetros:
-    // - url: URL original que se va a acortar
-    // - qrRequest: Indicador booleano opcional para solicitar la generación de un código QR
-    // - data: Propiedades adicionales de la URL corta, como la dirección IP y el patrocinador
-    // Valor de retorno:
-    // - ShortUrl: Objeto que representa la URL corta creada
+
+    /** Implementación del método de la interfaz para crear una URL corta
+    * @param url: URL original que se va a acortar
+    * @param qrRequest: Indicador booleano opcional para solicitar la generación de un código QR
+    * @param data: Propiedades adicionales de la URL corta, como la dirección IP y el patrocinador
+    * @return ShortUrl: Objeto que representa la URL corta creada
+    */
     override fun create(url: String, qrRequest: Boolean?, data: ShortUrlProperties): ShortUrl {
         logger.info("Creando URL corta para $url")
         // Verificar si la URL es válida

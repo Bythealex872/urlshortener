@@ -12,13 +12,11 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 interface CreateCSVUseCase {
-    // Método para procesar un archivo CSV y construir su contenido
-    // Parámetros:
-    // - inputStream: Flujo de entrada que representa el contenido del archivo CSV
-    // - ip: Dirección IP opcional
-    // Valor de retorno:
-    // - Pair<String, String?>: Par de cadenas, donde la primera es el contenido del CSV construido
-    //
+    /** Método para procesar un archivo CSV y construir su contenido
+     * @param inputStream: Flujo de entrada que representa el contenido del archivo CSV
+     * @param ip: Dirección IP opcional
+     * @return Pair<String, String?>: Par de cadenas, donde la primera es el contenido del CSV construido
+     */
     fun processAndBuildCsv(inputStream: InputStream, ip: String?): Pair<String, String?>
 }
 
@@ -28,13 +26,12 @@ class CreateCSVUseCaseImpl(
 ) : CreateCSVUseCase{
     private val logger: Logger = LoggerFactory.getLogger(CreateCSVUseCaseImpl::class.java)
 
-    // Implementación del método de la interfaz para procesar y construir el archivo CSV
-    // Parámetros:
-    // - inputStream: Flujo de entrada que representa el contenido del archivo CSV
-    // - ip: Dirección IP opcional
-    // Valor de retorno:
-    // - Pair<String, String?>: Par de cadenas, donde la primera es el contenido del CSV construido
-    //
+    /**
+    * Implementación del método de la interfaz para procesar y construir el archivo CSV
+    * @param inputStream: Flujo de entrada que representa el contenido del archivo CSV
+    * @param ip: Dirección IP opcional
+    * @return Pair<String, String?>: Par de cadenas, donde la primera es el contenido del CSV construido
+    */
     override fun processAndBuildCsv(inputStream: InputStream, ip: String?): Pair<String, String?> {
         val byteArrayInputStream = toByteArrayInputStream(inputStream)
 
@@ -52,12 +49,11 @@ class CreateCSVUseCaseImpl(
 
         return Pair(buildCsvContent(csvOutputs, separator), firstShortenedUri)
     }
-    // Método para construir el contenido del CSV a partir de la salida procesada
-    // Parámetros:
-    // - outputList: Lista de objetos CsvOutput, que contiene información procesada del CSV
-    // - separator: Carácter utilizado como separador en el CSV
-    // Valor de retorno:
-    // - String: Contenido del CSV construido como una cadena
+    /** Método para construir el contenido del CSV a partir de la salida procesada
+    * @param outputList: Lista de objetos CsvOutput, que contiene información procesada del CSV
+    * @param separator: Carácter utilizado como separador en el CSV
+    * @return String: Contenido del CSV construido como una cadena
+    */
     private fun buildCsvContent(outputList: List<CsvOutput>, separator: Char): String {
         val csvContent = StringBuilder()
         logger.info("Construyendo CSV")
@@ -72,12 +68,11 @@ class CreateCSVUseCaseImpl(
         return csvContent.toString()
     }
     /** Método para procesar el archivo CSV y generar una lista de salida
-    // Parámetros:
-    // - inputStream: Flujo de entrada que representa el contenido del archivo CSV
-    // - separator: Carácter utilizado como separador en el CSV
-    // - ip: Dirección IP opcional
-    // Valor de retorno:
-     - List<CsvOutput>: Lista de objetos CsvOutput, que contiene información procesada del CSV**/
+    * @param inputStream: Flujo de entrada que representa el contenido del archivo CSV
+    * @param separator: Carácter utilizado como separador en el CSV
+    * @param ip: Dirección IP opcional
+    * @return List<CsvOutput>: Lista de objetos CsvOutput, que contiene información procesada del CSV
+    */
     private fun processCsvFile(inputStream: InputStream, separator: Char, ip: String?): List<CsvOutput> {
         val csvOutputList = mutableListOf<CsvOutput>()
 
@@ -105,12 +100,12 @@ class CreateCSVUseCaseImpl(
         return csvOutputList
     }
 
-    /** Método para procesar una línea del CSV y generar un objeto CsvOutput
-     Parámetros:
-        - [line]: Lista de cadenas que representa una línea del CSV
-        - [ip]: Dirección IP opcional
-     Valor de retorno:
-         - [CsvOutput]: Objeto que contiene información procesada de una línea del CSV**/
+    /**
+     * Método para procesar una línea del CSV y generar un objeto CsvOutput
+     * @param [line]: Lista de cadenas que representa una línea del CSV
+     * @param [ip]: Dirección IP opcional
+     * @return [CsvOutput]: Objeto que contiene información procesada de una línea del CSV
+     */
     @Suppress("TooGenericExceptionCaught")
     private fun processCsvLine(line: List<String>, ip: String?): CsvOutput {
         val uri = line[0].trim()
@@ -146,11 +141,11 @@ class CreateCSVUseCaseImpl(
         logger.info("URI procesada: $uri")
         return CsvOutput(uri, shortUrl ?: "Error", qrUrl ?: "Error", errorMessage!!, safe)
     }
-    /** Método para detectar el separador del CSV a partir de la primera línea
-     Parámetros:
-     - [inputStream]: Flujo de entrada que representa el contenido del archivo CSV
-     Valor de retorno:
-     - [Char]: Carácter que se detecta como el separador más probable en el CSV**/
+    /**
+    * Método para detectar el separador del CSV a partir de la primera línea
+    * @param[inputStream]: Flujo de entrada que representa el contenido del archivo CSV
+    * @return [Char]: Carácter que se detecta como el separador más probable en el CSV
+    */
     private fun detectCsvSeparator(inputStream: InputStream): Char {
         logger.info("Detectando separador de CSV")
         inputStream.bufferedReader().use { reader ->
@@ -162,11 +157,11 @@ class CreateCSVUseCaseImpl(
             return separatorCounts.maxByOrNull { it.value }?.key ?: ','
         }
     }
-    /**Método para convertir la entrada a un array de bytes
-     Parámetros:
-     - [inputStream]: Flujo de entrada que se convertirá
-     Valor de retorno:
-     - ByteArrayInputStream: Flujo de entrada como un objeto ByteArrayInputStream**/
+    /**
+    * Método para convertir la entrada a un array de bytes
+    * @param inputStream: Flujo de entrada que se convertirá
+    * @return ByteArrayInputStream: Flujo de entrada como un objeto ByteArrayInputStream
+    */
     private fun toByteArrayInputStream(inputStream: InputStream): ByteArrayInputStream {
         val bytes = inputStream.readAllBytes()
         return ByteArrayInputStream(bytes)

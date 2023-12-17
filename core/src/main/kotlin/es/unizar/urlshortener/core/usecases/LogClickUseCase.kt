@@ -12,6 +12,13 @@ import org.slf4j.LoggerFactory
  * **Note**: This is an example of functionality.
  */
 interface LogClickUseCase {
+    /**
+     * Metodo que guarda en la base de datos un click de un usuario.
+     *
+     * @param key the key of the redirection
+     * @param ip the ip of the requester
+     * @param uastring the user agent of the requester
+     */
     fun logClick(key: String, ip:String, uastring:String?)
 }
 
@@ -25,6 +32,13 @@ class LogClickUseCaseImpl(
 ) : LogClickUseCase {
     private val logger: Logger = LoggerFactory.getLogger(LogClickUseCaseImpl::class.java)
 
+    /**
+     * Implementacion del metodo de la interfaz para guardar un click en la base de datos.
+     *
+     * @param key the key of the redirection
+     * @param ip the ip of the requester
+     * @param uastring the user agent of the requester
+     */
     override fun logClick(key: String, ip: String, uastring:String?){
         logger.info("Guardando click de $key en la base de datos")
         val ua = userAgentInfoUseCase.returnUserAgentInfo(uastring)
