@@ -15,7 +15,18 @@ import javax.imageio.ImageIO
 import java.io.ByteArrayOutputStream
 
 interface QRCodeUseCase {
+    // Método para generar un código QR a partir de una ID
+    // Parámetros:
+    // - id: Identificador único asociado a una URL corta
+    // Valor de retorno:
+    // - ByteArray: Representación de bytes del código QR generado
     fun createQRCode(id: String): ByteArray
+    // Método para obtener el código QR asociado a una ID
+    // Parámetros:
+    // - id: Identificador único asociado a una URL corta
+    // Valor de retorno:
+    // - ByteArray: Representación de bytes del código QR correspondiente a la ID
+
     fun getQRCode(id: String): ByteArray
 }
 
@@ -26,13 +37,21 @@ class QRCodeUseCaseImpl(
     private val shortUrlRepository: ShortUrlRepositoryService,
 ) : QRCodeUseCase {
     private val logger: Logger = LoggerFactory.getLogger(QRCodeUseCaseImpl::class.java)
-
+    // Implementación del método para generar un código QR
+    // Parámetros:
+    // - id: Identificador único asociado a una URL corta
+    // Valor de retorno:
+    // - ByteArray: Representación de bytes del código QR generado
     override fun createQRCode(id: String): ByteArray {
         logger.info("Generando QR para $id")
         val qrCodeImage = generateQrCodeImage(id)
         return convertToByteArray(qrCodeImage)
     }
-
+    // Implementación del método para obtener el código QR
+    // Parámetros:
+    // - id: Identificador único asociado a una URL corta
+    // Valor de retorno:
+    // - ByteArray: Representación de bytes del código QR correspondiente a la ID
     override fun getQRCode(id: String): ByteArray {
         logger.info("Buscando $id para crear qr")
         val shortUrl = shortUrlRepository.findByKey(id)
@@ -61,7 +80,11 @@ class QRCodeUseCaseImpl(
         const val QR_CODE_WIDTH = 400
         const val QR_CODE_HEIGHT = 400
     }
-
+    // Método para generar una imagen de código QR a partir de una URL
+    // Parámetros:
+    // - url: URL para la cual se generará el código QR
+    // Valor de retorno:
+    // - BufferedImage: Imagen que representa el código QR generado
     private fun generateQrCodeImage(url: String): BufferedImage {
         logger.info("Generando QR para $url")
         val qrCodeWriter = QRCodeWriter()
@@ -83,7 +106,11 @@ class QRCodeUseCaseImpl(
         logger.info("QR generado para $url")
         return image
     }
-
+    // Método para convertir una imagen a un array de bytes
+    // Parámetros:
+    // - image: Imagen a convertir
+    // Valor de retorno:
+    // - ByteArray: Representación de bytes de la imagen convertida
     private fun convertToByteArray(image: BufferedImage): ByteArray {
         val outputStream = ByteArrayOutputStream()
         ImageIO.write(image, "PNG", outputStream)

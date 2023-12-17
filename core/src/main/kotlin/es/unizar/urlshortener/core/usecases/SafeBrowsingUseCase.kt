@@ -9,8 +9,7 @@ import es.unizar.urlshortener.core.SafeBrowsingService
 interface SafeBrowsingUseCase {
     fun urlsAreSafe(urlList: List<String>) : List<String>
     fun urlisSafe(url :String): Boolean
-    fun groupPeticion(urlList: List<String>) : List<String>
-    fun doPeticion()
+
 }
 class SafeBrowsingUseCaseImpl(
     private val safeBrowsingService: SafeBrowsingService
@@ -24,13 +23,7 @@ class SafeBrowsingUseCaseImpl(
         return safeBrowsingService.isSafe(url)
     }
 
-    override fun groupPeticion(urlList: List<String>): List<String> {
-        TODO("Not yet implemented")
-    }
 
-    override fun doPeticion() {
-        TODO("Not yet implemented")
-    }
 
 
 }

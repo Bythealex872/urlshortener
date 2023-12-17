@@ -13,7 +13,13 @@ import org.slf4j.LoggerFactory
  * **Note**: This is an example of functionality.
  */
 interface RedirectUseCase {
-
+    // Método para redireccionar a una URL corta dada su clave
+    // Parámetros:
+    // - key: Clave única asociada a una URL corta
+    // - ip: Dirección IP del usuario que realiza la redirección
+    // - ua: Agente de usuario (User-Agent) del navegador del usuario, puede ser nulo
+    // Valor de retorno:
+    // - Redirection: Objeto que contiene la URL objetivo y el modo de redirección HTTP
     fun redirectTo(key: String, ip: String, ua: String?): Redirection
 
 }
@@ -25,7 +31,13 @@ class RedirectUseCaseImpl(
         private val uaService: UserAgentRequestService
 ) : RedirectUseCase {
     private val logger: Logger = LoggerFactory.getLogger(RedirectUseCaseImpl::class.java)
-
+    // Implementación del método para redireccionar a una URL corta
+    // Parámetros:
+    // - key: Clave única asociada a una URL corta
+    // - ip: Dirección IP del usuario que realiza la redirección
+    // - ua: Agente de usuario (User-Agent) del navegador del usuario, puede ser nulo
+    // Valor de retorno:
+    // - Redirection: Objeto que contiene la URL objetivo y el modo de redirección HTTP
     override fun redirectTo(key: String, ip: String, ua: String?): Redirection {
         logger.info("Buscando $key para redireccionar")
         val shortUrl = shortUrlRepository.findByKey(key)

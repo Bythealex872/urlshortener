@@ -51,7 +51,7 @@ interface UrlShortenerController {
     fun processCsvFile(@RequestPart("file") file: MultipartFile,request: HttpServletRequest): ResponseEntity<Any>
     
     /**
-    * Returns the user agent information from the map.
+    * Returns the user agent information from the [map].
     */
     fun returnUserAgentInfo(@PathVariable id: String): ResponseEntity<Map<String, Any>>
 }

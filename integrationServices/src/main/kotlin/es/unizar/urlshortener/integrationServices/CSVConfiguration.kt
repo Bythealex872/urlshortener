@@ -107,7 +107,7 @@ class CSVCodeIntegrationConfiguration(
             val qrRequest = parts[1].trim() == "1"
             var error = "no_error"
             lateinit var create: es.unizar.urlshortener.core.ShortUrl
-            // Crear URL corta
+            logger.info("Procesando URI: $trimmedUri")
             try {
                  create = createShortUrlUseCase.create(
                     url = trimmedUri,
@@ -129,7 +129,6 @@ class CSVCodeIntegrationConfiguration(
                 }
             }
             if (error == "no_error") {
-                // Obtener el enlace
                 val shortUrl = linkToService.link(create.hash).toString()
                 logger.info("Enviando mensaje: $shortUrl")
                 val address = session.localAddress
@@ -138,12 +137,13 @@ class CSVCodeIntegrationConfiguration(
                 val final = "$trimmedUri,$codedUri,$qrUrl,$error,$safe"
                 // Enviar mensaje a través de la sesión WebSocket
                 synchronized(creationLock) {
+                    logger.info("Enviando mensaje: $final")
                     session.sendMessage(TextMessage(final))
                 }
             } else {
                 val final = "$trimmedUri,no_url,no_qr,$error,$safe"
                 synchronized(creationLock) {
-                    // Enviar mensaje a través de la sesión WebSocket
+                    logger.info("Enviando mensaje: $final")
                     session.sendMessage(TextMessage(final))
                 }
             }
@@ -162,7 +162,7 @@ class CSVCodeIntegrationConfiguration(
                 mostLikelyDelimiter = delimiter
             }
         }
-
+        logger.info("Delimiter detected: $mostLikelyDelimiter")
         return mostLikelyDelimiter
     }
 }
