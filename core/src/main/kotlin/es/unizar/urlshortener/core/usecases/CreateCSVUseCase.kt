@@ -43,7 +43,7 @@ class CreateCSVUseCaseImpl(
         val csvContent = StringBuilder()
         logger.info("Construyendo CSV")
         csvContent.append("URI${separator}URI_recortada${separator}QR${separator}" +
-                "Mensaje${separator}Estado de validación\n")
+                "Mensaje${separator}Estado de validacion\n")
 
         for (output in outputList) {
             csvContent.append("${output.originalUri}$separator${output.shortenedUri}$separator" +

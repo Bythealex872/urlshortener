@@ -7,3 +7,9 @@ spring:
     driverClassName: org.hsqldb.jdbc.JDBCDriver
   jpa:
     open-in-view: false
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+springdoc.override-with-generic-response: false

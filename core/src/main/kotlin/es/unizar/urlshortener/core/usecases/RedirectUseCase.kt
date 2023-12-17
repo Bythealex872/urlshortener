@@ -43,7 +43,6 @@ class RedirectUseCaseImpl(
         }
 
         uaService.sendUserAgentMessage(Triple(key, ip, ua))
-        //logClickUseCase.logClick(key, ip, ua)
         logger.info("Redirecting to ${shortUrl.redirection}")
         // Devuelve la lógica de redirección
         return shortUrl.redirection
