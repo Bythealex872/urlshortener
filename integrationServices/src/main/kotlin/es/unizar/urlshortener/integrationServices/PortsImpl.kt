@@ -3,10 +3,10 @@ package es.unizar.urlshortener.integrationServices
 import es.unizar.urlshortener.core.QRRequestService
 import es.unizar.urlshortener.core.SafeBrowsingRequestService
 import es.unizar.urlshortener.core.UserAgentRequestService
-import jakarta.websocket.Session
 import org.springframework.integration.annotation.MessagingGateway
 import org.springframework.integration.annotation.Gateway
 import org.springframework.web.socket.WebSocketSession
+
 /**
  * Interfaz de mensajería para la solicitud de generación de códigos QR.
  */

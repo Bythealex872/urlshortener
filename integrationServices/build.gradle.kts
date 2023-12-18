@@ -1,7 +1,23 @@
+import kotlinx.kover.gradle.plugin.dsl.GroupingEntityType
+
 plugins {
     id("urlshortener.spring-library-conventions")
+    id("org.jetbrains.kotlinx.kover") version "0.7.4"
     kotlin("plugin.spring")
 }
+
+kover {
+    excludeJavaCode()
+}
+
+koverReport {
+    defaults {
+        log {
+            groupBy = GroupingEntityType.CLASS
+        }
+    }
+}
+
 dependencies {
     implementation(project(":core"))
     implementation("org.springframework.boot:spring-boot-starter-integration")

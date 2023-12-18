@@ -5,10 +5,7 @@ import es.unizar.urlshortener.core.HashService
 import es.unizar.urlshortener.core.LinkToService
 import es.unizar.urlshortener.core.ValidatorService
 import org.apache.commons.validator.routines.UrlValidator
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo
 import org.springframework.hateoas.server.mvc.linkTo
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 import java.nio.charset.StandardCharsets
 
 

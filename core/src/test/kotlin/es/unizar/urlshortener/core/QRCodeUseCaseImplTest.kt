@@ -13,7 +13,7 @@ import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
-class QRCodeUseCaseImplTests {
+class QRCodeUseCaseImplTest {
 
     private lateinit var shortUrlRepository: ShortUrlRepositoryService
     private lateinit var qrCodeUseCase: QRCodeUseCaseImpl

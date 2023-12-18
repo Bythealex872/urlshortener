@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.*
 
-class CreateShortUrlUseCaseImplTests {
+class CreateShortUrlUseCaseImplTest {
 
     private lateinit var shortUrlRepository: ShortUrlRepositoryService
     private lateinit var validatorService: ValidatorService

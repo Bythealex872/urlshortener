@@ -40,7 +40,7 @@ class CreateShortUrlUseCaseImpl(
     * @param url: URL original que se va a acortar
     * @param qrRequest: Indicador booleano opcional para solicitar la generación de un código QR
     * @param data: Propiedades adicionales de la URL corta, como la dirección IP y el patrocinador
-    * @return ShortUrl: Objeto que representa la URL corta creada
+    * @return [ShortUrl]: Objeto que representa la URL corta creada
     */
     override fun create(url: String, qrRequest: Boolean?, data: ShortUrlProperties): ShortUrl {
         logger.info("Creando URL corta para $url")

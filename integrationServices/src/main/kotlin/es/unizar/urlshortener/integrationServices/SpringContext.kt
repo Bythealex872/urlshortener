@@ -4,9 +4,9 @@ package es.unizar.urlshortener.integrationServices
 
 
 import org.springframework.stereotype.Component
-//import jakarta.websocket.*
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
+
 /**
  * Clase que proporciona acceso al contexto de la aplicación Spring.
  *
