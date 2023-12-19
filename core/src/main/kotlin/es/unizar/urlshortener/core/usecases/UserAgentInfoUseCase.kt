@@ -51,8 +51,8 @@ class UserAgentInfoUseCaseImpl(
             throw RedirectionForbidden(key)
         }
 
-        val countsBrowser = clickRepository.countClicksByBrowser(key)
-        val countsPlatform = clickRepository.countClicksByPlatform(key)
+        val countsBrowser = clickRepository.countClicksByBrowser(key).associate { it[0] as String to (it[1] as Long) }
+        val countsPlatform = clickRepository.countClicksByPlatform(key).associate { it[0] as String to (it[1] as Long) }
 
         logger.info("Devolviendo información del agente de usuario de $key")
         return click.let {
