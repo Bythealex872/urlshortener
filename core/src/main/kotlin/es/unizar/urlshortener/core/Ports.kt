@@ -11,7 +11,9 @@ interface ClickRepositoryService {
     fun save(cl: Click): Click
 
     fun updateUAByIp(ip: String, browser: String, platform: String)
+
     fun getClickStatsByBrowser(id: String): Map<String, Long>
+  
     fun getClickStatsByPlatform(id: String): Map<String, Long>
 
 }
