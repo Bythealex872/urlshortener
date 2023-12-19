@@ -74,7 +74,7 @@ class ApplicationConfiguration(
     fun safeBrowsingIntegration() = SafeBrowsingConfiguration(shortUrlRepositoryService())
 
     @Bean
-    fun csvIntegration() = CSVCodeIntegrationConfiguration(linkToService())
+    fun csvIntegration() = CSVIntegrationConfiguration(linkToService())
 
     @Bean
     fun uaIntegration() = UAIntegrationConfiguration()

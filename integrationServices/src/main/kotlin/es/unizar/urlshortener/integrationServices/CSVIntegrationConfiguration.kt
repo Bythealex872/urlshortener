@@ -3,7 +3,6 @@ package es.unizar.urlshortener.integrationServices
 import es.unizar.urlshortener.core.LinkToService
 import es.unizar.urlshortener.core.ShortUrlProperties
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCaseImpl
-
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.integration.channel.ExecutorChannel
@@ -25,67 +24,12 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import org.springframework.web.socket.handler.TextWebSocketHandler
 
 /**
- * Configuración para WebSocket en la aplicación Spring.
- */
-@Configuration
-@EnableWebSocket
-class WebSocketConfig : WebSocketConfigurer {
-    /**
-     * Registra el manejador WebSocket para la ruta "/api/fast-bulk".
-     *
-     * @param registry El registro de manejadores WebSocket.
-     */
-    override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
-        registry.addHandler(myHandler(), "/api/fast-bulk")
-            .addInterceptors(HttpSessionHandshakeInterceptor())
-            .setAllowedOrigins("*")
-    }
-    /**
-     * Devuelve una instancia de [MyWebSocketHandler].
-     *
-     * @return La instancia de [MyWebSocketHandler].
-     */
-    fun myHandler(): MyWebSocketHandler {
-        return MyWebSocketHandler()
-    }
-}
-/**
- * Handler de  WebSocket para manejar mensajes de texto.
- */
-class MyWebSocketHandler : TextWebSocketHandler() {
-
-    private val logger: Logger = LoggerFactory.getLogger(MyWebSocketHandler::class.java)
-    /**
-     * Maneja el mensaje de texto recibido.
-     *
-     * @param session La sesión WebSocket.
-     * @param message El mensaje de texto recibido.
-     */
-
-    override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
-        logger.info("Received message: ${message.payload}")
-        val sendCsvBean = SpringContext.getBean(CSVRequestGateway::class.java)
-        sendCsvBean.sendCSVMessage(Pair(message.payload, session))
-    }
-    /**
-     * Se llama después de que se establece la conexión WebSocket.
-     *
-     * @param session La sesión WebSocket.
-     */
-    override fun afterConnectionEstablished(session: WebSocketSession) {
-        val localAddress = session.attributes["localAddress"]
-        session.sendMessage(TextMessage("Hello from server"))
-        logger.info("WebSocket session established from local address: $localAddress")
-    }
-
-}
-/**
  * Configuración para la integración de CSV en la aplicación Spring.
  */
 @Configuration
 @EnableIntegration
 @EnableScheduling
-class CSVCodeIntegrationConfiguration(
+class CSVIntegrationConfiguration(
         private val linkToService: LinkToService
 ) {
 
@@ -96,7 +40,7 @@ class CSVCodeIntegrationConfiguration(
         private const val CSV_CREATION_THREAD_NAME = "csv-update-"
     }
 
-    private val logger: Logger = LoggerFactory.getLogger(CSVCodeIntegrationConfiguration::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(CSVIntegrationConfiguration::class.java)
     private val creationLock = Object()
 
     /**
@@ -158,7 +102,7 @@ class CSVCodeIntegrationConfiguration(
             }
 
             val safe: String = if (create.properties.safe == null) {
-                "URI de destino no validada todavía"
+                "URI de destino no validada todavia"
             } else {
                 if (create.properties.safe==true) {
                     "URL segura"
@@ -211,3 +155,58 @@ class CSVCodeIntegrationConfiguration(
     }
 }
 
+/**
+ * Configuración para WebSocket en la aplicación Spring.
+ */
+@Configuration
+@EnableWebSocket
+class WebSocketConfig : WebSocketConfigurer {
+    /**
+     * Registra el manejador WebSocket para la ruta "/api/fast-bulk".
+     *
+     * @param registry El registro de manejadores WebSocket.
+     */
+    override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
+        registry.addHandler(myHandler(), "/api/fast-bulk")
+                .addInterceptors(HttpSessionHandshakeInterceptor())
+                .setAllowedOrigins("*")
+    }
+    /**
+     * Devuelve una instancia de [MyWebSocketHandler].
+     *
+     * @return La instancia de [MyWebSocketHandler].
+     */
+    fun myHandler(): MyWebSocketHandler {
+        return MyWebSocketHandler()
+    }
+}
+/**
+ * Handler de  WebSocket para manejar mensajes de texto.
+ */
+class MyWebSocketHandler : TextWebSocketHandler() {
+
+    private val logger: Logger = LoggerFactory.getLogger(MyWebSocketHandler::class.java)
+    /**
+     * Maneja el mensaje de texto recibido.
+     *
+     * @param session La sesión WebSocket.
+     * @param message El mensaje de texto recibido.
+     */
+
+    override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
+        logger.info("Received message: ${message.payload}")
+        val sendCsvBean = SpringContext.getBean(CSVRequestGateway::class.java)
+        sendCsvBean.sendCSVMessage(Pair(message.payload, session))
+    }
+    /**
+     * Se llama después de que se establece la conexión WebSocket.
+     *
+     * @param session La sesión WebSocket.
+     */
+    override fun afterConnectionEstablished(session: WebSocketSession) {
+        val localAddress = session.attributes["localAddress"]
+        session.sendMessage(TextMessage("Hello from server"))
+        logger.info("WebSocket session established from local address: $localAddress")
+    }
+
+}

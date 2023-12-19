@@ -32,6 +32,8 @@ interface ShortUrlEntityRepository : JpaRepository<ShortUrlEntity, String> {
 interface ClickEntityRepository : JpaRepository<ClickEntity, Long>{
     fun findByHash(hash: String):  ClickEntity?
 
+    fun findAllByHash(hash: String): List<ClickEntity>?
+
     @Modifying
     @Transactional
     @Query("UPDATE ClickEntity c SET c.browser = :browser, c.platform = :platform WHERE c.ip = :ip")

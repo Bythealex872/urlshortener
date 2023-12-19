@@ -4,6 +4,7 @@ plugins {
     id("urlshortener.kotlin-common-conventions")
     id("org.jetbrains.kotlinx.kover") version "0.7.4"
 }
+
 kover {
     excludeJavaCode()
 }
@@ -15,6 +16,7 @@ koverReport {
         }
     }
 }
+
 dependencies {
     implementation("com.google.zxing:core:3.4.1")
     implementation("com.google.zxing:javase:3.4.1")

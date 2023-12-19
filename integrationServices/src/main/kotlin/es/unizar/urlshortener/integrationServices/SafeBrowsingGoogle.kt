@@ -13,6 +13,7 @@ import java.util.Properties
 import java.io.IOException
 import es.unizar.urlshortener.core.SafeBrowsingService
 import org.slf4j.LoggerFactory
+
 /**
  * Verify if the url is safe with Google Safe Browsing.
  * Code based in https://github.com/kalinchih/google-safe_browsing-api-v4

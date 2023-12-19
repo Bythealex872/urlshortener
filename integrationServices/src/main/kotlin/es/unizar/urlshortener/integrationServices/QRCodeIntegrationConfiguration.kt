@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory
 import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import java.util.concurrent.Executor
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
+
 /*
  * Clase de configuración para la integración de códigos QR.
  */

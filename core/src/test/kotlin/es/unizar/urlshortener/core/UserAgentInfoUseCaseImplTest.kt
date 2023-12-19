@@ -1,6 +1,5 @@
 package es.unizar.urlshortener.core
 
-import com.blueconic.browscap.Capabilities
 import com.blueconic.browscap.UserAgentParser
 import com.blueconic.browscap.UserAgentService
 import es.unizar.urlshortener.core.usecases.UserAgentInfoUseCaseImpl
