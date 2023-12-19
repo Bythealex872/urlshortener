@@ -38,13 +38,12 @@ class CreateCSVUseCaseImplTest {
         val csvInput = "URI,QR\nhttp://example.com,1\nhttp://example.org,0"
         val inputStream = ByteArrayInputStream(csvInput.toByteArray())
 
-        val result = createCSVUseCase.processAndBuildCsv(inputStream, "123.123.123.123")
+        val result = createCSVUseCase.processAndBuildCsv(inputStream, "127.0.0.1")
 
         // Assertions
         assertNotNull(result)
-        assertTrue(result.first.contains("http://example.com"))
-        assertTrue(result.first.contains("http://example.org"))
-        // Add more assertions as necessary
+        assertTrue(result.first.contains("http://example.com,http://short.url/hash"))
+        assertTrue(result.first.contains("http://example.org,http://short.url/hash"))
     }
 
     @Test
@@ -54,7 +53,7 @@ class CreateCSVUseCaseImplTest {
         val inputStream = ByteArrayInputStream(invalidCsvInput.toByteArray())
 
         assertThrows<CSVCouldNotBeProcessed> {
-            createCSVUseCase.processAndBuildCsv(inputStream, "123.123.123.123")
+            createCSVUseCase.processAndBuildCsv(inputStream, "127.0.0.1")
         }
     }
 }

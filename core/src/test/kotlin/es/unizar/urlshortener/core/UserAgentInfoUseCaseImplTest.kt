@@ -38,15 +38,21 @@ class UserAgentInfoUseCaseImplTest {
         whenever(shortUrlRepository.findByKey(key)).thenReturn(shortUrl)
         whenever(clickRepository.findAllByKey(key)).thenReturn(listOf(click))
 
+        // Ajustar para que devuelva un Map<String, Long>
+        val browserStats = mapOf("Chrome" to 1L)
+        val platformStats = mapOf("Windows" to 1L)
+        whenever(clickRepository.getClickStatsByBrowser(key)).thenReturn(browserStats)
+        whenever(clickRepository.getClickStatsByPlatform(key)).thenReturn(platformStats)
+
         val result = userAgentInfoUseCase.getUserAgentInfoByKey(key)
 
         assertNotNull(result)
-        //val properties = result["Properties"] as ClickProperties
-        val browsers = result["Browsers"] as Map<String, Long>
-        val platforms = result["Platforms"] as Map<String, Long>
-        assertEquals("Chrome", browsers.keys.first())
-        assertEquals("Windows", platforms.keys.first())
+        assertEquals(key, result["Hash"])
+        assertEquals(1, result["Total of clicks"])
+        assertEquals(browserStats, result["Browsers"])
+        assertEquals(platformStats, result["Platforms"])
     }
+
 
     @Test
     fun `getUserAgentInfoByKey should throw RedirectionNotFound when URL is not found`() {
@@ -58,5 +64,44 @@ class UserAgentInfoUseCaseImplTest {
             userAgentInfoUseCase.getUserAgentInfoByKey(key)
         }
     }
+
+    @Test
+    fun `getUserAgentInfoByKey should throw RedirectionNotFound when no clicks are found`() {
+        val key = "keyWithNoClicks"
+        val shortUrl = ShortUrl(key, Redirection("http://example.com"), properties = ShortUrlProperties(safe = true))
+
+        whenever(shortUrlRepository.findByKey(key)).thenReturn(shortUrl)
+        whenever(clickRepository.findAllByKey(key)).thenReturn(null)
+
+        assertThrows<RedirectionNotFound> {
+            userAgentInfoUseCase.getUserAgentInfoByKey(key)
+        }
+    }
+
+
+    @Test
+    fun `getUserAgentInfoByKey should throw RetryAfterException when URL has not been validated`() {
+        val key = "unvalidatedKey"
+        val shortUrl = ShortUrl(key, Redirection("http://example.com"), properties = ShortUrlProperties(safe = null))
+
+        whenever(shortUrlRepository.findByKey(key)).thenReturn(shortUrl)
+
+        assertThrows<RetryAfterException> {
+            userAgentInfoUseCase.getUserAgentInfoByKey(key)
+        }
+    }
+
+    @Test
+    fun `getUserAgentInfoByKey should throw RedirectionForbidden when URL is not safe`() {
+        val key = "unsafeKey"
+        val shortUrl = ShortUrl(key, Redirection("http://example.com"), properties = ShortUrlProperties(safe = false))
+
+        whenever(shortUrlRepository.findByKey(key)).thenReturn(shortUrl)
+
+        assertThrows<RedirectionForbidden> {
+            userAgentInfoUseCase.getUserAgentInfoByKey(key)
+        }
+    }
+
 
 }

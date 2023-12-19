@@ -32,8 +32,8 @@ class UserAgentInfoUseCaseImpl(
      */
     override fun getUserAgentInfoByKey(key: String): Map<String, Any>{
         logger.info("Buscando $key para obtener información del agente de usuario")
-        val clicks = clickRepository.findAllByKey(key)
         val shortUrl = shortUrlRepository.findByKey(key)
+        val clicks = clickRepository.findAllByKey(key)
         if(shortUrl == null){
             logger.error("No se ha encontrado la URL")
             throw RedirectionNotFound(key)

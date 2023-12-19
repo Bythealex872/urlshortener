@@ -86,7 +86,7 @@ class CreateCSVUseCaseImpl(
         val lines = csvReader.readAll()
 
         logger.info("Procesando CSV")
-        if (lines.isEmpty() || lines.first().toList() != listOf("URI", "QR")) {
+        if (lines.first().toList() != listOf("URI", "QR")) {
             logger.error("Formato de CSV no válido")
             throw CSVCouldNotBeProcessed()
         }

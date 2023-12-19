@@ -56,7 +56,7 @@ interface UrlShortenerController {
     fun qrCode(id: String, request: HttpServletRequest): ResponseEntity<ByteArrayResource>
 
     fun processCsvFile(@RequestPart("file") file: MultipartFile,request: HttpServletRequest): ResponseEntity<String>
-    
+
     /**
     * Returns the user agent information from the [map].
     */
@@ -306,8 +306,8 @@ class UrlShortenerControllerImpl(
     }
 
     @Operation(
-        summary = "Return a resume of the User Agent",
-        description = "Return a resume of the User Agent associated with the ID",
+        summary = "Return a summary of the User Agent information",
+        description = "Returns a summary of the User Agent information associated with the given ID",
         responses = [
             ApiResponse(
                 responseCode = "200",

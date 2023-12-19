@@ -52,9 +52,6 @@ class UrlShortenerControllerTest {
     @MockBean
     private lateinit var userAgentInfoUseCase: UserAgentInfoUseCase
 
-    //@MockBean
-    //private lateinit var sendSafeBrowser: SendSafeBrowser
-
     @Test
     fun `redirectTo returns a redirect when the key exists and no userAgent`() {
 
