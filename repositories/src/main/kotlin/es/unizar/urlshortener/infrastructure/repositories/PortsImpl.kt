@@ -13,10 +13,20 @@ class ClickRepositoryServiceImpl(
     private val clickEntityRepository: ClickEntityRepository
 ) : ClickRepositoryService {
     override fun findByKey(id: String): Click? = clickEntityRepository.findByHash(id)?.toDomain()
+
+    override fun findAllByKey(id: String): List<Click>? = clickEntityRepository.findAllByHash(id)?.map { it.toDomain() }
     override fun save(cl: Click): Click = clickEntityRepository.save(cl.toEntity()).toDomain()
 
     override fun updateUAByIp(ip: String, browser: String, platform: String) =
             clickEntityRepository.updateUAByIp(ip, browser, platform)
+
+    override fun getClickStatsByBrowser(id: String): Map<String, Long> {
+        return clickEntityRepository.countClicksByBrowser(id).associate { it[0] as String to (it[1] as Long) }
+    }
+
+    override fun getClickStatsByPlatform(id: String): Map<String, Long> {
+        return clickEntityRepository.countClicksByPlatform(id).associate { it[0] as String to (it[1] as Long) }
+    }
 }
 
 /**
