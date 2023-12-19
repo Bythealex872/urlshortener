@@ -36,14 +36,16 @@ class UserAgentInfoUseCaseImplTest {
         val click = Click(key, ClickProperties(browser = "Chrome", platform = "Windows"))
 
         whenever(shortUrlRepository.findByKey(key)).thenReturn(shortUrl)
-        whenever(clickRepository.findByKey(key)).thenReturn(click)
+        whenever(clickRepository.findAllByKey(key)).thenReturn(listOf(click))
 
         val result = userAgentInfoUseCase.getUserAgentInfoByKey(key)
 
         assertNotNull(result)
-        val properties = result["Properties"] as ClickProperties
-        assertEquals("Chrome", properties.browser)
-        assertEquals("Windows", properties.platform)
+        //val properties = result["Properties"] as ClickProperties
+        val browsers = result["Browsers"] as Map<String, Long>
+        val platforms = result["Platforms"] as Map<String, Long>
+        assertEquals("Chrome", browsers.keys.first())
+        assertEquals("Windows", platforms.keys.first())
     }
 
     @Test

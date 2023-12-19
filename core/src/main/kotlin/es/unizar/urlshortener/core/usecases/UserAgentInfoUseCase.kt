@@ -59,7 +59,7 @@ class UserAgentInfoUseCaseImpl(
                 "Hash" to key,
                 "Total of clicks" to clicks.size,
                 "Browsers" to browsers,
-                "platforms" to platforms
+                "Platforms" to platforms
         )
     }
 
