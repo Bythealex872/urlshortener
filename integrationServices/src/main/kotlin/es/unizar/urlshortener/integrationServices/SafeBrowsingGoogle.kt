@@ -60,8 +60,9 @@ class SafeBrowsingServiceImpl : SafeBrowsingService {
     override fun isSafe(url: String): Boolean {
         return urlsAreSafe(listOf(url)).isEmpty()
     }
+
     /**
-     *Verifica si una lista de URLs son seguras utilizando Google Safe Browsing.
+     * Verifica si una lista de URLs son seguras utilizando Google Safe Browsing.
      *
      * @param urls Lista de URLs a verificar.
      * @return Lista de URLs que se consideran no seguras.
@@ -90,6 +91,7 @@ class SafeBrowsingServiceImpl : SafeBrowsingService {
         }
         return threadList
     }
+
     /**
      * Create a FindThreatMatchesRequest object.
      *

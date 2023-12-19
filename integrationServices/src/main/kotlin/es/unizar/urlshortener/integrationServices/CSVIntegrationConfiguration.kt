@@ -132,6 +132,7 @@ class CSVIntegrationConfiguration(
             }
         }
     }
+
     /**
      * Detecta el delimitador más probable en una línea dada.
      *
@@ -161,6 +162,7 @@ class CSVIntegrationConfiguration(
 @Configuration
 @EnableWebSocket
 class WebSocketConfig : WebSocketConfigurer {
+
     /**
      * Registra el manejador WebSocket para la ruta "/api/fast-bulk".
      *
@@ -171,6 +173,7 @@ class WebSocketConfig : WebSocketConfigurer {
                 .addInterceptors(HttpSessionHandshakeInterceptor())
                 .setAllowedOrigins("*")
     }
+
     /**
      * Devuelve una instancia de [MyWebSocketHandler].
      *
@@ -180,24 +183,26 @@ class WebSocketConfig : WebSocketConfigurer {
         return MyWebSocketHandler()
     }
 }
+
 /**
  * Handler de  WebSocket para manejar mensajes de texto.
  */
 class MyWebSocketHandler : TextWebSocketHandler() {
 
     private val logger: Logger = LoggerFactory.getLogger(MyWebSocketHandler::class.java)
+
     /**
      * Maneja el mensaje de texto recibido.
      *
      * @param session La sesión WebSocket.
      * @param message El mensaje de texto recibido.
      */
-
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
         logger.info("Received message: ${message.payload}")
         val sendCsvBean = SpringContext.getBean(CSVRequestGateway::class.java)
         sendCsvBean.sendCSVMessage(Pair(message.payload, session))
     }
+
     /**
      * Se llama después de que se establece la conexión WebSocket.
      *

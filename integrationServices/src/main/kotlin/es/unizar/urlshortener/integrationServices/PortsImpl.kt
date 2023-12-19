@@ -12,6 +12,7 @@ import org.springframework.web.socket.WebSocketSession
  */
 @MessagingGateway
 interface QRRequestGateway : QRRequestService {
+
     /**
      * Envia un mensaje para la generación de un código QR.
      *
@@ -20,11 +21,13 @@ interface QRRequestGateway : QRRequestService {
     @Gateway(requestChannel = "qrCreationChannel")
     override fun sendQRMessage(p: Pair<String, String>)
 }
+
 /**
  * Interfaz de mensajería para la solicitud de información del agente de usuario.
  */
 @MessagingGateway
 interface UserAgentRequestGateway : UserAgentRequestService {
+
     /**
      * Envia un mensaje para obtener información del agente de usuario.
      *
@@ -33,11 +36,13 @@ interface UserAgentRequestGateway : UserAgentRequestService {
     @Gateway(requestChannel = "uaUpdateChannel")
     override fun sendUserAgentMessage(p: Triple<String, String,String?>)
 }
+
 /**
  * Interfaz de mensajería para la solicitud de verificación de seguridad de una URL.
  */
 @MessagingGateway
 interface SafeBrowsingRequestGateway : SafeBrowsingRequestService {
+
     /**
      * Envia un mensaje para verificar la seguridad de una URL.
      *

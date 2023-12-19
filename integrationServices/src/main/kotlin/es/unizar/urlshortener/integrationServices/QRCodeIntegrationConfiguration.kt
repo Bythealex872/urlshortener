@@ -16,7 +16,7 @@ import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import java.util.concurrent.Executor
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 
-/*
+/**
  * Clase de configuración para la integración de códigos QR.
  */
 @Configuration
@@ -39,13 +39,15 @@ class QRCodeIntegrationConfiguration(
     }
 
     private val logger: Logger = LoggerFactory.getLogger(QRCodeIntegrationConfiguration::class.java)
-    /*
-    * Clase de datos para transportar la información del código QR.
-    */
+
+    /**
+     * Clase de datos para transportar la información del código QR.
+     */
     data class QRCodePayload(val id: String, val qrCode: ByteArray)
-    /*
-    * Configuración del ejecutor para la creación de códigos QR.
-    */
+
+    /**
+     * Configuración del ejecutor para la creación de códigos QR.
+     */
     fun qrCreationExecutor(): Executor = ThreadPoolTaskExecutor().apply {
         corePoolSize = QR_CREATION_CORE_POOL_SIZE
         maxPoolSize = QR_CREATION_MAX_POOL_SIZE
@@ -53,9 +55,10 @@ class QRCodeIntegrationConfiguration(
         setThreadNamePrefix(QR_CREATION_THREAD_NAME)
         initialize()
     }
-    /*
-    * Configuración del ejecutor para la actualización de códigos QR.
-    */
+
+    /**
+     * Configuración del ejecutor para la actualización de códigos QR.
+     */
     fun qrUpdateExecutor(): Executor = ThreadPoolTaskExecutor().apply {
         corePoolSize = QR_UPDATE_CORE_POOL_SIZE
         maxPoolSize = QR_UPDATE_MAX_POOL_SIZE
@@ -63,19 +66,22 @@ class QRCodeIntegrationConfiguration(
         setThreadNamePrefix(QR_UPDATE_THREAD_NAME)
         initialize()
     }
-    /*
-    * Configuración del canal para la creación de códigos QR.
-    */
+
+    /**
+     * Configuración del canal para la creación de códigos QR.
+     */
     @Bean
     fun qrCreationChannel(): MessageChannel = ExecutorChannel(qrCreationExecutor())
-    /*
-    * Configuración del canal para la actualización de códigos QR.
-    */
+
+    /**
+     * Configuración del canal para la actualización de códigos QR.
+     */
     @Bean
     fun qrUpdateChannel(): MessageChannel = ExecutorChannel(qrUpdateExecutor())
-    /*
-    * Configuración del flujo de integración para la creación y actualización de códigos QR.
-    */
+
+    /**
+     * Configuración del flujo de integración para la creación y actualización de códigos QR.
+     */
     @Bean
     fun qrFlow(createQRCodeUseCase: QRCodeUseCase): IntegrationFlow = integrationFlow(qrCreationChannel()) {
         filter<Pair<String, String>> { payload ->

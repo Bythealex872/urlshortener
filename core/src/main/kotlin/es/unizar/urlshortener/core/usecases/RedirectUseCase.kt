@@ -28,7 +28,7 @@ interface RedirectUseCase {
  */
 class RedirectUseCaseImpl(
         private val shortUrlRepository: ShortUrlRepositoryService,
-        private val uaService: UserAgentRequestService
+        private val uaRequestService: UserAgentRequestService
 ) : RedirectUseCase {
     private val logger: Logger = LoggerFactory.getLogger(RedirectUseCaseImpl::class.java)
 
@@ -54,7 +54,7 @@ class RedirectUseCaseImpl(
             throw RedirectionForbidden(key)
         }
 
-        uaService.sendUserAgentMessage(Triple(key, ip, ua))
+        uaRequestService.sendUserAgentMessage(Triple(key, ip, ua))
         logger.info("Redirecting to ${shortUrl.redirection}")
         // Devuelve la lógica de redirección
         return shortUrl.redirection

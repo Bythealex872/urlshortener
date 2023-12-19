@@ -71,7 +71,7 @@ class ApplicationConfiguration(
     fun qrCodeIntegration() = QRCodeIntegrationConfiguration(shortUrlRepositoryService())
 
     @Bean
-    fun safeBrowsingIntegration() = SafeBrowsingConfiguration(shortUrlRepositoryService())
+    fun safeBrowsingIntegration() = SafeBrowsingIntegrationConfiguration(shortUrlRepositoryService())
 
     @Bean
     fun csvIntegration() = CSVIntegrationConfiguration(linkToService())

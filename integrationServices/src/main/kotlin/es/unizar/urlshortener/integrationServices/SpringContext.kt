@@ -17,6 +17,7 @@ import org.springframework.context.ApplicationContextAware
 open class SpringContext : ApplicationContextAware {
 
     private lateinit var context: ApplicationContext
+
     /**
      * Método llamado por el contenedor Spring para proporcionar el contexto de la aplicación.
      *
@@ -26,6 +27,7 @@ open class SpringContext : ApplicationContextAware {
         this.context = context
         Companion.context = this
     }
+
     /**
      * Obtiene una instancia del bean especificado por su clase.
      *
@@ -44,6 +46,7 @@ open class SpringContext : ApplicationContextAware {
      */
     companion object : DI {
         lateinit var context: SpringContext
+
         /**
          * Obtiene una instancia del bean especificado por su clase utilizando el contexto de la aplicación.
          *
@@ -57,6 +60,7 @@ open class SpringContext : ApplicationContextAware {
 }
 
 interface DI {
+
     /**
      * Obtiene una instancia del bean especificado por su clase.
      *

@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit
 @Configuration
 @EnableIntegration
 @EnableScheduling
-class SafeBrowsingConfiguration(
+class SafeBrowsingIntegrationConfiguration(
     private val shortUrlRepository: ShortUrlRepositoryService
 ) {
     companion object {
@@ -40,7 +40,7 @@ class SafeBrowsingConfiguration(
         private const val TIME_LIMIT = 1L
     }
 
-    private val logger: Logger = LoggerFactory.getLogger(SafeBrowsingConfiguration::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(SafeBrowsingIntegrationConfiguration::class.java)
 
     data class SafeBrowsingPayload(val url: String, val isSafe: Boolean)
 
@@ -58,30 +58,34 @@ class SafeBrowsingConfiguration(
         setThreadNamePrefix(SAFE_UPDATE_THREAD_NAME)
         initialize()
     }
-    /*
-    * Configuración del canal para Safe Browsing.
-    */
+
+    /**
+     * Configuración del canal para Safe Browsing.
+     */
     @Bean
     fun safeBrowsingChannel(): MessageChannel = ExecutorChannel(safeBrowsingExecutor())
-    /*
-    * Configuración del canal para la actualización del estado seguro.
-    */
+
+    /**
+     * Configuración del canal para la actualización del estado seguro.
+     */
     @Bean
     fun safeUpdateChannel(): MessageChannel = ExecutorChannel(safeUpdateExecutor())
-    /*
-    * Configuración de la tienda de grupos de mensajes.
-    */
+
+    /**
+     * Configuración de la tienda de grupos de mensajes.
+     */
     @Bean
     fun messageStore(): MessageGroupStore = SimpleMessageStore()
 
-    /*
+    /**
      * Configuración del procesador de grupo de mensajes como un Bean.
      */
     @Bean
     fun messageGroupProcessor(): MessageGroupProcessor = DefaultAggregatingMessageGroupProcessor()
-    /*
-    * Configuración del flujo de integración para Safe Browsing.
-    */
+
+    /**
+     * Configuración del flujo de integración para Safe Browsing.
+     */
     @Bean
     fun safeBrowsingFlow(safeBrowsingUseCase: SafeBrowsingUseCase): IntegrationFlow =
         integrationFlow(safeBrowsingChannel()) {
@@ -95,14 +99,13 @@ class SafeBrowsingConfiguration(
 
                 // Configura el tamaño del lote (N URLs) y el tiempo límite (1 minuto)
                 correlationStrategy { "defaultCorrelationId" }
-                //releaseStrategy { group -> group.size() >= GROUP_SIZE }
                 expireGroupsUponTimeout(true)
                 sendPartialResultOnExpiry(true)
                 groupTimeout(TimeUnit.MINUTES.toMillis(TIME_LIMIT))
             }
             // Envía el lote de URLs al servicio de Safe Browsing
             transform <List<Pair<String, String>>> { payload ->
-                val urls =payload.map { it.second }
+                val urls = payload.map { it.second }
                 val unsafeResults = safeBrowsingUseCase.urlsAreSafe(urls)
                 urls.map { url ->
                     SafeBrowsingPayload(url, url !in unsafeResults)
@@ -110,8 +113,9 @@ class SafeBrowsingConfiguration(
             }
             channel(safeUpdateChannel())
         }
-    /*
-    * Configuración del flujo de integración para la actualización del estado seguro.
+
+    /**
+     * Configuración del flujo de integración para la actualización del estado seguro.
      */
     @ServiceActivator(inputChannel = "safeUpdateChannel")
     fun updateDatabase(payloads: List<SafeBrowsingPayload>) {
