@@ -36,4 +36,10 @@ interface ClickEntityRepository : JpaRepository<ClickEntity, Long>{
     @Transactional
     @Query("UPDATE ClickEntity c SET c.browser = :browser, c.platform = :platform WHERE c.ip = :ip")
     fun updateUAByIp(ip: String, browser: String, platform: String)
+
+    @Query("SELECT c.browser, COUNT(c) FROM ClickEntity c WHERE c.hash = :hash GROUP BY c.browser")
+    fun countClicksByBrowser(hash: String): List<Array<Any>>
+
+    @Query("SELECT c.platform, COUNT(c) FROM ClickEntity c WHERE c.hash = :hash GROUP BY c.platform")
+    fun countClicksByPlatform(hash: String): List<Array<Any>>
 }

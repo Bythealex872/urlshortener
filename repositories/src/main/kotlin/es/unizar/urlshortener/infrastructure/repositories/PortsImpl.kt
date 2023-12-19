@@ -17,6 +17,12 @@ class ClickRepositoryServiceImpl(
 
     override fun updateUAByIp(ip: String, browser: String, platform: String) =
             clickEntityRepository.updateUAByIp(ip, browser, platform)
+
+    override fun countClicksByBrowser(hash: String): List<Array<Any>> =
+            clickEntityRepository.countClicksByBrowser(hash)
+
+    override fun countClicksByPlatform(hash: String): List<Array<Any>> =
+            clickEntityRepository.countClicksByPlatform(hash)
 }
 
 /**

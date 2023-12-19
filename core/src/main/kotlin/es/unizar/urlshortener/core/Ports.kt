@@ -10,6 +10,10 @@ interface ClickRepositoryService {
     fun save(cl: Click): Click
 
     fun updateUAByIp(ip: String, browser: String, platform: String)
+
+    fun countClicksByBrowser(hash: String): List<Array<Any>>
+
+    fun countClicksByPlatform(hash: String): List<Array<Any>>
 }
 
 /**
